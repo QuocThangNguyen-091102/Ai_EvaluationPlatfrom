@@ -24,7 +24,45 @@ Danh sách file và trách nhiệm từng file: [docs/09_repo_manifest.md](docs/
 
 ## Cài đặt và chạy
 
-Hướng dẫn chạy toàn bộ stack sẽ được viết ở M2-T08, sau khi các thành phần (database, backend, frontend) chạy được.
+Yêu cầu: Docker Desktop (có Docker Compose), Git. Muốn chạy test trên máy host thì cần thêm Python 3.11.
+
+```bash
+git clone <địa chỉ repo> ai-evaluation-platform
+cd ai-evaluation-platform
+
+# 1. Tạo file cấu hình rồi đổi giá trị mật khẩu
+cp .env.example .env
+#    Sửa POSTGRES_PASSWORD, và phần mật khẩu trong DATABASE_URL cho khớp.
+
+# 2. Dựng và chạy toàn bộ stack (db, backend, frontend)
+docker compose up --build
+```
+
+Khi các service đều ở trạng thái healthy (`docker compose ps`):
+
+| Thành phần | Địa chỉ |
+|------------|---------|
+| Frontend | http://localhost:5173 |
+| Backend (tài liệu API tự sinh) | http://localhost:8000/docs |
+| Kiểm tra sức khỏe | http://localhost:8000/health (trả `{"status":"ok","database":"ok"}`) |
+| PostgreSQL (chỉ từ máy host) | 127.0.0.1:5432 |
+
+Migration chạy tự động khi backend khởi động (`alembic upgrade head`). Dữ liệu database nằm trong volume `pgdata` nên còn sau `docker compose down`. Muốn xóa cả dữ liệu: `docker compose down -v`.
+
+Nếu cổng 5432, 8000 hoặc 5173 đã bị chiếm, đổi `DB_HOST_PORT`, `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT` trong `.env`.
+
+### Chạy test backend
+
+```bash
+docker compose up -d db                    # test integration cần database
+cd backend
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements-dev.txt     # Windows; Linux/macOS: .venv/bin/python
+.venv/Scripts/python -m pytest             # toàn bộ
+.venv/Scripts/python -m pytest -m "not integration"            # chỉ unit, không cần database
+```
+
+Lưu ý: nếu bạn đổi `POSTGRES_PASSWORD` thì đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
 
 ## Quy ước làm việc
 
