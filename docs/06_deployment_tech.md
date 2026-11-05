@@ -58,7 +58,7 @@ Biến môi trường (chỉ liệt kê tên; giá trị nằm trong `.env`, m�
 |------|------|
 | Database | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL` |
 | Auth | `JWT_SECRET`, `JWT_EXPIRE_MINUTES` |
-| Provider | `LLM_API_KEY`, `EMBEDDING_API_KEY` (và tên provider, model nếu cần) |
+| Provider | `LLM_API_KEY` (cần từ M4; embedding chạy cục bộ nên không cần key) |
 | Upload | `UPLOAD_DIR`, `MAX_UPLOAD_SIZE_MB`, danh sách loại file cho phép |
 | Frontend | `VITE_API_BASE_URL` |
 | Web | `CORS_ALLOWED_ORIGINS` |
@@ -137,29 +137,40 @@ Bắt buộc gói sau interface (`base_llm_client.py`, `base_embedder.py`) để
 
 | Phương án | LLM | Embedding | Ưu | Nhược |
 |-----------|-----|-----------|----|-------|
-| **A1 (đã chọn)** | Hosted LLM thông qua một provider | Embedding của cùng provider | Một API key, một chỗ tính chi phí, ít cấu hình; khớp tên file skeleton hiện có (`openai_embedder.py`, `openai_llm_client.py`) | Phụ thuộc một nhà cung cấp, benchmark các nhóm model bị giới hạn trong nhà đó |
+| **A1** | Hosted LLM thông qua một provider | Embedding của cùng provider | Một API key, một chỗ tính chi phí, ít cấu hình; khớp tên file skeleton hiện có (`openai_embedder.py`, `openai_llm_client.py`) | Phụ thuộc một nhà cung cấp, benchmark các nhóm model bị giới hạn trong nhà đó |
 | A2 | Claude (Anthropic) cho LLM | Provider khác cho embedding (theo hiểu biết của mình Anthropic không có API embedding riêng, cần xác minh) | Chất lượng sinh văn bản tốt, có nhiều cỡ model để benchmark | Hai API key, hai nơi tính chi phí, phải đổi tên adapter trong skeleton |
-| A3 | Hosted LLM | Embedding chạy cục bộ (ví dụ sentence-transformers) | Không tốn phí embedding, dữ liệu không rời máy khi embed | Image Docker nặng hơn, chạy chậm hơn trên máy yếu, số chiều vector khác |
+| **A3 (đã chọn cho embedding)** | Hosted LLM | Embedding chạy cục bộ (ví dụ sentence-transformers) | Không tốn phí embedding, dữ liệu không rời máy khi embed | Image Docker nặng hơn, chạy chậm hơn trên máy yếu, số chiều vector khác |
 
 Hệ quả cần nhớ cho mọi phương án:
 - **Số chiều vector** (cột `vector(N)` trong DB) do embedding model quyết định và đổi model là phải embed lại toàn bộ chunk. Vì vậy phải chốt trước M3-T01.
 - **Judge model** (LLM-as-a-Judge) nên khác model sinh câu trả lời trong cùng một run để giảm thiên lệch tự ưu ái; model và prompt của judge phải ghi vào metadata run.
 - Tên model, giá và giới hạn rate limit thay đổi theo thời gian. Phải xác minh trên tài liệu của provider lúc cài (M3-T06, M4-T03), và ghi thời điểm lấy giá khi tính chi phí (M8-T04).
 
-**Đã chọn: A1** (một provider cho cả LLM và embedding, cài sau interface).
+**Đã chọn (2026-11-05):**
+- **Embedding: phương án A3, chạy cục bộ** bằng model `intfloat/multilingual-e5-small`. Không cần API key, không tốn phí, dữ liệu không rời máy khi embed.
+- **LLM provider: chưa chốt**, quyết định ở M4 (M3 không cần LLM). Lúc đó thử một gói miễn phí hoặc chạy LLM cục bộ, dùng giới hạn thật mà trang của nhà cung cấp hiển thị khi đó.
 
-Lý do:
-- Với người mới, giảm số thứ phải học và cấu hình đi một nửa (một API key, một cách tính chi phí, một kiểu lỗi và rate limit) giúp bạn tập trung vào phần khó thật sự là evaluation.
-- Giá trị của dự án nằm ở cách đo, không ở việc dùng model nào. Nhờ interface `base_llm_client.py` và `base_embedder.py`, đổi provider sau này chỉ là viết thêm một adapter, không sửa pipeline.
-- Benchmark vẫn so sánh được: dùng ít nhất hai model (một nhỏ, một lớn) của cùng provider, và judge là một model khác với model sinh.
+Thông số của model, đọc từ cấu hình chính thức trên Hugging Face (`config.json`, `1_Pooling/config.json`, `sentence_bert_config.json`, model card):
+
+| Thuộc tính | Giá trị |
+|------------|---------|
+| Số chiều vector | **384** (cột `vector(384)` trong `document_chunks`) |
+| Độ dài đầu vào tối đa | 512 token (chunk phải nhỏ hơn mức này) |
+| Giấy phép | MIT |
+| Ngôn ngữ | Danh sách ngôn ngữ của model có tiếng Việt (`vi`) |
+| Tiền tố bắt buộc | `query: ` cho câu hỏi, `passage: ` cho đoạn tài liệu |
+
+Lưu ý quan trọng về tiền tố: nếu adapter quên thêm tiền tố, hệ thống **không báo lỗi** mà chất lượng truy xuất tụt đi một cách âm thầm. Vì vậy `local_embedder.py` phải chịu trách nhiệm thêm tiền tố và có test kiểm tra điều này.
+
+Vì sao chọn model đa ngôn ngữ thay vì model chỉ tiếng Anh nhỏ hơn: tài liệu của bạn nhiều khả năng có tiếng Việt, và model chỉ huấn luyện cho tiếng Anh sẽ truy xuất kém trên văn bản tiếng Việt. Cái giá là model nặng hơn.
 
 Giả định yếu cần kiểm chứng, không được xem là đúng sẵn:
-1. *"Bạn có API key và ngân sách chạy khoảng 100 case nhiều lần."* Chưa có số liệu chi phí. Kiểm chứng **trước M3-T01** bằng một lần gọi thật nhỏ (điều kiện vào M3-T01), rồi ước tính chi phí chạy thật ở M4-T05. Nếu chi phí không chấp nhận được, chuyển sang A3 (embedding cục bộ, giữ LLM hosted).
-2. *"Một provider đủ để benchmark có ý nghĩa."* Hai cỡ model của cùng nhà vẫn cho thấy khác biệt chất lượng, độ trễ, chi phí, nhưng kết luận chỉ đúng với nhà đó. Báo cáo phải nêu rõ giới hạn này.
-3. *"Tên model và giá không đổi."* Provider đổi liên tục; vì vậy tên model và giá nằm trong `configs/models.yaml`, không nằm trong code.
-4. *Tên file `openai_*.py` ngầm giả định nhà cung cấp.* Chấp nhận: mỗi adapter một file mang tên provider là quy ước bình thường; chọn provider khác thì đổi tên file và thêm adapter.
+1. *"Hỗ trợ tiếng Việt" nghĩa là "tốt với tiếng Việt".* Danh sách ngôn ngữ chỉ cho biết model từng thấy tiếng Việt khi huấn luyện, chưa nói chất lượng truy xuất. Chưa đo; sẽ đo ở baseline thủ công (M4-T08) và ở Evaluation (M6). Nếu corpus thật toàn tiếng Anh thì có thể chuyển sang model nhẹ hơn, nhưng phải embed lại toàn bộ.
+2. *"Chạy được trên CPU máy của bạn với tốc độ chấp nhận được."* Chưa đo. Kích thước tải về và tốc độ embed sẽ đo ở M3-T06.
+3. *"Đóng gói vào Docker không quá nặng."* Thư viện suy luận (thường là PyTorch) làm image backend nặng hơn nhiều; thử cài ở môi trường tạm đã bị ngắt kết nối nhiều lần khi tải PyTorch. Cách đóng gói (PyTorch hay một runtime nhẹ hơn) quyết ở M3-T06.
+4. *"Số chiều 384 đúng với thực tế khi chạy."* Mới xác minh từ file cấu hình chính thức, **chưa chạy model thật để đếm số phần tử của vector**. M3-T06 sẽ chạy model thật và có test khẳng định `len(vector) == 384`.
 
-Điều kiện đổi quyết định: chỉ được đổi **trước M3-T01** miễn phí. Sau khi cột `vector(N)` đã tạo và chunk đã embed, đổi embedding model nghĩa là embed lại toàn bộ.
+Hệ quả cần nhớ: số chiều đã cố định trong migration `0002` (đã áp dụng). Đổi sang model có số chiều khác nghĩa là phải có migration mới và embed lại toàn bộ chunk.
 
 ### Quyết định B. Ragas / DeepEval
 

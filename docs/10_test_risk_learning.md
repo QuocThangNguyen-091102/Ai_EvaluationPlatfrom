@@ -103,7 +103,7 @@ Mỗi mục là điều kiện **kiểm tra được** (có lệnh hoặc quan s
 | 7 | Lỗi trả về theo một định dạng JSON thống nhất; `pytest` chạy được với test `/health` | Chạy `pytest` |
 | 8 | Không có secret trong Git history; `.env` bị ignore | Quét repo và lịch sử |
 
-**Điều kiện vào M3-T01**: embedding model và số chiều vector đã chốt sau một lần gọi thử provider (`06_deployment_tech.md` mục 4).
+**Điều kiện vào M3-T01** (đã chốt 2026-11-05): embedding model là `intfloat/multilingual-e5-small`, 384 chiều, chạy cục bộ (`06_deployment_tech.md` mục 4). Số chiều mới xác minh từ cấu hình chính thức; test khẳng định số chiều thật khi chạy model nằm ở M3-T06.
 
 ### Gate M3. Ingestion
 
