@@ -160,15 +160,37 @@ Thông số của model, đọc từ cấu hình chính thức trên Hugging Fac
 | Ngôn ngữ | Danh sách ngôn ngữ của model có tiếng Việt (`vi`) |
 | Tiền tố bắt buộc | `query: ` cho câu hỏi, `passage: ` cho đoạn tài liệu |
 
-Lưu ý quan trọng về tiền tố: nếu adapter quên thêm tiền tố, hệ thống **không báo lỗi** mà chất lượng truy xuất tụt đi một cách âm thầm. Vì vậy `local_embedder.py` phải chịu trách nhiệm thêm tiền tố và có test kiểm tra điều này.
+Lưu ý về tiền tố: tác giả model yêu cầu thêm tiền tố, và quên thì hệ thống không báo lỗi mà chỉ có thể làm chất lượng truy xuất kém đi mà không ai biết. Vì vậy `local_embedder.py` chịu trách nhiệm thêm tiền tố và có test kiểm tra điều này. Lưu ý trung thực: trong lần chạy thử (mục "Kết quả chạy thử thật") một ví dụ cho thấy khoảng cách điểm giữa đoạn liên quan và không liên quan **không tệ hơn** khi bỏ tiền tố, nên một ví dụ không chứng minh được tác hại; mình vẫn giữ tiền tố theo khuyến cáo của tác giả và sẽ đo ở baseline.
 
 Vì sao chọn model đa ngôn ngữ thay vì model chỉ tiếng Anh nhỏ hơn: tài liệu của bạn nhiều khả năng có tiếng Việt, và model chỉ huấn luyện cho tiếng Anh sẽ truy xuất kém trên văn bản tiếng Việt. Cái giá là model nặng hơn.
 
 Giả định yếu cần kiểm chứng, không được xem là đúng sẵn:
 1. *"Hỗ trợ tiếng Việt" nghĩa là "tốt với tiếng Việt".* Danh sách ngôn ngữ chỉ cho biết model từng thấy tiếng Việt khi huấn luyện, chưa nói chất lượng truy xuất. Chưa đo; sẽ đo ở baseline thủ công (M4-T08) và ở Evaluation (M6). Nếu corpus thật toàn tiếng Anh thì có thể chuyển sang model nhẹ hơn, nhưng phải embed lại toàn bộ.
-2. *"Chạy được trên CPU máy của bạn với tốc độ chấp nhận được."* Chưa đo. Kích thước tải về và tốc độ embed sẽ đo ở M3-T06.
+2. *"Chạy được trên CPU máy của bạn với tốc độ chấp nhận được."* Đã đo một lần: nhanh (xem mục "Kết quả chạy thử thật"). Kích thước tải về chính xác và tốc độ với văn bản dài sẽ đo ở M3-T06.
 3. *"Đóng gói vào Docker không quá nặng."* Thư viện suy luận (thường là PyTorch) làm image backend nặng hơn nhiều; thử cài ở môi trường tạm đã bị ngắt kết nối nhiều lần khi tải PyTorch. Cách đóng gói (PyTorch hay một runtime nhẹ hơn) quyết ở M3-T06.
-4. *"Số chiều 384 đúng với thực tế khi chạy."* Mới xác minh từ file cấu hình chính thức, **chưa chạy model thật để đếm số phần tử của vector**. M3-T06 sẽ chạy model thật và có test khẳng định `len(vector) == 384`.
+4. *"Số chiều 384 đúng với thực tế khi chạy."* **Đã xác minh bằng chạy thật** (xem mục "Kết quả chạy thử thật"): vector có đúng 384 phần tử. M3-T06 vẫn có test khẳng định `len(vector) == 384` trong code của dự án.
+
+### Kết quả chạy thử thật (2026-11-05)
+
+Chạy model thật trên CPU máy của bạn, trong môi trường Python tạm ngoài dự án (không đụng tới `requirements.txt` hay image Docker). Thử rất nhỏ: **1 câu hỏi và 3 đoạn tài liệu**, nên đây là kiểm tra "model chạy được và xếp đúng ca dễ", **không phải đo chất lượng**.
+
+| Phép đo | Kết quả |
+|---------|---------|
+| Số chiều vector thực tế | **384**, kiểu `float32` (khớp cột `vector(384)`) |
+| Độ dài đầu vào tối đa | 512 token |
+| Câu hỏi tiếng Việt với đoạn tiếng Việt liên quan | cosine **0,914** |
+| Câu hỏi tiếng Việt với đoạn tiếng Việt không liên quan | cosine **0,766** (xếp hạng đúng, cách nhau 0,149) |
+| Câu hỏi tiếng Việt với đoạn **tiếng Anh** liên quan | cosine **0,773** |
+| Tốc độ | 32 đoạn ngắn trong 0,37 giây trên CPU (sau khi nạp model); tải và nạp model lần đầu mất 49 giây (một máy, một lần chạy) |
+| Đoạn dài hơn giới hạn | Văn bản 1324 token bị **cắt âm thầm** ở 512 token |
+
+Ba phát hiện quan trọng cho thiết kế:
+
+1. **Truy xuất chéo ngôn ngữ yếu.** Câu hỏi tiếng Việt với đoạn tiếng Anh *đúng nghĩa* chỉ được 0,773, gần như bằng đoạn tiếng Việt *không liên quan* (0,766), tức là gần như không phân biệt được. Hệ quả: nếu corpus có nhiều ngôn ngữ trộn lẫn, hoặc câu hỏi và tài liệu khác ngôn ngữ, chất lượng truy xuất sẽ kém. Cần kiểm tra ngôn ngữ của tài liệu ở M5-T03 và ghi giới hạn này vào báo cáo.
+2. **Điểm cosine bị nén vào khoảng cao (0,77 đến 0,91).** Không thể dùng ngưỡng tuyệt đối kiểu "dưới 0,5 là không liên quan" để quyết định "không đủ thông tin" ở M4. Ngưỡng (nếu dùng) phải hiệu chỉnh trên dữ liệu thật; không đặt tùy ý.
+3. **Chunk phải ngắn hơn 512 token và đo bằng token, không bằng ký tự.** Phần vượt quá bị bỏ mà không báo lỗi, nên một chunk quá dài sẽ mất nội dung ở đuôi. Mẫu thử cho thấy khoảng 1,2 token mỗi từ tiếng Việt (một mẫu, chỉ để tham khảo). Chunker (M3-T05) phải kiểm tra điều này.
+
+Ghi chú vận hành: cài thư viện suy luận trên Windows với đường dẫn thư mục dài gây lỗi `No such file` (giới hạn độ dài đường dẫn); phải dùng đường dẫn ngắn. Cần nhớ khi đóng gói và khi hướng dẫn người khác cài.
 
 Hệ quả cần nhớ: số chiều đã cố định trong migration `0002` (đã áp dụng). Đổi sang model có số chiều khác nghĩa là phải có migration mới và embed lại toàn bộ chunk.
 

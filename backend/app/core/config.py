@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # Độ dài tối thiểu của mật khẩu khi đăng ký.
     password_min_length: int = Field(default=8, ge=1)
 
+    # Thư mục lưu file gốc người dùng upload (trong Docker là volume `uploads`) và dung lượng tối đa mỗi file.
+    upload_dir: str = "uploads"
+    max_upload_size_mb: int = Field(default=20, gt=0)
+
     log_level: str = "INFO"
 
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.

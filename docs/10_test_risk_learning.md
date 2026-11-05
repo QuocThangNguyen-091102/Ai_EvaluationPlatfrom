@@ -71,6 +71,8 @@ Rủi ro tổng quan R1 đến R8 nằm ở `01_feasibility.md`. Bổ sung các 
 | R17 | Không gian lỗi quá lớn khiến mất thời gian debug | Chậm tiến độ | Log có cấu trúc, `error_message` theo từng bản ghi, lỗi chuẩn hóa | M2-T07 |
 | R18 | Dò mật khẩu đăng nhập (brute force) vì chưa giới hạn số lần thử | Kẻ tấn công thử nhiều mật khẩu cho một email | Băm bằng argon2 (chậm có chủ đích), thông báo lỗi chung; giới hạn tần suất đăng nhập là Deferred, cần bổ sung trước khi mở ra Internet | M3-T02 (chấp nhận cho MVP chạy cục bộ), M9-T07 |
 | R19 | Token JWT không thu hồi được trước khi hết hạn | User bị khóa vẫn dùng được token cũ đến hết hạn | Mỗi request kiểm tra lại `is_active` trong DB (đã làm); đặt thời hạn token ngắn (`JWT_EXPIRE_MINUTES`) | M3-T02 |
+| R20 | File upload vượt giới hạn vẫn được server nhận về trước khi bị từ chối | Tốn băng thông và đĩa tạm khi bị gửi file rất lớn liên tục | Giới hạn kích thước ở reverse proxy trước khi mở ra Internet; hiện chấp nhận cho MVP chạy cục bộ | M3-T03, M9-T07 |
+| R21 | Truy xuất chéo ngôn ngữ yếu và điểm cosine bị nén ở khoảng cao (đo ở lần chạy thử model) | Câu hỏi và tài liệu khác ngôn ngữ cho kết quả kém; ngưỡng tuyệt đối cho "không đủ thông tin" không dùng được | Kiểm tra ngôn ngữ corpus ở M5-T03; hiệu chỉnh ngưỡng trên dữ liệu thật ở M4; ghi giới hạn vào báo cáo | M4-T04, M5-T03 |
 
 ## 4. Lộ trình học gắn milestone
 

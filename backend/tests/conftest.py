@@ -60,3 +60,18 @@ def db_session(migrated_database) -> Iterator[Session]:
         session.close()
         transaction.rollback()
         connection.close()
+
+
+@pytest.fixture
+def make_authenticated_user(api_client):
+    """Tạo user mới qua API và trả về header Authorization để gọi các endpoint cần đăng nhập."""
+    import uuid
+
+    def _make() -> dict[str, str]:
+        email = f"{uuid.uuid4().hex[:12]}@example.com"
+        password = "a-strong-password"
+        api_client.post("/api/v1/auth/register", json={"email": email, "password": password})
+        token = api_client.post("/api/v1/auth/login", json={"email": email, "password": password}).json()["access_token"]
+        return {"Authorization": f"Bearer {token}"}
+
+    return _make

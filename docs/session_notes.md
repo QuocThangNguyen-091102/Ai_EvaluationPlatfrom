@@ -9,6 +9,7 @@
 - Chốt embedding chạy cục bộ (phương án A3): model `intfloat/multilingual-e5-small`, 384 chiều. Không cần API key cho embedding.
 - Hoàn thành M3-T01: models và migration `0002` cho `users`, `documents`, `document_chunks`.
 - User duyệt gate M1 và M2. Hoàn thành M3-T02: đăng ký, đăng nhập, `/auth/me` (53 test pass).
+- Hoàn thành M3-T03: upload, kiểm tra loại file và dung lượng, lưu file gốc vào volume `uploads` (93 test pass).
 - Chi tiết và kết quả kiểm tra thật của từng task: `docs/progress_log.md`.
 
 ### Trạng thái
@@ -16,7 +17,7 @@
 - Stack Docker: db và backend đang chạy (nếu Docker Desktop đang mở); `docker compose up --build` để chạy đủ.
 - File `.env` cục bộ (không commit) dùng một mật khẩu dev cục bộ. Lịch sử git đã được viết lại để xóa mật khẩu này khỏi mọi commit.
 - Chưa có tính năng cho người dùng cuối. Chưa kiểm tra giao diện bằng trình duyệt thật.
-- **Chưa chạy model embedding thật.** Số chiều 384 xác minh từ file cấu hình chính thức trên Hugging Face. Việc cài PyTorch ở môi trường thử tạm bị ngắt mạng nhiều lần. M3-T06 sẽ chạy model thật và có test `len(vector) == 384`.
+- Đã chạy thử model embedding thật: vector đúng 384 chiều; truy xuất chéo ngôn ngữ yếu; chunk phải ngắn hơn 512 token (chi tiết `docs/06_deployment_tech.md`). Thử rất nhỏ, chưa phải đo chất lượng. M3-T06 vẫn có test `len(vector) == 384` trong code dự án.
 
 ### Việc đang chờ user
 1. Tạo remote GitHub rồi push (M2-T01 còn thiếu bước này).
@@ -28,7 +29,7 @@
 - Tác vụ cơ bản dùng Sonnet 5.5. Khi gặp task code khó cần Opus 5.5 (ví dụ M3-T07, M4-T02, M4-T04) thì dừng và báo user để tự đổi model.
 
 ### Việc tiếp theo
-- M3-T03 (upload endpoint, validation, lưu file gốc). M3-T07 (Ingestion service) là task khó [C]: dừng và báo user đổi sang Opus 5.5 trước khi làm.
+- M3-T04 (parsers TXT, PDF, DOCX). M3-T07 (Ingestion service) là task khó [C]: dừng và báo user đổi sang Opus 5.5 trước khi làm.
 
 ### Lưu ý
 - Master Prompt gốc và danh sách task (`Kiến trúc.txt`, 77 task) do user dán, không lưu trong workspace. Tóm tắt nằm trong bộ nhớ dự án và `CLAUDE.md`.

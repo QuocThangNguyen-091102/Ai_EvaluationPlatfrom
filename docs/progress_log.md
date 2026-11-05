@@ -18,6 +18,17 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T03 | Upload endpoint + validation + lưu file gốc | 2026-11-05
+- Trạng thái: Hoàn thành
+- File mới: `core/file_validation.py`, `core/file_storage.py` (đã có trong manifest, chuyển từ Planned), `repositories/document_repository.py`, `schemas/document.py`, `services/document_service.py`, `api/routes/documents.py`; sửa `core/config.py` (`upload_dir`, `max_upload_size_mb`), `api/dependencies.py`, `main.py`, `Dockerfile` (thư mục upload thuộc `appuser`), `docker-compose.yml` (volume `uploads`), `requirements.txt` (`python-multipart`), `.env.example`; test: `unit/test_file_validation.py`, `integration/test_document_upload_api.py`, `conftest.py` (fixture `make_authenticated_user`).
+- Endpoint: `POST /api/v1/documents` (multipart): 202 (status `uploaded`), 409 kèm `existing_document_id`, 413, 415, 422, 401.
+- Quyết định kỹ thuật: nhận diện loại file bằng nội dung (PDF phải bắt đầu `%PDF-`; DOCX phải là zip có `word/document.xml`; TXT phải là UTF-8, bỏ qua `Content-Type` do client gửi); tên file trên đĩa do server tạo (`<user_id>/<document_id><đuôi>`), tên client chỉ để hiển thị và đã làm sạch; kiểm tra dung lượng khi đọc theo từng phần nên dừng sớm khi vượt giới hạn; ghi file nguyên tử (ghi `.part` rồi đổi tên); lưu DB và lưu file đi cùng nhau: ghi file lỗi thì rollback và không để lại bản ghi hay file mồ côi; trùng nội dung phát hiện bằng SHA-256 theo từng user.
+- Kiểm tra thật: 93 test pass (45 unit, 48 integration). Test không để lại dữ liệu trong DB. Trên stack Docker thật qua HTTP: TXT 202, trùng 409 (đúng id cũ), PDF giả 415, file 22 MB 413, không token 401; file nằm trong volume `uploads` thuộc `appuser`. Đã dọn dữ liệu thử.
+- Lỗi gặp và đã sửa: (1) file TXT mã hóa UTF-16 bị báo "nhị phân" gây hiểu nhầm, đã sửa code để báo yêu cầu UTF-8; (2) hai lỗi trong test của mình khi tạo dữ liệu cp1258.
+- Rủi ro mới: R20 (server vẫn nhận hết file quá lớn trước khi từ chối, cần giới hạn ở reverse proxy trước khi mở ra Internet), R21 (xem kết quả thử model).
+- Chưa làm: parse nội dung (M3-T04), xử lý nền (M3-T07), list, chi tiết, xóa, reprocess (M3-T08).
+- File TXT chỉ nhận UTF-8: file Windows-1258 hoặc UTF-16 bị từ chối kèm thông báo rõ ràng; có thể nới sau nếu cần.
+
 ### M3-T02 | Authentication (register, login, me) | 2026-11-05
 - Trạng thái: Hoàn thành
 - File: `core/security.py`, `core/config.py` (thêm `jwt_secret`, `jwt_expire_minutes`, `password_min_length`), `core/exceptions.py` (thêm `headers` cho `AppError`), `repositories/user_repository.py`, `schemas/auth.py`, `services/auth_service.py`, `api/dependencies.py`, `api/routes/auth.py`, `main.py`, `docker-compose.yml` (truyền `JWT_SECRET`), `requirements.txt` (thêm `PyJWT`, `argon2-cffi`, `email-validator`), `.env.example`, `README.md`; test: `unit/test_security.py`, `unit/test_auth_schemas.py`, `integration/test_auth_api.py`, `conftest.py` (fixture `api_client`).
@@ -45,7 +56,9 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ### M3 (điều kiện vào) | Chốt embedding chạy cục bộ | 2026-11-05
 - User chọn phương án A3. Model: `intfloat/multilingual-e5-small`; thông số đọc từ cấu hình chính thức trên Hugging Face: 384 chiều, 512 token, giấy phép MIT, có tiếng Việt trong danh sách ngôn ngữ, bắt buộc tiền tố `query: ` và `passage: `.
-- **Không chạy thử model thật được:** cài PyTorch ở môi trường tạm thất bại vì mạng bị ngắt khi tải. Vì vậy điều kiện "gọi thử" mới được xác minh một phần (từ file cấu hình). Test khẳng định số chiều thật nằm ở M3-T06.
+- **Chạy thử model thật: đã làm (cùng ngày, sau lần đầu thất bại).** Lần đầu cài PyTorch bị ngắt mạng, lần hai lỗi vì đường dẫn Windows quá dài; lần ba dùng đường dẫn ngắn thì thành công. Kết quả thật: vector 384 chiều (`float32`); xếp hạng đúng ca tiếng Việt (0,914 so với 0,766); **truy xuất chéo ngôn ngữ yếu** (câu hỏi tiếng Việt với đoạn tiếng Anh đúng nghĩa chỉ 0,773); điểm cosine bị nén ở 0,77 đến 0,91; văn bản dài hơn 512 token bị cắt âm thầm; 32 đoạn ngắn embed trong 0,37 giây. Thử rất nhỏ (1 câu hỏi, 3 đoạn), chỉ kiểm tra model chạy và số chiều, không phải đo chất lượng. Chi tiết trong `06_deployment_tech.md`.
+- Một điều chỉnh lời nói trước đó: mình từng nói quên tiền tố `query:`/`passage:` sẽ làm chất lượng "tụt âm thầm"; ở một ví dụ, bỏ tiền tố không làm khoảng cách điểm tệ hơn, nên tác hại này chưa được chứng minh. Vẫn giữ tiền tố theo khuyến cáo của tác giả model.
+- Ghi chú: thư viện `huggingface-hub` kéo theo gói `httpx2` làm dependency, nên `httpx2` là gói có thật và được dùng bởi một thư viện lớn. Mình vẫn chưa thêm nó vào dự án (chỉ nằm trong môi trường thử tạm); quyết định xử lý cảnh báo của pytest vẫn để bạn.
 - Tài liệu đã cập nhật: `06_deployment_tech.md` (mục 4, kèm giả định yếu), `07_database.md`, `09_repo_manifest.md`, `10_test_risk_learning.md`, `.env.example` (bỏ `EMBEDDING_API_KEY`).
 
 ---

@@ -11,8 +11,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY alembic.ini .
 COPY app ./app
 
-# Chạy bằng user thường, không dùng root.
-RUN useradd --create-home --uid 1000 appuser
+# Chạy bằng user thường, không dùng root. Thư mục upload phải thuộc user này để volume `uploads` ghi được.
+RUN useradd --create-home --uid 1000 appuser \
+    && mkdir -p /app/uploads \
+    && chown appuser /app/uploads
 USER appuser
 
 EXPOSE 8000

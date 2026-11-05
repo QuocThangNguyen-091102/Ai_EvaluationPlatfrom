@@ -25,6 +25,10 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET chưa được đặt trong .env (ít nhất 32 ký tự)}
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      UPLOAD_DIR: /app/uploads
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-20}
+    volumes:
+      - uploads:/app/uploads
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000"
     depends_on:
@@ -58,3 +62,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:
