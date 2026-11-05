@@ -18,6 +18,15 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T05 | Làm sạch văn bản + chunker | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `ai_engine/ingestion/text_cleaner.py` (`clean_text`, `clean_document`), `ai_engine/chunking/fixed_size_chunker.py` (`chunk_document`, `full_text`); test: `unit/test_text_cleaner.py`, `unit/test_chunker.py`.
+- Làm sạch: chuẩn hóa NFC cho chữ có dấu, bỏ ký tự vô hình và ký tự điều khiển, gộp khoảng trắng, chuẩn hóa xuống dòng. **Không nối dòng bị ngắt và không bỏ gạch nối cuối dòng** (đổi so với dự định lúc đọc PDF: nối bừa làm mất cấu trúc DOCX và vị trí ký tự).
+- Chunker: kích thước và overlap tính bằng **từ** (cấu hình được; kiểm tra `0 <= overlap < chunk_size`). Mỗi chunk có `index`, `content`, `page_number` (trang của từ đầu), `char_start`, `char_end`, `word_count`; `full_text[char_start:char_end] == content` (có test).
+- Kiểm tra thật: 140 test pass (47 integration cần DB và 93 unit), gồm một test chạy PDF tiếng Việt thật qua parse, làm sạch và chia chunk.
+- Lưu ý cho M3-T06 và M5: (1) embedder phải đếm token thật vì model cắt âm thầm quá 512 token; (2) vị trí ký tự của chunk tính trên văn bản đã làm sạch, nên tham chiếu `reference_contexts` ở M5 chỉ ổn định khi parser và bộ làm sạch không đổi phiên bản.
+- Sự cố: lệnh commit của mình bị ngắt giữa chừng, mình kiểm tra lại trạng thái thật rồi mới commit.
+
 ### M3-T04 | Parsers TXT / PDF / DOCX | 2026-11-05
 - Trạng thái: Hoàn thành
 - File: `ai_engine/ingestion/txt_parser.py`, `pdf_parser.py`, `docx_parser.py`; mới: `ai_engine/ingestion/parsed_document.py` (kiểu dữ liệu chung và `ParsingError`); `backend/tests/unit/test_parsers.py`, `backend/tests/fixtures/vi_two_pages.pdf`; sửa `backend/pytest.ini` (thêm thư mục gốc repo vào đường dẫn import), `requirements.txt` (`pypdf`, `python-docx`).
