@@ -101,7 +101,7 @@ Hệ quả:
 
 ## 6. Việc chuẩn bị trong repo để sẵn sàng triển khai
 
-- Giao diện tĩnh, đọc địa chỉ API từ `VITE_API_BASE_URL` lúc build (không chứa secret). **Đang có.**
+- Giao diện tĩnh, đọc địa chỉ API từ `VITE_API_BASE_URL` lúc build (không chứa secret). **Đang có.** `frontend/vercel.json` chuyển mọi đường dẫn về `index.html` để tải lại trang như `/documents` không báo 404 (**chưa thử trên Vercel thật**; khi tạo dự án Vercel phải đặt Root Directory là `frontend` và đặt `VITE_API_BASE_URL` trỏ tới địa chỉ HTTPS của backend).
 - Backend đóng gói Docker, đọc mọi cấu hình từ biến môi trường. **Đang có.**
 - Nơi lưu file nằm sau một module (`core/file_storage.py`), đổi sang lưu trữ đám mây khi cần. **Đang có.**
 - Embedding và LLM nằm sau interface. **Embedding: M3-T06; LLM: M4.**

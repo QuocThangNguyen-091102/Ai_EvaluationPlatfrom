@@ -284,6 +284,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|------------|-----------|
 | `frontend/Dockerfile`, `package.json`, `index.html`, `vite.config.js` | Build và chạy frontend | | `docker-compose.yml` | Implemented | M2 |
+| `frontend/vercel.json` | Cấu hình Vercel: chuyển mọi đường dẫn về `index.html` cho định tuyến phía client | Không | Vercel | | | Implemented (chưa thử trên Vercel thật) | M3 |
 | `frontend/src/main.jsx` | Điểm vào, gắn App | `App.jsx` | Trình duyệt | Implemented | M2 |
 | `frontend/src/App.jsx` | Định tuyến các trang | Pages, layouts, `AuthContext.jsx` | `main.jsx` | Implemented | M2, hoàn thiện M3 |
 | `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Tested | M2 |
