@@ -18,7 +18,9 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       # Trong mạng của Compose, backend gọi db bằng tên service "db".
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -29,6 +31,7 @@ services:
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-20}
     volumes:
       - uploads:/app/uploads
+      - models:/app/model-cache
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT:-8000}:8000"
     depends_on:
@@ -63,3 +66,4 @@ services:
 volumes:
   pgdata:
   uploads:
+  models:

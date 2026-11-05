@@ -1,0 +1,16 @@
+# Build context là thư mục gốc repo; mẫu loại trừ tính từ gốc repo.
+.git
+.env
+.env.*
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+backend/.venv
+backend/tests
+backend/uploads
+frontend
+docs
+evaluation
+security
+scripts
+configs

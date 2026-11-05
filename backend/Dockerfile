@@ -1,20 +1,25 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=/app/model-cache
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Build context là thư mục gốc repo (để copy được cả ai_engine/).
+COPY backend/requirements.txt .
+# PyTorch bản CPU: bản mặc định trên Linux kéo theo CUDA (vài GB), không dùng được trên máy chủ miễn phí.
+RUN pip install --no-cache-dir torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt
 
-COPY alembic.ini .
-COPY app ./app
+COPY backend/alembic.ini .
+COPY backend/app ./app
+COPY ai_engine ./ai_engine
 
-# Chạy bằng user thường, không dùng root. Thư mục upload phải thuộc user này để volume `uploads` ghi được.
+# Chạy bằng user thường, không dùng root. Thư mục upload và cache model phải thuộc user này để volume ghi được.
 RUN useradd --create-home --uid 1000 appuser \
-    && mkdir -p /app/uploads \
-    && chown appuser /app/uploads
+    && mkdir -p /app/uploads /app/model-cache \
+    && chown appuser /app/uploads /app/model-cache
 USER appuser
 
 EXPOSE 8000
