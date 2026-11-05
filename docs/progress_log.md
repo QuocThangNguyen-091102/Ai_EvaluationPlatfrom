@@ -18,6 +18,15 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T04 | Parsers TXT / PDF / DOCX | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `ai_engine/ingestion/txt_parser.py`, `pdf_parser.py`, `docx_parser.py`; mới: `ai_engine/ingestion/parsed_document.py` (kiểu dữ liệu chung và `ParsingError`); `backend/tests/unit/test_parsers.py`, `backend/tests/fixtures/vi_two_pages.pdf`; sửa `backend/pytest.ini` (thêm thư mục gốc repo vào đường dẫn import), `requirements.txt` (`pypdf`, `python-docx`).
+- File hỏng, PDF có mật khẩu, PDF không có văn bản, DOCX nén bất thường đều ném `ParsingError` với thông điệp an toàn (không chứa nội dung file), không làm sập tiến trình.
+- Kiểm tra thật: 110 test pass (17 test mới). PDF mẫu tiếng Việt thật (tạo bằng font Arial có dấu) trích đúng chữ có dấu theo từng trang.
+- Phát hiện: PDF xuống dòng theo bố cục trang nên một câu bị ngắt thành hai dòng ("chấp / thuận"); bước làm sạch (M3-T05) phải nối lại.
+- Giới hạn đã biết: PDF dạng ảnh quét không có văn bản (không OCR); DOCX không đọc header, footer, chú thích cuối trang, hộp văn bản, bảng lồng nhau. Chưa thử với PDF thực tế phức tạp (nhiều cột, bảng): chất lượng trích phụ thuộc từng file.
+- Lưu ý đóng gói: thư mục `ai_engine/` nằm ngoài `backend/` nên Docker build context hiện tại chưa thấy nó; sẽ sửa khi backend bắt đầu import `ai_engine` (M3-T07).
+
 ### M3-T03 | Upload endpoint + validation + lưu file gốc | 2026-11-05
 - Trạng thái: Hoàn thành
 - File mới: `core/file_validation.py`, `core/file_storage.py` (đã có trong manifest, chuyển từ Planned), `repositories/document_repository.py`, `schemas/document.py`, `services/document_service.py`, `api/routes/documents.py`; sửa `core/config.py` (`upload_dir`, `max_upload_size_mb`), `api/dependencies.py`, `main.py`, `Dockerfile` (thư mục upload thuộc `appuser`), `docker-compose.yml` (volume `uploads`), `requirements.txt` (`python-multipart`), `.env.example`; test: `unit/test_file_validation.py`, `integration/test_document_upload_api.py`, `conftest.py` (fixture `make_authenticated_user`).
