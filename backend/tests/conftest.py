@@ -4,13 +4,14 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-# Settings yêu cầu DATABASE_URL (từ biến môi trường hoặc file .env ở gốc repo).
-# Nếu không có cấu hình nào, dùng URL giả để unit test vẫn import được app.
+# Settings yêu cầu DATABASE_URL và JWT_SECRET (từ biến môi trường hoặc file .env ở gốc repo).
+# Nếu thiếu, dùng giá trị giả để unit test vẫn import được app; giá trị thật (nếu có) luôn được ưu tiên.
 # Test integration cần DATABASE_URL thật (xem README).
 try:
     import app.core.config  # noqa: F401
 except ValidationError:
-    os.environ["DATABASE_URL"] = "postgresql+psycopg://test:test@127.0.0.1:5432/test"
+    os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@127.0.0.1:5432/test")
+    os.environ.setdefault("JWT_SECRET", "chi-dung-cho-test-khong-phai-secret-that-0123456789")
 
 import pytest
 from alembic import command
@@ -18,7 +19,7 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.database.session import get_engine
+from app.database.session import get_engine, get_session
 from app.main import app
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,16 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False)
+
+
+@pytest.fixture
+def api_client(db_session) -> Iterator[TestClient]:
+    """Client gọi API thật nhưng mọi truy cập DB đi qua db_session (rollback cuối test, không để lại dữ liệu)."""
+    app.dependency_overrides[get_session] = lambda: db_session
+    try:
+        yield TestClient(app, raise_server_exceptions=False)
+    finally:
+        app.dependency_overrides.pop(get_session, None)
 
 
 @pytest.fixture(scope="session")

@@ -69,6 +69,8 @@ Rủi ro tổng quan R1 đến R8 nằm ở `01_feasibility.md`. Bổ sung các 
 | R15 | Kết quả đánh giá bị rò rỉ dữ liệu giữa lần chạy (prompt hoặc test case lộ cho model sinh) | Điểm cao giả | Giữ ground truth ngoài prompt sinh; review prompt khi viết | M4-T04, M6-T03 |
 | R16 | Test bảo mật sai phạm vi hoặc tạo dữ liệu thật | Rủi ro đạo đức | Chỉ dùng dữ liệu giả và canary token; môi trường test cô lập | M7-T01 |
 | R17 | Không gian lỗi quá lớn khiến mất thời gian debug | Chậm tiến độ | Log có cấu trúc, `error_message` theo từng bản ghi, lỗi chuẩn hóa | M2-T07 |
+| R18 | Dò mật khẩu đăng nhập (brute force) vì chưa giới hạn số lần thử | Kẻ tấn công thử nhiều mật khẩu cho một email | Băm bằng argon2 (chậm có chủ đích), thông báo lỗi chung; giới hạn tần suất đăng nhập là Deferred, cần bổ sung trước khi mở ra Internet | M3-T02 (chấp nhận cho MVP chạy cục bộ), M9-T07 |
+| R19 | Token JWT không thu hồi được trước khi hết hạn | User bị khóa vẫn dùng được token cũ đến hết hạn | Mỗi request kiểm tra lại `is_active` trong DB (đã làm); đặt thời hạn token ngắn (`JWT_EXPIRE_MINUTES`) | M3-T02 |
 
 ## 4. Lộ trình học gắn milestone
 

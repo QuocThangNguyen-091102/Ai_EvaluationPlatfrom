@@ -18,6 +18,20 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T02 | Authentication (register, login, me) | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `core/security.py`, `core/config.py` (thêm `jwt_secret`, `jwt_expire_minutes`, `password_min_length`), `core/exceptions.py` (thêm `headers` cho `AppError`), `repositories/user_repository.py`, `schemas/auth.py`, `services/auth_service.py`, `api/dependencies.py`, `api/routes/auth.py`, `main.py`, `docker-compose.yml` (truyền `JWT_SECRET`), `requirements.txt` (thêm `PyJWT`, `argon2-cffi`, `email-validator`), `.env.example`, `README.md`; test: `unit/test_security.py`, `unit/test_auth_schemas.py`, `integration/test_auth_api.py`, `conftest.py` (fixture `api_client`).
+- Endpoint: `POST /api/v1/auth/register` (201, 409, 422), `POST /api/v1/auth/login` (200, 401), `GET /api/v1/auth/me` (200, 401), đúng hợp đồng `08_api_contracts.md`.
+- Quyết định kỹ thuật: băm mật khẩu bằng argon2 (không giới hạn 72 byte như bcrypt); JWT HS256 chỉ nhận đúng thuật toán (từ chối `alg: none`); email chuẩn hóa chữ thường; đăng nhập sai trả cùng một thông báo và có bước tốn thời gian băm giả khi email không tồn tại (giảm dò email qua thời gian phản hồi); mỗi request kiểm tra lại `is_active` trong DB nên user bị khóa mất hiệu lực ngay; Service không truy cập DB, chỉ qua `UserRepository`.
+- Kiểm tra thật: 53 test pass (24 unit, 29 integration); unit test chạy được cả khi không có `.env`; test không để lại dữ liệu trong DB (đếm user sau test = 0). Trên stack thật qua HTTP: đăng ký 201, đăng ký trùng 409, đăng nhập sai 401, đăng nhập đúng nhận token, `/auth/me` có token trả đúng user, không token trả 401 kèm `WWW-Authenticate: Bearer`, CORS cho origin của frontend đúng. Đã xóa user thử nghiệm.
+- Lỗi gặp: một test của mình dùng chữ tiếng Việt trong giá trị header HTTP (phải là ASCII); đã sửa test, không phải code ứng dụng.
+- Rủi ro mới ghi vào `10_test_risk_learning.md`: R18 (chưa giới hạn số lần thử đăng nhập, chấp nhận cho MVP chạy cục bộ nhưng phải xử lý trước khi mở ra Internet), R19 (JWT không thu hồi tức thì).
+- Chưa làm: giao diện đăng nhập (M3-T09); giới hạn tần suất đăng nhập; chưa thử trên trình duyệt thật.
+
+### DUYỆT | Gate M1 và M2 | 2026-11-05
+- User duyệt gate Milestone 1 và Milestone 2 bằng tin nhắn "Duyệt" (sau khi mình trả lời câu hỏi "Duyệt ở đâu" và nêu các điểm còn tồn tại: giao diện chưa kiểm tra bằng trình duyệt thật, repo chưa có remote).
+- Các điểm user chưa trả lời, vẫn còn mở: remote GitHub và push, cảnh báo `httpx`/`httpx2`.
+
 ### M3-T01 | Models + migration: users, documents, document_chunks | 2026-11-05
 - Trạng thái: Hoàn thành
 - File mới/sửa: `app/models/user.py`, `document.py`, `document_chunk.py`, `models/__init__.py`, `migrations/env.py` (import models), `migrations/versions/0002_create_users_documents_chunks.py`, `requirements.txt` (thêm `pgvector==0.5.1`), `alembic.ini` (bỏ cảnh báo `path_separator`), `tests/conftest.py` (fixture `migrated_database`, `db_session`), `tests/integration/test_ingestion_schema.py`. Đổi tên file rỗng `openai_embedder.py` thành `local_embedder.py`.

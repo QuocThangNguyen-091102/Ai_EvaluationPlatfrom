@@ -33,6 +33,7 @@ cd ai-evaluation-platform
 # 1. Tạo file cấu hình rồi đổi giá trị mật khẩu
 cp .env.example .env
 #    Sửa POSTGRES_PASSWORD, và phần mật khẩu trong DATABASE_URL cho khớp.
+#    Đổi JWT_SECRET thành một chuỗi ngẫu nhiên dài ít nhất 32 ký tự (xem hướng dẫn trong .env.example).
 
 # 2. Dựng và chạy toàn bộ stack (db, backend, frontend)
 docker compose up --build

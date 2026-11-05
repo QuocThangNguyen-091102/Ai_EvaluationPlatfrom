@@ -5,6 +5,7 @@ Mọi tham số của backend đi qua đối tượng `settings` ở đây; khô
 
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +15,13 @@ class Settings(BaseSettings):
 
     # Ví dụ: postgresql+psycopg://user:password@host:5432/dbname
     database_url: str
+
+    # Khóa ký JWT. Bắt buộc dài ít nhất 32 ký tự; tạo bằng: python -c "import secrets; print(secrets.token_urlsafe(48))"
+    jwt_secret: str = Field(min_length=32)
+    jwt_expire_minutes: int = Field(default=60, gt=0)
+
+    # Độ dài tối thiểu của mật khẩu khi đăng ký.
+    password_min_length: int = Field(default=8, ge=1)
 
     log_level: str = "INFO"
 

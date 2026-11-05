@@ -30,25 +30,40 @@ _CODE_BY_STATUS = {
 class AppError(Exception):
     """Lỗi nghiệp vụ có chủ đích. Service ném lỗi này, bộ xử lý bên dưới đổi thành phản hồi HTTP."""
 
-    def __init__(self, status_code: int, code: str, message: str, details: Any = None) -> None:
+    def __init__(
+        self,
+        status_code: int,
+        code: str,
+        message: str,
+        details: Any = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details
+        self.headers = headers
 
 
-def error_response(status_code: int, code: str, message: str, details: Any = None) -> JSONResponse:
+def error_response(
+    status_code: int,
+    code: str,
+    message: str,
+    details: Any = None,
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={"error": {"code": code, "message": message, "details": details}},
+        headers=headers,
     )
 
 
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def handle_app_error(_: Request, exc: AppError) -> JSONResponse:
-        return error_response(exc.status_code, exc.code, exc.message, exc.details)
+        return error_response(exc.status_code, exc.code, exc.message, exc.details, exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def handle_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

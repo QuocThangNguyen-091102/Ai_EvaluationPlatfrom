@@ -159,7 +159,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/alembic.ini` | Cấu hình Alembic | `database/migrations/` | Alembic | | | Implemented | M2 |
 | `backend/app/main.py` | Khởi tạo FastAPI, đăng ký router, middleware lỗi và CORS | `api/routes/*`, `core/*` | uvicorn | | App FastAPI | Implemented | M2 |
 | `backend/app/core/config.py` | Đọc cấu hình từ biến môi trường | `configs/*.yaml` | Mọi module backend | Biến môi trường | Đối tượng settings | Implemented | M2 |
-| `backend/app/core/security.py` | Hash mật khẩu, tạo và kiểm tra JWT | `config.py` | `auth_service.py`, `api/dependencies.py` | Mật khẩu, token | Hash, token, claims | Created | M3 |
+| `backend/app/core/security.py` | Hash mật khẩu, tạo và kiểm tra JWT | `config.py` | `auth_service.py`, `api/dependencies.py` | Mật khẩu, token | Hash, token, claims | Tested | M3 |
 | `backend/app/core/logging.py` | Cấu hình log, không ghi dữ liệu nhạy cảm | `config.py` | `main.py` | | Logger | Implemented | M2 |
 | `backend/app/core/exceptions.py` | Lỗi nghiệp vụ và bộ chuyển thành JSON lỗi thống nhất | Không | Service, `main.py` | | Phản hồi lỗi chuẩn | Tested | M2 |
 | `backend/app/core/file_storage.py` | Lưu, đọc, xóa file gốc trong volume | `config.py` | `document_service.py` | File, đường dẫn | Đường dẫn lưu | Planned | M3 |
@@ -171,11 +171,13 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/tests/integration/test_health_database.py` | Test `/health` với PostgreSQL thật | DB đang chạy | pytest | | | Tested | M2 |
 | `backend/app/database/migrations/versions/0002_create_users_documents_chunks.py` | Tạo bảng `users`, `documents`, `document_chunks` (vector 384 chiều, khóa ngoại kép, chỉ mục) | `models/*`, `pgvector` | Alembic | | Schema DB | Tested | M3 |
 | `backend/tests/integration/test_ingestion_schema.py` | Kiểm tra bảng, số chiều vector, ràng buộc, cascade, truy vấn khoảng cách | DB đang chạy | pytest | | | Tested | M3 |
+| `backend/tests/unit/test_security.py`, `test_auth_schemas.py` | Unit test băm mật khẩu, JWT (hết hạn, sai khóa, alg none, thiếu claim), schema đăng ký | `core/security.py`, `schemas/auth.py` | pytest | | | Tested | M3 |
+| `backend/tests/integration/test_auth_api.py` | Test API đăng ký, đăng nhập, `/auth/me` với PostgreSQL thật (rollback cuối mỗi test) | DB đang chạy | pytest | | | Tested | M3 |
 | `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Implemented | M2 |
 | `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Implemented | M2 |
 | `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Implemented (migration `0001` bật extension vector) | M2 trở đi |
 | `backend/app/database/migrations/env.py`, `script.py.mako`, `versions/` | Cấu hình chạy Alembic và các file migration | `models/*`, `core/config.py` | Alembic | `DATABASE_URL` | Schema DB | Implemented | M2 |
-| `backend/app/api/dependencies.py` | Dependency xác thực, lấy current user và session | `core/security.py`, `database/session.py` | Mọi router | Request | `current_user`, session | Created | M3 |
+| `backend/app/api/dependencies.py` | Dependency xác thực, lấy current user và session | `core/security.py`, `database/session.py` | Mọi router | Request | `current_user`, session | Tested | M3 |
 
 ### 5.3 Backend: routes
 
@@ -184,7 +186,7 @@ Tất cả route: phụ thuộc vào service tương ứng và schema tương �
 | Đường dẫn | Trách nhiệm | Service dùng | Trạng thái | Milestone |
 |-----------|-------------|--------------|------------|-----------|
 | `backend/app/api/routes/health.py` | `GET /health` | (kiểm tra DB trực tiếp qua session) | Tested | M2 |
-| `backend/app/api/routes/auth.py` | Register, login, me | `auth_service.py` | Created | M3 |
+| `backend/app/api/routes/auth.py` | Register, login, me | `auth_service.py` | Tested | M3 |
 | `backend/app/api/routes/documents.py` | Upload, list, detail, delete, reprocess | `document_service.py` | Created | M3 |
 | `backend/app/api/routes/chat.py` | Hỏi đáp, session, message | `chat_service.py` | Created | M4 |
 | `backend/app/api/routes/model_configs.py` | Cấu hình model | `model_config_service.py` | Planned | M4 |
@@ -200,7 +202,7 @@ Mỗi hàng là một nhóm cùng tên miền. Với `models`: định nghĩa b�
 
 | Miền | models | schemas | repositories | services | Trạng thái | Milestone |
 |------|--------|---------|--------------|----------|------------|-----------|
-| Tài khoản | `user.py` (Tested, M3-T01) | `auth.py` | `user_repository.py` | `auth_service.py` | Created | M3 |
+| Tài khoản | `user.py` (Tested, M3-T01) | `auth.py` (Tested) | `user_repository.py` (Tested) | `auth_service.py` (Tested) | Created | M3 |
 | Tài liệu | `document.py`, `document_chunk.py` (Tested, M3-T01) | `document.py` | `document_repository.py`, `chunk_repository.py` | `document_service.py` (upload, xóa, reprocess; gọi `ai_engine/ingestion/ingestion_pipeline.py`) | Created | M3 |
 | Chat | `chat.py`, `retrieved_context.py` [P] | `chat.py` | `chat_repository.py` | `chat_service.py` (gọi `ai_engine/pipeline/rag_pipeline.py`) | Created (trừ [P]) | M4 |
 | Cấu hình model | `model_config.py` | `model_config.py` [P] | `model_config_repository.py` [P] | `model_config_service.py` [P] | Created (trừ [P]) | M4 |
