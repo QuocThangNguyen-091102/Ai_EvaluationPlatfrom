@@ -12,7 +12,7 @@ flowchart TB
         subgraph net["Docker network nội bộ"]
             fe["frontend<br/>React (Vite)<br/>cổng ra host"]
             be["backend<br/>FastAPI (uvicorn)<br/>cổng ra host"]
-            db[("db<br/>PostgreSQL + pgvector<br/>không mở cổng ra host<br/>(chỉ mở khi cần debug)")]
+            db[("db<br/>PostgreSQL + pgvector<br/>cổng chỉ bind 127.0.0.1<br/>(cho alembic, pytest từ máy host)")]
         end
         vol_pg[("volume: pgdata")]
         vol_up[("volume: uploads")]
@@ -47,7 +47,7 @@ Ghi chú: trình duyệt gọi API trực tiếp tới backend (không qua rever
 | Volume `pgdata` | Giữ dữ liệu DB sau khi restart (kiểm chứng ở M2-T03) |
 | Volume `uploads` | Lưu file gốc, gắn vào `backend` tại `UPLOAD_DIR` |
 | Network | Một network nội bộ do Compose tạo; `db` chỉ truy cập được từ `backend` |
-| Cổng `db` | Không công bố ra host mặc định |
+| Cổng `db` | Công bố ra host nhưng chỉ bind `127.0.0.1` (`DB_HOST_PORT`), để chạy alembic và pytest từ máy host; máy khác trong mạng không truy cập được |
 | Migration | Chạy `alembic upgrade head` khi backend khởi động trong Compose, và có lệnh thủ công được ghi trong README |
 | Logs | Ghi ra stdout, xem bằng `docker compose logs`; không ghi nội dung tài liệu, câu hỏi nhạy cảm hay secret |
 | Kết nối LLM | Chỉ `backend` ra Internet; frontend không bao giờ giữ API key |
