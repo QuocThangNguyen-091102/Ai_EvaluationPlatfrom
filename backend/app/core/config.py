@@ -9,7 +9,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # .env nằm ở gốc repo; chạy từ thư mục backend/ thì đọc ../.env. Trong Docker, biến được truyền trực tiếp.
+    model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
+
+    # Ví dụ: postgresql+psycopg://user:password@host:5432/dbname
+    database_url: str
 
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.
     cors_allowed_origins: str = "http://localhost:5173"
