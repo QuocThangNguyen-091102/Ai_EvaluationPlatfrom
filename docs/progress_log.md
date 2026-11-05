@@ -18,6 +18,24 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T01 | Models + migration: users, documents, document_chunks | 2026-11-05
+- Trạng thái: Hoàn thành
+- File mới/sửa: `app/models/user.py`, `document.py`, `document_chunk.py`, `models/__init__.py`, `migrations/env.py` (import models), `migrations/versions/0002_create_users_documents_chunks.py`, `requirements.txt` (thêm `pgvector==0.5.1`), `alembic.ini` (bỏ cảnh báo `path_separator`), `tests/conftest.py` (fixture `migrated_database`, `db_session`), `tests/integration/test_ingestion_schema.py`. Đổi tên file rỗng `openai_embedder.py` thành `local_embedder.py`.
+- Thiết kế đáng chú ý:
+  - Khóa ngoại kép `(document_id, user_id)` trỏ tới `documents(id, user_id)`: DB từ chối chunk có `user_id` khác chủ của document. Đây là cách thực thi cho việc denormalize `user_id` đã quyết định ở M1.
+  - Chưa tạo chỉ mục vector (xem lý do trong `07_database.md`); các chỉ mục thường đã có.
+  - `status` dùng CHECK constraint thay vì ENUM của PostgreSQL để migration sau dễ sửa.
+- Kiểm tra thật: `alembic upgrade head` OK; `alembic check` báo "No new upgrade operations detected" (model khớp DB); `downgrade base` rồi `upgrade head` OK; 20 test pass (13 test mới); backend container healthy với các model mới.
+- 13 test mới kiểm tra: bảng tồn tại, cột vector đúng `vector(384)`, chỉ mục tồn tại, vector sai số chiều bị từ chối, chunk không thể mang `user_id` khác chủ document, cùng nội dung bị từ chối với cùng user nhưng cho phép khác user, email duy nhất, status mặc định và bị chặn giá trị lạ, xóa document xóa chunk, xóa user xóa document và chunk, thứ tự chunk duy nhất, truy vấn khoảng cosine trả chunk gần nhất trước.
+- Chưa kiểm chứng: hành vi RESTRICT của PostgreSQL khi xóa user vẫn chưa kiểm chứng vì chưa có bảng nào dùng RESTRICT (các bảng đó đến ở M4 trở đi).
+
+### M3 (điều kiện vào) | Chốt embedding chạy cục bộ | 2026-11-05
+- User chọn phương án A3. Model: `intfloat/multilingual-e5-small`; thông số đọc từ cấu hình chính thức trên Hugging Face: 384 chiều, 512 token, giấy phép MIT, có tiếng Việt trong danh sách ngôn ngữ, bắt buộc tiền tố `query: ` và `passage: `.
+- **Không chạy thử model thật được:** cài PyTorch ở môi trường tạm thất bại vì mạng bị ngắt khi tải. Vì vậy điều kiện "gọi thử" mới được xác minh một phần (từ file cấu hình). Test khẳng định số chiều thật nằm ở M3-T06.
+- Tài liệu đã cập nhật: `06_deployment_tech.md` (mục 4, kèm giả định yếu), `07_database.md`, `09_repo_manifest.md`, `10_test_risk_learning.md`, `.env.example` (bỏ `EMBEDDING_API_KEY`).
+
+---
+
 ### M2-T08 | GATE M2: Foundation | 2026-11-05
 - Trạng thái: **Đạt, kèm 2 điểm cần user biết** (xem cuối mục).
 - Cách kiểm tra: clone repo sạch vào thư mục tạm, làm đúng theo README (tạo `.env` với mật khẩu mới, `docker compose up --build -d`), rồi kiểm tra; sau đó dọn clone và volume của nó.

@@ -5,8 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
 from app.database.base import Base
-
-# Import các module model ở đây khi có model (M3 trở đi) để Alembic thấy bảng của chúng.
+from app import models  # noqa: F401  (import để Base.metadata có đủ bảng)
 
 config = context.config
 if config.config_file_name is not None:

@@ -61,9 +61,9 @@ Quy ước: PK là khóa chính, FK là khóa ngoại. `ts` là timestamp. Các 
 - **Cột**: `id` PK, `document_id` FK, `user_id` (sao chép từ document để lọc nhanh), `chunk_index`, `content`, `page_number` (nullable), `char_start`, `char_end`, `embedding` (vector N chiều), `embedding_model`, `created_at`.
 - **Quan hệ**: thuộc một document.
 - **Ownership**: `user_id` (denormalize có chủ đích).
-- **Index**: duy nhất `(document_id, chunk_index)`; `user_id`; chỉ mục vector (HNSW hoặc IVFFlat, chọn ở M3 bằng đo thực tế, MVP có thể bắt đầu bằng quét chính xác khi dữ liệu nhỏ).
+- **Index**: duy nhất `(document_id, chunk_index)`; `user_id`; chưa tạo chỉ mục vector ở M3-T01 (quét chính xác cho kết quả đúng với dữ liệu nhỏ và tránh việc lọc `user_id` làm chỉ mục gần đúng trả thiếu); thêm HNSW hoặc IVFFlat khi đo thấy cần.
 - **Retention**: theo document; reprocess xóa chunk cũ và ghi chunk mới trong cùng transaction.
-- **Lý do `user_id` denormalize**: lọc quyền ngay trong câu truy vấn vector không cần join, và nếu lập trình viên quên lọc ở tầng trên thì cột này vẫn là rào chắn thứ hai. Đổi lại phải đảm bảo `chunk.user_id = document.user_id` (kiểm tra bằng ràng buộc hoặc test).
+- **Lý do `user_id` denormalize**: lọc quyền ngay trong câu truy vấn vector không cần join, và nếu lập trình viên quên lọc ở tầng trên thì cột này vẫn là rào chắn thứ hai. Đổi lại phải đảm bảo `chunk.user_id = document.user_id`. **Đã thực thi bằng khóa ngoại kép** `(document_id, user_id)` trỏ tới `documents(id, user_id)` (migration `0002`), nên DB từ chối chunk có `user_id` khác chủ của document (kiểm tra bằng ràng buộc hoặc test).
 
 ### 3.3 Chat
 

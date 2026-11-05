@@ -77,7 +77,7 @@ ai-evaluation-platform/
 │   ├── provider_retry.py            [P]
 │   ├── ingestion/ (pdf_parser, docx_parser, txt_parser, text_cleaner, ingestion_pipeline)
 │   ├── chunking/ (fixed_size_chunker)
-│   ├── embeddings/ (base_embedder, openai_embedder)
+│   ├── embeddings/ (base_embedder, local_embedder)
 │   ├── retrieval/ (vector_retriever, metadata_filters)
 │   ├── generation/ (base_llm_client, openai_llm_client, prompt_templates, cost_estimator [P])
 │   └── pipeline/ (rag_pipeline, context_builder, rag_config [P], rag_result [P])
@@ -169,6 +169,8 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/tests/conftest.py` | Fixture `client`, bảo đảm có `DATABASE_URL` khi chạy unit test | `app.main` | Mọi test | | | Tested | M2 |
 | `backend/tests/unit/test_health.py`, `test_error_handling.py` | Unit test `/health` và bộ xử lý lỗi chuẩn | `app.main`, `core/exceptions.py` | pytest | | | Tested | M2 |
 | `backend/tests/integration/test_health_database.py` | Test `/health` với PostgreSQL thật | DB đang chạy | pytest | | | Tested | M2 |
+| `backend/app/database/migrations/versions/0002_create_users_documents_chunks.py` | Tạo bảng `users`, `documents`, `document_chunks` (vector 384 chiều, khóa ngoại kép, chỉ mục) | `models/*`, `pgvector` | Alembic | | Schema DB | Tested | M3 |
+| `backend/tests/integration/test_ingestion_schema.py` | Kiểm tra bảng, số chiều vector, ràng buộc, cascade, truy vấn khoảng cách | DB đang chạy | pytest | | | Tested | M3 |
 | `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Implemented | M2 |
 | `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Implemented | M2 |
 | `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Implemented (migration `0001` bật extension vector) | M2 trở đi |
@@ -198,8 +200,8 @@ Mỗi hàng là một nhóm cùng tên miền. Với `models`: định nghĩa b�
 
 | Miền | models | schemas | repositories | services | Trạng thái | Milestone |
 |------|--------|---------|--------------|----------|------------|-----------|
-| Tài khoản | `user.py` | `auth.py` | `user_repository.py` | `auth_service.py` | Created | M3 |
-| Tài liệu | `document.py`, `document_chunk.py` | `document.py` | `document_repository.py`, `chunk_repository.py` | `document_service.py` (upload, xóa, reprocess; gọi `ai_engine/ingestion/ingestion_pipeline.py`) | Created | M3 |
+| Tài khoản | `user.py` (Tested, M3-T01) | `auth.py` | `user_repository.py` | `auth_service.py` | Created | M3 |
+| Tài liệu | `document.py`, `document_chunk.py` (Tested, M3-T01) | `document.py` | `document_repository.py`, `chunk_repository.py` | `document_service.py` (upload, xóa, reprocess; gọi `ai_engine/ingestion/ingestion_pipeline.py`) | Created | M3 |
 | Chat | `chat.py`, `retrieved_context.py` [P] | `chat.py` | `chat_repository.py` | `chat_service.py` (gọi `ai_engine/pipeline/rag_pipeline.py`) | Created (trừ [P]) | M4 |
 | Cấu hình model | `model_config.py` | `model_config.py` [P] | `model_config_repository.py` [P] | `model_config_service.py` [P] | Created (trừ [P]) | M4 |
 | Dataset | `dataset.py` | `dataset.py` | `dataset_repository.py` | `dataset_service.py` | Created | M5 |
@@ -214,19 +216,19 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
-| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider | Không | `openai_embedder.py`, `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Planned | M3 |
+| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider | Không | `local_embedder.py`, `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Planned | M3 |
 | `ai_engine/ingestion/pdf_parser.py` | Trích văn bản và số trang từ PDF | Thư viện parse PDF | `ingestion_pipeline.py` | File PDF | Văn bản theo trang | Created | M3 |
 | `ai_engine/ingestion/docx_parser.py` | Trích văn bản từ DOCX | Thư viện parse DOCX | `ingestion_pipeline.py` | File DOCX | Văn bản | Created | M3 |
 | `ai_engine/ingestion/txt_parser.py` | Đọc TXT, xử lý encoding | Không | `ingestion_pipeline.py` | File TXT | Văn bản | Created | M3 |
 | `ai_engine/ingestion/text_cleaner.py` | Chuẩn hóa văn bản | Không | `ingestion_pipeline.py` | Văn bản thô | Văn bản sạch | Created | M3 |
 | `ai_engine/ingestion/ingestion_pipeline.py` | Ghép parse, làm sạch, chunk, embed; trả danh sách chunk kèm vector | Parsers, cleaner, chunker, embedder | `document_service.py` | File, cấu hình chunk | Chunk và vector | Created | M3 |
 | `ai_engine/chunking/fixed_size_chunker.py` | Chia chunk theo kích thước và overlap, gắn metadata (trang, vị trí ký tự) | Không | `ingestion_pipeline.py` | Văn bản, chunk size, overlap | Danh sách chunk | Created | M3 |
-| `ai_engine/embeddings/base_embedder.py` | Interface embedding provider | Không | `openai_embedder.py`, test (provider giả), pipeline | Danh sách văn bản | Danh sách vector | Created | M3 |
-| `ai_engine/embeddings/openai_embedder.py` | Cài interface cho provider đã chọn (tên file theo quyết định A ở `06_deployment_tech.md`, có thể đổi) | `base_embedder.py`, `provider_retry.py` | Ingestion, pipeline | Văn bản | Vector | Created | M3 |
+| `ai_engine/embeddings/base_embedder.py` | Interface embedding provider | Không | `local_embedder.py`, test (provider giả), pipeline | Danh sách văn bản | Danh sách vector | Created | M3 |
+| `ai_engine/embeddings/local_embedder.py` | Cài interface bằng model chạy cục bộ `intfloat/multilingual-e5-small` (384 chiều); thêm tiền tố `query: ` và `passage: ` (quyết định A3 ở `06_deployment_tech.md`) | `base_embedder.py`, `provider_retry.py` | Ingestion, pipeline | Văn bản | Vector | Created | M3 |
 | `ai_engine/retrieval/vector_retriever.py` | Tìm vector gần nhất kèm điều kiện quyền, trả chunk và điểm | DB (pgvector), `metadata_filters.py` | `rag_pipeline.py` | Vector, `user_id`, Top-K | Chunk kèm điểm | Created | M4 |
 | `ai_engine/retrieval/metadata_filters.py` | Dựng điều kiện lọc user và document | Không | `vector_retriever.py` | `user_id`, `document_ids` | Điều kiện lọc | Created | M4 |
 | `ai_engine/generation/base_llm_client.py` | Interface LLM provider | Không | `openai_llm_client.py`, test, pipeline | Prompt, tham số | Câu trả lời, token | Created | M4 |
-| `ai_engine/generation/openai_llm_client.py` | Cài interface cho provider đã chọn (tên có thể đổi theo quyết định A) | `base_llm_client.py`, `provider_retry.py` | Pipeline, `llm_judge.py` | Prompt | Answer, token usage | Created | M4 |
+| `ai_engine/generation/openai_llm_client.py` | Cài interface cho provider đã chọn (tên sẽ chốt ở M4 theo LLM provider) | `base_llm_client.py`, `provider_retry.py` | Pipeline, `llm_judge.py` | Prompt | Answer, token usage | Created | M4 |
 | `ai_engine/generation/prompt_templates.py` | Prompt hệ thống và prompt hỏi đáp có mã phiên bản | Không | `rag_pipeline.py` | Câu hỏi, context | Prompt | Created | M4 |
 | `ai_engine/generation/cost_estimator.py` | Ước tính chi phí từ token và bảng giá | `configs/models.yaml` | `rag_pipeline.py` | Token, model | Chi phí ước tính | Planned | M4 |
 | `ai_engine/pipeline/rag_config.py` | Kiểu dữ liệu cấu hình pipeline | Không | Pipeline, service, runner | | `RAGConfig` | Planned | M4 |
@@ -307,7 +309,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 
 ## 7. Quyết định đã chọn và lý do
 
-1. **Tên adapter provider theo A1** (`openai_embedder.py`, `openai_llm_client.py`), vì quyết định A ở `06_deployment_tech.md` chọn A1. Quy ước: mỗi adapter một file mang tên provider; đổi provider thì đổi tên file và thêm adapter, pipeline không đổi.
+1. **Tên adapter theo provider.** Embedding chạy cục bộ nên adapter là `local_embedder.py` (đã đổi tên từ `openai_embedder.py`). Adapter LLM giữ tên giữ chỗ `openai_llm_client.py` cho đến khi chốt LLM provider ở M4. Quy ước: mỗi adapter một file mang tên provider; đổi provider thì đổi tên file và thêm adapter, pipeline không đổi.
 2. **Đã xóa các file đầu cơ ở mục 2** (đều là file rỗng). Nguyên tắc: file chỉ được tạo khi có task cần nó. Một file rỗng "để sẵn" gây hai hại: làm bản manifest nói dối về những gì đã có, và khiến người đọc tưởng đã có thiết kế cho nó. Cần lại thì tạo lại ngay khi làm task.
 3. **Tách `ai_engine`, `evaluation`, `security` khỏi `backend/app`** thay vì đặt hết trong backend. Lý do: logic AI phải chạy được từ script độc lập (tiêu chí M4-T04) và dùng chung cho nhiều luồng; nếu nằm trong backend, nó dễ kéo theo phụ thuộc FastAPI và DB. *Giả định yếu:* "tách thư mục là đủ để tách phụ thuộc". Không đủ nếu không có người canh; vì thế quy tắc ở mục 4 được kiểm tra ở mỗi gate.
 
