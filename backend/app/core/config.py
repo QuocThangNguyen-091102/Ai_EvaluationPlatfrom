@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     # Ví dụ: postgresql+psycopg://user:password@host:5432/dbname
     database_url: str
 
+    log_level: str = "INFO"
+
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.
     cors_allowed_origins: str = "http://localhost:5173"
 
