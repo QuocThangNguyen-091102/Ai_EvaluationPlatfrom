@@ -18,6 +18,15 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M4-T01 | Bảng chat, ngữ cảnh truy xuất, cấu hình model | 2026-11-06
+- Trạng thái: Hoàn thành (làm trước M4-T02 và T04 vì độc lập; gate M3 chưa đóng, xem mục "ĐI TRƯỚC GATE" ở dưới).
+- File: `models/chat.py` (`ChatSession`, `ChatMessage`), `models/model_config.py`, `models/retrieved_context.py` (mới), migration `0003`, `tests/integration/test_chat_schema.py`.
+- `ModelConfiguration` lưu: provider và model LLM, provider và model embedding, phiên bản prompt, `top_k`, `temperature`, `chunk_size`, `chunk_overlap`; có CHECK bảo vệ giá trị vô lý, tên duy nhất theo user. `RetrievedContext` lưu bản chụp nội dung chunk; hiện chỉ gắn với message chat, các cột gắn với evaluation và security thêm ở M6, M7.
+- Kiểm tra thật: 188 test pass (16 test mới), `alembic check` khớp, downgrade rồi upgrade chạy sạch. **Đã kiểm chứng điều mình ghi là chưa kiểm chứng ở M2-T04**: RESTRICT chặn xóa cấu hình đang có message dùng; xóa chunk hoặc tài liệu thì ngữ cảnh truy xuất vẫn còn kèm bản chụp; xóa user kéo theo mọi dữ liệu dưới nó.
+
+### ĐI TRƯỚC GATE | 2026-11-06
+- M3-T07 (ingestion service) cần Opus 5.5 và user chưa đổi model, nên mình làm trước các task cơ bản độc lập ở M4 đến M6 để không chờ. Gate M3 chưa đóng; sẽ quay lại làm M3-T07, phần reprocess của T08 và gate khi có Opus. Hàng đợi cần Opus: M3-T07, M4-T02, M4-T04, M5-T04 (cần người viết dataset), M6-T03, M6-T04, M6-T07, M7-T04, M7-T06, M8-T03.
+
 ### M3-T09 | Giao diện: đăng nhập và trang Tài liệu | 2026-11-06
 - Trạng thái: Hoàn thành giao diện. Cột trạng thái xử lý sẽ có ý nghĩa đầy đủ khi M3-T07 xong (hiện tài liệu dừng ở "Đã tải lên").
 - Làm trước thứ tự một chút (cùng M3-T08 phần 1) theo yêu cầu của user: cần giao diện tương tác và có thể deploy miễn phí.
