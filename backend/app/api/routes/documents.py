@@ -1,11 +1,23 @@
-from fastapi import APIRouter, Depends, UploadFile, status
+import uuid
+from typing import Literal
+
+from fastapi import APIRouter, Depends, Query, Response, UploadFile, status
 
 from app.api.dependencies import get_current_user, get_document_service
+from app.models.document import Document
 from app.models.user import User
-from app.schemas.document import DocumentResponse
+from app.schemas.document import DocumentListResponse, DocumentResponse
 from app.services.document_service import DocumentService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+DocumentStatus = Literal["uploaded", "processing", "ready", "failed"]
+
+
+def _to_response(document: Document, chunk_count: int) -> DocumentResponse:
+    response = DocumentResponse.model_validate(document)
+    response.chunk_count = chunk_count
+    return response
 
 
 @router.post("", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -15,6 +27,41 @@ def upload_document(
     service: DocumentService = Depends(get_document_service),
 ) -> DocumentResponse:
     document = service.upload(current_user, file.filename, file.file)
-    response = DocumentResponse.model_validate(document)
-    response.chunk_count = service.count_chunks(current_user, document)
-    return response
+    return _to_response(document, service.count_chunks(current_user, document))
+
+
+@router.get("", response_model=DocumentListResponse)
+def list_documents(
+    status_filter: DocumentStatus | None = Query(default=None, alias="status"),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    service: DocumentService = Depends(get_document_service),
+) -> DocumentListResponse:
+    rows, total = service.list_documents(current_user, status=status_filter, limit=limit, offset=offset)
+    return DocumentListResponse(
+        items=[_to_response(document, chunk_count) for document, chunk_count in rows],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/{document_id}", response_model=DocumentResponse)
+def get_document(
+    document_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: DocumentService = Depends(get_document_service),
+) -> DocumentResponse:
+    document, chunk_count = service.get_document(current_user, document_id)
+    return _to_response(document, chunk_count)
+
+
+@router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_document(
+    document_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: DocumentService = Depends(get_document_service),
+) -> Response:
+    service.delete_document(current_user, document_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

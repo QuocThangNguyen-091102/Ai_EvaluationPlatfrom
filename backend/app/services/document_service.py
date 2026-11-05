@@ -73,6 +73,26 @@ class DocumentService:
     def count_chunks(self, user: User, document: Document) -> int:
         return self._documents.count_chunks(user.id, document.id)
 
+    def list_documents(
+        self, user: User, *, status: str | None, limit: int, offset: int
+    ) -> tuple[list[tuple[Document, int]], int]:
+        return self._documents.list_for_user(user.id, status=status, limit=limit, offset=offset)
+
+    def get_document(self, user: User, document_id: uuid.UUID) -> tuple[Document, int]:
+        document = self._documents.get_for_user(user.id, document_id)
+        if document is None:
+            # Cùng một thông báo cho "không tồn tại" và "thuộc user khác" để không lộ sự tồn tại.
+            raise AppError(404, "not_found", "Không tìm thấy tài liệu")
+        return document, self._documents.count_chunks(user.id, document.id)
+
+    def delete_document(self, user: User, document_id: uuid.UUID) -> None:
+        document, _ = self.get_document(user, document_id)
+        storage_path = document.storage_path
+        self._documents.delete(document)
+        # Xóa bản ghi trước, file sau: nếu xóa file lỗi chỉ còn một file thừa vô hại, không có bản ghi trỏ vào file mất.
+        self._remove_quietly(storage_path)
+        logger.info("Document deleted: id=%s user_id=%s", document_id, user.id)
+
     def _read_with_limit(self, stream: BinaryIO) -> bytes:
         limit = settings.max_upload_size_mb * 1024 * 1024
         parts: list[bytes] = []

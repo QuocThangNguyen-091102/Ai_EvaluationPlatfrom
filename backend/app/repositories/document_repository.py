@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,33 @@ class DocumentRepository:
 
     def __init__(self, session: Session) -> None:
         self._session = session
+
+    def get_for_user(self, user_id: uuid.UUID, document_id: uuid.UUID) -> Document | None:
+        """Trả None cả khi document tồn tại nhưng thuộc user khác (caller trả 404, không lộ sự tồn tại)."""
+        return self._session.scalar(select(Document).where(Document.id == document_id, Document.user_id == user_id))
+
+    def list_for_user(
+        self, user_id: uuid.UUID, *, status: str | None, limit: int, offset: int
+    ) -> tuple[list[tuple[Document, int]], int]:
+        """Trả (danh sách (document, số chunk), tổng số), mới nhất trước."""
+        conditions = [Document.user_id == user_id]
+        if status is not None:
+            conditions.append(Document.status == status)
+
+        total = self._session.scalar(select(func.count()).select_from(Document).where(*conditions))
+        rows = self._session.execute(
+            select(Document, func.count(DocumentChunk.id))
+            .outerjoin(
+                DocumentChunk,
+                (DocumentChunk.document_id == Document.id) & (DocumentChunk.user_id == Document.user_id),
+            )
+            .where(*conditions)
+            .group_by(Document.id)
+            .order_by(Document.created_at.desc(), Document.id)
+            .limit(limit)
+            .offset(offset)
+        ).all()
+        return [(document, chunk_count) for document, chunk_count in rows], total
 
     def find_by_hash(self, user_id: uuid.UUID, content_hash: str) -> Document | None:
         return self._session.scalar(
@@ -39,6 +66,11 @@ class DocumentRepository:
             self._session.rollback()
             raise DuplicateDocumentError(document.content_hash) from exc
         return document
+
+    def delete(self, document: Document) -> None:
+        """Xóa document; chunk bị DB xóa theo (ON DELETE CASCADE)."""
+        self._session.execute(delete(Document).where(Document.id == document.id, Document.user_id == document.user_id))
+        self._session.commit()
 
     def commit(self) -> None:
         self._session.commit()

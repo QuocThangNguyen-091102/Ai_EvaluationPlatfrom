@@ -21,3 +21,10 @@ class DocumentResponse(BaseModel):
     processing_config: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
+
+
+class DocumentListResponse(BaseModel):
+    items: list[DocumentResponse]
+    total: int
+    limit: int
+    offset: int
