@@ -13,21 +13,52 @@ export class ApiError extends Error {
   }
 }
 
-export async function request(path, options = {}) {
+let authToken = null;
+let onUnauthorized = () => {};
+
+export function setAuthToken(token) {
+  authToken = token;
+}
+
+// Hàm này được gọi khi server trả 401 cho một request đã gửi kèm token (token hết hạn hoặc không còn hiệu lực).
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler ?? (() => {});
+}
+
+export async function request(path, { method = "GET", json, formData, auth = true } = {}) {
+  const headers = {};
+  let body;
+  if (json !== undefined) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(json);
+  } else if (formData !== undefined) {
+    body = formData; // trình duyệt tự đặt Content-Type kèm ranh giới multipart
+  }
+  const sentToken = auth ? authToken : null;
+  if (sentToken) {
+    headers.Authorization = `Bearer ${sentToken}`;
+  }
+
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, options);
+    response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body });
   } catch {
-    throw new ApiError("Không kết nối được tới backend", { status: 0, code: "network_error" });
+    throw new ApiError("Không kết nối được tới máy chủ", { status: 0, code: "network_error" });
   }
 
-  const body = await response.json().catch(() => null);
+  if (response.status === 204) {
+    return null;
+  }
+  const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const error = body?.error;
+    if (response.status === 401 && sentToken) {
+      onUnauthorized();
+    }
+    const error = payload?.error;
     // /health trả trực tiếp {status, database}, không bọc trong "error".
-    const message = error?.message ?? (body?.status ? `Backend báo trạng thái: ${body.status}` : "Yêu cầu thất bại");
-    throw new ApiError(message, { status: response.status, code: error?.code, details: error?.details ?? body });
+    const message = error?.message ?? (payload?.status ? `Máy chủ báo trạng thái: ${payload.status}` : "Yêu cầu thất bại");
+    throw new ApiError(message, { status: response.status, code: error?.code, details: error?.details ?? payload });
   }
-  return body;
+  return payload;
 }
