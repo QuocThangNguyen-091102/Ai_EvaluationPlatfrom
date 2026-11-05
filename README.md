@@ -2,7 +2,7 @@
 
 Nền tảng đánh giá RAG (Retrieval-Augmented Generation), kiểm soát chất lượng LLM và kiểm thử bảo mật AI. Gồm một ứng dụng RAG mẫu (hỏi đáp có trích dẫn trên tài liệu của người dùng) và một nền tảng đo chất lượng truy xuất, chất lượng câu trả lời, hành vi bảo mật, độ trễ và chi phí.
 
-Trạng thái: **Milestone 2 (Foundation) đã xong, chờ duyệt gate; tiếp theo là Milestone 3 (Ingestion)**. Stack chạy được và có health check, nhưng chưa có tính năng nào cho người dùng cuối. Tiến độ chi tiết xem [docs/progress_log.md](docs/progress_log.md).
+Trạng thái: **đang ở Milestone 3 (Ingestion)**. Đã có đăng ký, đăng nhập, upload và quản lý tài liệu qua giao diện web. Chưa có hỏi đáp, đánh giá và kiểm thử bảo mật. Triển khai miễn phí lên internet: xem [docs/11_free_deployment.md](docs/11_free_deployment.md). Tiến độ chi tiết xem [docs/progress_log.md](docs/progress_log.md).
 
 ## Công nghệ
 
@@ -64,6 +64,17 @@ python -m venv .venv
 ```
 
 Lưu ý: nếu bạn đổi `POSTGRES_PASSWORD` thì đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
+
+Test với model embedding thật (chậm, lần đầu tải vài trăm MB): `RUN_MODEL_TESTS=1 .venv/Scripts/python -m pytest -k real`.
+
+### Chạy test giao diện
+
+```bash
+cd frontend
+npm install
+npm test          # unit và component test (vitest)
+npm run build     # kiểm tra build
+```
 
 ## Quy ước làm việc
 

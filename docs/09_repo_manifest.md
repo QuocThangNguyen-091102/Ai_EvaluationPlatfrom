@@ -164,7 +164,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/app/core/logging.py` | Cấu hình log, không ghi dữ liệu nhạy cảm | `config.py` | `main.py` | | Logger | Implemented | M2 |
 | `backend/app/core/exceptions.py` | Lỗi nghiệp vụ và bộ chuyển thành JSON lỗi thống nhất | Không | Service, `main.py` | | Phản hồi lỗi chuẩn | Tested | M2 |
 | `backend/app/core/file_storage.py` | Lưu, đọc, xóa file gốc trong volume | `config.py` | `document_service.py` | File, đường dẫn | Đường dẫn lưu | Tested | M3 |
-| `backend/.dockerignore` | Loại `.venv`, test, cache khỏi build context của backend | Không | Docker build | | | Implemented | M2 |
+| `backend/Dockerfile.dockerignore` | Loại `.venv`, test, giao diện, tài liệu khỏi build context (context là thư mục gốc repo) | Không | Docker build | | | Implemented | M2 |
 | `backend/requirements-dev.txt` | Dependency chỉ dùng khi phát triển (pytest, httpx), tách khỏi image chạy thật | `requirements.txt` | Dev | | | Implemented | M2 |
 | `backend/pytest.ini` | Cấu hình pytest, marker `integration` | Không | pytest | | | Implemented | M2 |
 | `backend/tests/conftest.py` | Fixture `client`, bảo đảm có `DATABASE_URL` khi chạy unit test | `app.main` | Mọi test | | | Tested | M2 |
@@ -177,6 +177,10 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/app/core/file_validation.py` | Nhận diện PDF, DOCX, TXT (UTF-8) bằng nội dung, làm sạch tên hiển thị | Không | `services/document_service.py` | Tên file, nội dung | Loại file hợp lệ hoặc lỗi | Tested | M3 |
 | `backend/tests/unit/test_file_validation.py` | Unit test nhận diện loại file và làm sạch tên | `core/file_validation.py` | pytest | | | Tested | M3 |
 | `backend/tests/integration/test_document_upload_api.py` | Test API upload với PostgreSQL thật và thư mục tạm | DB đang chạy | pytest | | | Tested | M3 |
+| `ai_engine/ingestion/parsed_document.py` | Kiểu dữ liệu chung `ParsedDocument`, `ParsedPage`, `ParsingError` | Không | Parsers, cleaner, chunker | | | Tested | M3 |
+| `backend/tests/unit/test_parsers.py`, `test_text_cleaner.py`, `test_chunker.py`, `test_local_embedder.py` | Unit test parser, làm sạch, chunker, adapter embedding (model giả; 5 test model thật chạy khi `RUN_MODEL_TESTS=1`) | `ai_engine/*` | pytest | | | Tested | M3 |
+| `backend/tests/fixtures/vi_two_pages.pdf` | PDF mẫu tiếng Việt có dấu, 2 trang, để test parser | Không | `test_parsers.py`, `test_chunker.py` | | | Implemented | M3 |
+| `backend/tests/integration/test_document_management_api.py` | Test API danh sách, chi tiết, xóa tài liệu (có cô lập user, phân trang) | DB đang chạy | pytest | | | Tested | M3 |
 | `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Implemented | M2 |
 | `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Implemented | M2 |
 | `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Implemented (migration `0001` bật extension vector) | M2 trở đi |
@@ -222,15 +226,15 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
-| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider | Không | `local_embedder.py`, `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Planned | M3 |
-| `ai_engine/ingestion/pdf_parser.py` | Trích văn bản và số trang từ PDF | Thư viện parse PDF | `ingestion_pipeline.py` | File PDF | Văn bản theo trang | Created | M3 |
-| `ai_engine/ingestion/docx_parser.py` | Trích văn bản từ DOCX | Thư viện parse DOCX | `ingestion_pipeline.py` | File DOCX | Văn bản | Created | M3 |
-| `ai_engine/ingestion/txt_parser.py` | Đọc TXT, xử lý encoding | Không | `ingestion_pipeline.py` | File TXT | Văn bản | Created | M3 |
-| `ai_engine/ingestion/text_cleaner.py` | Chuẩn hóa văn bản | Không | `ingestion_pipeline.py` | Văn bản thô | Văn bản sạch | Created | M3 |
+| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider mạng (LLM ở M4; model embedding cục bộ không cần) | Không | `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Planned | M3 |
+| `ai_engine/ingestion/pdf_parser.py` | Trích văn bản và số trang từ PDF | Thư viện parse PDF | `ingestion_pipeline.py` | File PDF | Văn bản theo trang | Tested | M3 |
+| `ai_engine/ingestion/docx_parser.py` | Trích văn bản từ DOCX | Thư viện parse DOCX | `ingestion_pipeline.py` | File DOCX | Văn bản | Tested | M3 |
+| `ai_engine/ingestion/txt_parser.py` | Đọc TXT, xử lý encoding | Không | `ingestion_pipeline.py` | File TXT | Văn bản | Tested | M3 |
+| `ai_engine/ingestion/text_cleaner.py` | Chuẩn hóa văn bản | Không | `ingestion_pipeline.py` | Văn bản thô | Văn bản sạch | Tested | M3 |
 | `ai_engine/ingestion/ingestion_pipeline.py` | Ghép parse, làm sạch, chunk, embed; trả danh sách chunk kèm vector | Parsers, cleaner, chunker, embedder | `document_service.py` | File, cấu hình chunk | Chunk và vector | Created | M3 |
-| `ai_engine/chunking/fixed_size_chunker.py` | Chia chunk theo kích thước và overlap, gắn metadata (trang, vị trí ký tự) | Không | `ingestion_pipeline.py` | Văn bản, chunk size, overlap | Danh sách chunk | Created | M3 |
-| `ai_engine/embeddings/base_embedder.py` | Interface embedding provider | Không | `local_embedder.py`, test (provider giả), pipeline | Danh sách văn bản | Danh sách vector | Created | M3 |
-| `ai_engine/embeddings/local_embedder.py` | Cài interface bằng model chạy cục bộ `intfloat/multilingual-e5-small` (384 chiều); thêm tiền tố `query: ` và `passage: ` (quyết định A3 ở `06_deployment_tech.md`) | `base_embedder.py`, `provider_retry.py` | Ingestion, pipeline | Văn bản | Vector | Created | M3 |
+| `ai_engine/chunking/fixed_size_chunker.py` | Chia chunk theo kích thước và overlap, gắn metadata (trang, vị trí ký tự) | Không | `ingestion_pipeline.py` | Văn bản, chunk size, overlap | Danh sách chunk | Tested | M3 |
+| `ai_engine/embeddings/base_embedder.py` | Interface embedding provider | Không | `local_embedder.py`, test (provider giả), pipeline | Danh sách văn bản | Danh sách vector | Tested | M3 |
+| `ai_engine/embeddings/local_embedder.py` | Cài interface bằng model chạy cục bộ `intfloat/multilingual-e5-small` (384 chiều); thêm tiền tố `query: ` và `passage: ` (quyết định A3 ở `06_deployment_tech.md`) | `base_embedder.py`, `provider_retry.py` | Ingestion, pipeline | Văn bản | Vector | Tested | M3 |
 | `ai_engine/retrieval/vector_retriever.py` | Tìm vector gần nhất kèm điều kiện quyền, trả chunk và điểm | DB (pgvector), `metadata_filters.py` | `rag_pipeline.py` | Vector, `user_id`, Top-K | Chunk kèm điểm | Created | M4 |
 | `ai_engine/retrieval/metadata_filters.py` | Dựng điều kiện lọc user và document | Không | `vector_retriever.py` | `user_id`, `document_ids` | Điều kiện lọc | Created | M4 |
 | `ai_engine/generation/base_llm_client.py` | Interface LLM provider | Không | `openai_llm_client.py`, test, pipeline | Prompt, tham số | Câu trả lời, token | Created | M4 |
@@ -282,23 +286,27 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/Dockerfile`, `package.json`, `index.html`, `vite.config.js` | Build và chạy frontend | | `docker-compose.yml` | Implemented | M2 |
 | `frontend/src/main.jsx` | Điểm vào, gắn App | `App.jsx` | Trình duyệt | Implemented | M2 |
 | `frontend/src/App.jsx` | Định tuyến các trang | Pages, layouts, `AuthContext.jsx` | `main.jsx` | Implemented | M2, hoàn thiện M3 |
-| `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Implemented | M2 |
+| `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Tested | M2 |
 | `frontend/.dockerignore` | Loại `node_modules`, `dist` khỏi build context | Không | Docker build | Implemented | M2 |
 | `frontend/src/services/api/healthApi.js` | Gọi `GET /health` | `httpClient.js` | `App.jsx` | Implemented | M2 |
-| `frontend/src/services/api/authApi.js` | Gọi `/auth/*` | `httpClient.js` | `AuthContext.jsx`, `LoginPage.jsx` | Created | M3 |
-| `frontend/src/services/api/documentApi.js` | Gọi `/documents*` | `httpClient.js` | `DocumentsPage.jsx` | Created | M3 |
+| `frontend/src/formatting.js` | Định dạng dung lượng, ngày giờ, loại file, nhãn trạng thái và thông điệp lỗi bằng tiếng Việt | Không | Pages | Giá trị thô | Chuỗi hiển thị | Tested | M3 |
+| `frontend/src/components/BackendStatus.jsx` | Chỉ báo máy chủ và database có phản hồi không (chân trang) | `healthApi.js` | `MainLayout.jsx` | | | Implemented | M3 |
+| `frontend/src/styles.css` | Giao diện toàn bộ: bố cục, bảng, nút, thẻ; thích ứng màn hình nhỏ; chế độ tối | Không | `main.jsx` | | | Implemented | M3 |
+| `frontend/src/test/setup.js` và các file `*.test.js(x)` | Thiết lập và test giao diện (52 test: client API, đăng nhập, bảo vệ trang, trang tài liệu, định dạng) | vitest, Testing Library | `npm test` | | | Tested | M3 |
+| `frontend/src/services/api/authApi.js` | Gọi `/auth/*` | `httpClient.js` | `AuthContext.jsx`, `LoginPage.jsx` | Tested | M3 |
+| `frontend/src/services/api/documentApi.js` | Gọi `/documents*` | `httpClient.js` | `DocumentsPage.jsx` | Tested | M3 |
 | `frontend/src/services/api/chatApi.js` | Gọi `/chat/*` | `httpClient.js` | `ChatPage.jsx` | Created | M4 |
 | `frontend/src/services/api/modelConfigApi.js` | Gọi `/model-configurations*` | `httpClient.js` | `ChatPage.jsx`, `EvaluationsPage.jsx`, `SecurityPage.jsx`, `BenchmarksPage.jsx` | Planned | M4 |
 | `frontend/src/services/api/datasetApi.js` | Gọi `/datasets*`, `/dataset-versions*`, `/test-cases*` | `httpClient.js` | `DatasetsPage.jsx` | Created | M5 |
 | `frontend/src/services/api/evaluationApi.js` | Gọi `/evaluations*` | `httpClient.js` | `EvaluationsPage.jsx`, `DashboardPage.jsx` | Created | M6 |
 | `frontend/src/services/api/securityApi.js` | Gọi `/security/*` | `httpClient.js` | `SecurityPage.jsx` | Created | M7 |
 | `frontend/src/services/api/benchmarkApi.js` | Gọi `/benchmarks*` | `httpClient.js` | `BenchmarksPage.jsx` | Created | M8 |
-| `frontend/src/contexts/AuthContext.jsx` | Giữ trạng thái đăng nhập và token | `authApi.js` | `App.jsx`, `useAuth.js` | Created | M3 |
-| `frontend/src/hooks/useAuth.js` | Truy cập `AuthContext` | `AuthContext.jsx` | Pages, layout | Created | M3 |
-| `frontend/src/components/ProtectedRoute.jsx` | Chặn route khi chưa đăng nhập | `useAuth.js` | `App.jsx` | Planned | M3 |
-| `frontend/src/layouts/MainLayout.jsx` | Khung chung: menu, vùng nội dung | `useAuth.js` | `App.jsx` | Created | M3 |
-| `frontend/src/pages/LoginPage.jsx` | Đăng nhập, đăng ký | `authApi.js` | `App.jsx` | Created | M3 |
-| `frontend/src/pages/DocumentsPage.jsx` | Upload, danh sách, trạng thái, xóa | `documentApi.js` | `App.jsx` | Created | M3 |
+| `frontend/src/contexts/AuthContext.jsx` | Giữ trạng thái đăng nhập và token | `authApi.js` | `App.jsx`, `useAuth.js` | Tested | M3 |
+| `frontend/src/hooks/useAuth.js` | Truy cập `AuthContext` | `AuthContext.jsx` | Pages, layout | Tested | M3 |
+| `frontend/src/components/ProtectedRoute.jsx` | Chặn route khi chưa đăng nhập | `useAuth.js` | `App.jsx` | Tested | M3 |
+| `frontend/src/layouts/MainLayout.jsx` | Khung chung: menu, vùng nội dung | `useAuth.js` | `App.jsx` | Implemented | M3 |
+| `frontend/src/pages/LoginPage.jsx` | Đăng nhập, đăng ký | `authApi.js` | `App.jsx` | Tested | M3 |
+| `frontend/src/pages/DocumentsPage.jsx` | Upload, danh sách, trạng thái, xóa | `documentApi.js` | `App.jsx` | Tested | M3 |
 | `frontend/src/pages/ChatPage.jsx` | Chat và hiển thị citation | `chatApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M4 |
 | `frontend/src/pages/DatasetsPage.jsx` | Dataset, version, test case | `datasetApi.js` | `App.jsx` | Created | M5 |
 | `frontend/src/pages/EvaluationsPage.jsx` | Run, kết quả, biểu đồ | `evaluationApi.js`, `datasetApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M6 |

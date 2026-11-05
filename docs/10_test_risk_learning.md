@@ -74,6 +74,7 @@ Rủi ro tổng quan R1 đến R8 nằm ở `01_feasibility.md`. Bổ sung các 
 | R20 | File upload vượt giới hạn vẫn được server nhận về trước khi bị từ chối | Tốn băng thông và đĩa tạm khi bị gửi file rất lớn liên tục | Giới hạn kích thước ở reverse proxy trước khi mở ra Internet; hiện chấp nhận cho MVP chạy cục bộ | M3-T03, M9-T07 |
 | R21 | Truy xuất chéo ngôn ngữ yếu và điểm cosine bị nén ở khoảng cao (đo ở lần chạy thử model) | Câu hỏi và tài liệu khác ngôn ngữ cho kết quả kém; ngưỡng tuyệt đối cho "không đủ thông tin" không dùng được | Kiểm tra ngôn ngữ corpus ở M5-T03; hiệu chỉnh ngưỡng trên dữ liệu thật ở M4; ghi giới hạn vào báo cáo | M4-T04, M5-T03 |
 | R22 | Điều khoản dịch vụ miễn phí đổi hoặc hết hạn; bản demo công khai bị lạm dụng | Mất bản demo hoặc hết hạn mức | Xem `11_free_deployment.md` mục 7; làm giới hạn tần suất đăng nhập (R18) trước khi mở công khai | M9-T04 |
+| R23 | Backend dùng model embedding cục bộ nên cần khoảng 1 GB RAM và image 2,2 GB (đã đo) | Không chạy được trên máy chủ miễn phí cấu hình thấp | Chọn máy chủ đủ RAM (phương án A ở `11_free_deployment.md`); thu gọn image nếu cần; giữ adapter để chuyển sang API embedding khi bắt buộc | M9-T04 |
 
 ## 4. Lộ trình học gắn milestone
 

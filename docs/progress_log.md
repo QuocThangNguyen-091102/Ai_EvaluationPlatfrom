@@ -18,6 +18,34 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T09 | Giao diện: đăng nhập và trang Tài liệu | 2026-11-06
+- Trạng thái: Hoàn thành giao diện. Cột trạng thái xử lý sẽ có ý nghĩa đầy đủ khi M3-T07 xong (hiện tài liệu dừng ở "Đã tải lên").
+- Làm trước thứ tự một chút (cùng M3-T08 phần 1) theo yêu cầu của user: cần giao diện tương tác và có thể deploy miễn phí.
+- File: `frontend/src/` gồm `main.jsx`, `App.jsx`, `styles.css`, `formatting.js`, `contexts/AuthContext.jsx`, `hooks/useAuth.js`, `components/ProtectedRoute.jsx`, `components/BackendStatus.jsx`, `layouts/MainLayout.jsx`, `pages/LoginPage.jsx`, `pages/DocumentsPage.jsx`, `services/api/{httpClient,authApi,documentApi}.js`; thêm `react-router-dom`, `vitest`, Testing Library.
+- Tính năng: đăng nhập, đăng ký (lỗi 422 hiện lý do cụ thể), chuyển hướng về trang đang định vào, tự đăng xuất khi token hết hạn, tải lên nhiều file (kéo thả hoặc chọn), kiểm tra đuôi file trên giao diện (server vẫn là nơi quyết định), danh sách có phân trang, xóa có xác nhận, tự làm mới khi còn tài liệu đang xử lý (dừng sau 20 lần), trạng thái đang tải và lỗi, chế độ tối, thích ứng điện thoại.
+- Quyết định: token lưu trong localStorage (giải thích rủi ro XSS trong code); backend kiểm tra mọi quyền, `ProtectedRoute` chỉ là tiện ích giao diện.
+- Kiểm tra thật: 52 test giao diện pass (chạy 3 lần ổn định); `npm run build` OK; kịch bản trình duyệt thật (Chromium tự động) trên stack Docker: 13 kiểm tra pass (chuyển hướng, đăng nhập sai, đăng ký, upload hợp lệ và bị từ chối, trùng nội dung, tải lại giữ phiên, xóa, đăng xuất, đăng nhập lại), xem ảnh chụp bản sáng, tối, điện thoại.
+- Lỗi tìm thấy bằng trình duyệt thật và đã sửa: trên điện thoại trang bị tràn ngang vì chữ ẩn trong tiêu đề cột nằm ngoài vùng cuộn của bảng (sửa bằng `position: relative` cho khung bảng). Test jsdom không thể bắt lỗi này.
+- Chưa làm: các trang Chat, Dataset, Evaluation, Security, Benchmark; kiểm tra truy cập bàn phím và đọc màn hình đầy đủ; kiểm thử trên Safari và Firefox.
+
+### M3-T08 (phần 1) | Danh sách, chi tiết, xóa tài liệu | 2026-11-06
+- Trạng thái: phần 1 hoàn thành; **reprocess chưa làm** (phụ thuộc M3-T07).
+- Endpoint: `GET /api/v1/documents` (lọc `status`, phân trang `limit` 1 đến 100, `offset`), `GET /api/v1/documents/{id}`, `DELETE /api/v1/documents/{id}`.
+- Cô lập user: tài liệu của người khác hoặc không tồn tại đều trả cùng 404; xóa chỉ xóa bản ghi của chính user, chunk bị DB xóa theo, file xóa sau (nếu xóa file lỗi chỉ còn file thừa vô hại).
+- Kiểm tra thật: 20 test mới pass, ổn định qua 3 lần chạy. Lỗi trong test của mình: các upload trong một test chung một transaction nên `now()` bằng nhau, thứ tự "mới nhất trước" lúc đó phụ thuộc id ngẫu nhiên (một test pass do may mắn); đã đặt giờ tạo rõ ràng.
+
+### M3-T06 | Adapter embedding chạy cục bộ | 2026-11-06
+- Trạng thái: Hoàn thành
+- File: `ai_engine/embeddings/base_embedder.py` (interface `Embedder`, `EmbeddingError`, `InputTooLongError`), `ai_engine/embeddings/local_embedder.py` (`LocalEmbedder`); đóng gói: `backend/Dockerfile` (PyTorch bản CPU, context là thư mục gốc repo để thấy `ai_engine/`), `backend/Dockerfile.dockerignore`, `docker-compose.yml` (volume `models`), `requirements.txt` (`torch`, `sentence-transformers`).
+- Thiết kế: hai hàm riêng cho đoạn tài liệu và câu hỏi (thêm tiền tố `passage: ` và `query: `); nạp model muộn một lần; vector chuẩn hóa; kiểm tra token thật và **từ chối** đoạn vượt 512 token thay vì để model cắt âm thầm; kiểm tra số chiều khớp cấu hình ngay khi nạp; mọi lỗi thành `EmbeddingError` với thông điệp không chứa nội dung văn bản. Không dùng `provider_retry` vì model chạy cục bộ không có lỗi mạng.
+- Kiểm tra thật: 12 test với model giả pass; 5 test với **model thật** pass (`RUN_MODEL_TESTS=1`): vector đúng 384 chiều khớp cột database, xếp hạng tiếng Việt đúng, vector chuẩn hóa và ổn định, tiền tố làm vector khác nhau, đoạn dài bị từ chối. Chạy model thật trong container: RAM khoảng 933 MB, image 2,2 GB, 32 đoạn trong 0,22 giây.
+- Sự cố: tải PyTorch bị ngắt mạng và đường dẫn Windows quá dài làm cài đặt lỗi; đã xử lý bằng đường dẫn ngắn và thử lại.
+
+### YÊU CẦU MỚI | Giao diện tương tác và triển khai miễn phí | 2026-11-05
+- User yêu cầu: có giao diện tương tác, chạy được trên internet, hoàn toàn miễn phí, và giao quyền tự làm.
+- Đã tra điều khoản hiện tại của Vercel, Neon, Supabase và các nơi chạy container miễn phí (nhiều nguồn thứ cấp mâu thuẫn nhau). Kết luận và kế hoạch ở `docs/11_free_deployment.md`: Vercel chỉ cho giao diện; backend cần nơi chạy container đủ RAM; chọn nơi cụ thể và kiểm tra lại điều khoản ở M9-T04. Số đo thật về RAM và image đã ghi vào tài liệu đó.
+- Việc chỉ user làm được: tạo tài khoản các dịch vụ, đưa secret vào bảng cấu hình, bấm triển khai.
+
 ### M3-T05 | Làm sạch văn bản + chunker | 2026-11-05
 - Trạng thái: Hoàn thành
 - File: `ai_engine/ingestion/text_cleaner.py` (`clean_text`, `clean_document`), `ai_engine/chunking/fixed_size_chunker.py` (`chunk_document`, `full_text`); test: `unit/test_text_cleaner.py`, `unit/test_chunker.py`.

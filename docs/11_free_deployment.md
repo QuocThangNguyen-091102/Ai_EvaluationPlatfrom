@@ -71,9 +71,24 @@ Ghép các dịch vụ miễn phí rời nhau:
 | Database | Neon hoặc Supabase gói miễn phí | Neon khoảng 0,5 GB và hạn mức giờ tính toán, vượt thì tạm dừng; Supabase khoảng 500 MB, tự tạm dừng sau một tuần ít hoạt động; **chưa xác nhận bật được pgvector ở gói miễn phí** |
 | Backend | Dịch vụ container có gói miễn phí | Thường ngủ khi rảnh và RAM khoảng 512 MB **[chưa xác minh]** |
 | File | Lưu trữ tương thích S3 miễn phí | Hạn mức chưa xác minh |
-| Embedding | **API thay cho model cục bộ** | Model cục bộ nhiều khả năng không vừa 512 MB RAM (chưa đo); đổi sang API đồng nghĩa số chiều vector có thể đổi và phải có migration |
+| Embedding | **API thay cho model cục bộ** | Model cục bộ **không vừa 512 MB RAM** (đã đo: khoảng 0,93 GB, xem mục 4.1); đổi sang API đồng nghĩa số chiều vector có thể đổi và phải có migration |
 
 Phương án B đòi hỏi sửa nhiều hơn và chất lượng trải nghiệm kém hơn (ngủ, giới hạn). Chỉ chọn khi A không thực hiện được.
+
+### 4.1 Số đo thật của backend (đo ngày 2026-11-05 trong container, máy phát triển)
+
+| Số đo | Giá trị |
+|-------|---------|
+| RAM của tiến trình backend sau khi nạp model embedding | **khoảng 933 MB** (đỉnh 957 MB), trước khi nạp là 14 MB |
+| Kích thước image backend (PyTorch bản CPU, sentence-transformers) | **2,2 GB** |
+| Embed 32 đoạn ngắn trên CPU (sau khi nạp model) | 0,22 giây |
+| Tải model lần đầu vào volume rồi nạp rồi embed | 29 giây (mạng của máy này) |
+| Số chiều vector | 384 (khớp database) |
+
+Hệ quả:
+- Máy chủ cần **tối thiểu khoảng 1,5 đến 2 GB RAM** cho backend, PostgreSQL và hệ điều hành; các gói miễn phí 512 MB không chạy được model cục bộ.
+- Image 2,2 GB có thể vượt giới hạn dung lượng của một số gói miễn phí. Có thể giảm bằng cách bỏ các thư viện không dùng (scikit-learn, scipy do sentence-transformers kéo theo) hoặc dùng runtime nhẹ hơn cho model; việc này để làm ở M9-T04 nếu cần.
+- Số đo chỉ cho một máy và một lần chạy; đo lại trên máy đích khi triển khai.
 
 ## 5. Điều gì mình làm được và điều gì chỉ bạn làm được
 
