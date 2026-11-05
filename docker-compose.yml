@@ -36,5 +36,23 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    environment:
+      # Địa chỉ backend mà TRÌNH DUYỆT gọi (từ máy host), không phải tên service trong mạng Docker.
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-5173}:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:5173/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
 volumes:
   pgdata:
