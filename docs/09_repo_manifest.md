@@ -141,6 +141,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Created | M3 |
 | `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Created | M9 |
 | `docs/01_feasibility.md` … `docs/10_test_risk_learning.md` | Tài liệu thiết kế M1 | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1 |
+| `docs/11_free_deployment.md` | Kế hoạch triển khai miễn phí lên internet (Vercel cho giao diện, máy chủ container cho backend) | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1, thực hiện M9-T04 |
 | `docs/progress_log.md` | Nhật ký kết quả từng task | Không | Người dùng, Claude | | | Implemented | M1 |
 | `docs/session_notes.md` | Ghi chú cuối phiên | Không | Claude | | | Implemented | M1 |
 | `docs/baseline_manual.md` | Bảng kết quả hỏi đáp thủ công (khoảng 20 câu) làm điểm tham chiếu | Không | Người dùng | | | Planned | M4 |

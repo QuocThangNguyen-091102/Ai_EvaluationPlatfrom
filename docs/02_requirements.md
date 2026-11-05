@@ -93,3 +93,5 @@ Các yêu cầu về hiệu năng và chi phí chưa có con số vì chưa có 
 | NFR-12 | Triển khai | Máy sạch chạy được toàn bộ stack bằng Docker Compose theo README | Thử trên máy sạch ở gate M2 và M9 |
 | NFR-13 | Trung thực | Mọi con số trong báo cáo đến từ run thật; giới hạn của metric và của kiểm thử được ghi rõ | Rà soát báo cáo trước khi công bố |
 | NFR-14 | Khả năng bảo trì | Module có ranh giới rõ (router, service, repository, AI engine); đặt tên theo quy ước ở `CLAUDE.md` | Review cấu trúc và tên file theo từng milestone |
+| NFR-15 | Chi phí | Bản demo trên internet dùng hạ tầng miễn phí; chấp nhận giới hạn (ngủ, dung lượng, hạn mức). Chi tiết `11_free_deployment.md` | Triển khai thật và kiểm tra hoạt động ở M9-T04 |
+| NFR-16 | Giao diện | Giao diện web tương tác cho mọi luồng chính (đăng nhập, tài liệu, chat, dataset, đánh giá, bảo mật, benchmark), dùng được trên trình duyệt máy tính | Mở từng trang và chạy luồng chính (E2E ở M9-T03) |
