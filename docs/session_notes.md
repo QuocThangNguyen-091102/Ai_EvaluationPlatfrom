@@ -11,15 +11,14 @@
 ### Trạng thái
 - Git: nhánh `main`, các commit theo từng task, **chưa có remote, chưa push**.
 - Stack Docker hiện đang dừng (`docker compose up --build` để chạy lại). Volume `ai-evaluation-platform_pgdata` còn dữ liệu cũ.
-- File `.env` cục bộ (không commit) dùng mật khẩu dev `DEV_PASSWORD_REDACTED`.
+- File `.env` cục bộ (không commit) dùng một mật khẩu dev cục bộ. Lịch sử git đã được viết lại để xóa mật khẩu này khỏi mọi commit (không còn trong history).
 - Chưa có tính năng cho người dùng cuối. Chưa kiểm tra giao diện bằng trình duyệt thật.
 
 ### Việc đang chờ user
 1. **Chặn M3-T01:** điều kiện vào M3-T01 là gọi thử provider để chốt embedding model và số chiều vector (`06_deployment_tech.md` mục 4). Cần user cung cấp API key của provider đã chọn (A1) hoặc chuyển sang A3 (embedding cục bộ).
 2. Tạo remote GitHub rồi push (M2-T01 còn thiếu bước này).
-3. Mật khẩu dev `DEV_PASSWORD_REDACTED` nằm trong 2 commit cũ của `conftest.py`: giữ nguyên hay viết lại lịch sử trước lần push đầu.
-4. Cảnh báo `httpx`/`httpx2` của pytest: bỏ qua hay xử lý.
-5. Duyệt gate Milestone 2.
+3. Cảnh báo `httpx`/`httpx2` của pytest: bỏ qua hay xử lý.
+4. Duyệt gate Milestone 2.
 
 ### Quy tắc làm việc đã thống nhất
 - Chỉ trả lời tiếng Việt (CLAUDE.md mục 1). Mỗi milestone xong thì dừng chờ duyệt.
