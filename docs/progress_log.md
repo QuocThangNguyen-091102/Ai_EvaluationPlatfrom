@@ -18,6 +18,65 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M2-T08 | GATE M2: Foundation | 2026-11-05
+- Trạng thái: **Đạt, kèm 2 điểm cần user biết** (xem cuối mục).
+- Cách kiểm tra: clone repo sạch vào thư mục tạm, làm đúng theo README (tạo `.env` với mật khẩu mới, `docker compose up --build -d`), rồi kiểm tra; sau đó dọn clone và volume của nó.
+- Kết quả thật của bản clone sạch:
+  - `docker compose ps`: db, backend, frontend đều `healthy`.
+  - `GET /health` trả `{"status":"ok","database":"ok"}`; frontend trả HTTP 200.
+  - Backend log có `Running upgrade -> 0001, enable pgvector extension`; DB mới có extension `vector` và `alembic_version = 0001`.
+  - `pytest` theo README: 7 passed (6 unit, 1 integration); chỉ unit: 6 passed.
+- Kiểm tra khác trong M2: dữ liệu DB còn sau `down` rồi `up` (M2-T03); `alembic downgrade base` rồi `upgrade head` chạy sạch (M2-T04); `/health` trả 503 khi dừng db và tự phục hồi khi db trở lại (M2-T05); backend chạy bằng user không phải root.
+- Lỗi tìm thấy và đã sửa trong gate: `tests/conftest.py` đặt `DATABASE_URL` mặc định bằng biến môi trường nên ghi đè mật khẩu trong `.env`. Sửa ở commit `fix(tests)`; xác nhận bằng chạy pytest trong bản clone dùng mật khẩu khác.
+- Quét Git history tìm secret: không có file `.env`, không có mẫu API key hay private key. **Điểm 1:** mật khẩu dev cục bộ `DEV_PASSWORD_REDACTED` nằm trong 2 commit cũ của `conftest.py` (không còn ở HEAD). Đây là mật khẩu tạm cho DB cục bộ chỉ bind `127.0.0.1`, không phải secret thật. Chưa viết lại lịch sử vì thao tác này phá hủy; repo chưa có remote nên có thể làm trước lần push đầu nếu user muốn.
+- **Điểm 2:** commit đầu chưa được push vì chưa có remote GitHub; cần user tạo repo và cung cấp địa chỉ.
+- Chưa kiểm tra được: giao diện trên trình duyệt thật (chỉ kiểm tra HTTP 200 và CORS bằng curl); chạy trên máy khác (chỉ thử trên máy này bằng clone sạch).
+- Manifest đã cập nhật: 18 file chuyển sang Implemented hoặc Tested, thêm 10 file mới của M2.
+
+### M2-T07 | Logging, xử lý lỗi chuẩn, thiết lập pytest | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `core/logging.py`, `core/exceptions.py`, `core/config.py` (thêm `log_level`), `main.py`, `tests/conftest.py`, `tests/unit/test_health.py`, `tests/unit/test_error_handling.py`, `tests/integration/test_health_database.py`; mới: `pytest.ini`, `requirements-dev.txt`.
+- Lỗi trả về theo một định dạng thống nhất `{"error":{"code","message","details"}}`; lỗi không lường trước trả 500 mà không lộ chi tiết nội bộ (có test).
+- Kiểm tra: `pytest` 7 passed; `-m "not integration"` 6 passed.
+- Lưu ý: pytest cảnh báo deprecation của `starlette.testclient` khi dùng `httpx` và gợi ý gói `httpx2`. Mình **không cài** gói đó vì chưa kiểm chứng gói này; test vẫn pass với `httpx==0.28.1`. Cần user quyết định có xử lý cảnh báo hay không.
+
+### M2-T06 | Frontend skeleton | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `package.json`, `package-lock.json`, `index.html`, `vite.config.js`, `src/main.jsx`, `src/App.jsx`, `src/services/api/httpClient.js`, `Dockerfile`; mới: `src/services/api/healthApi.js`, `frontend/.dockerignore`; compose có thêm service `frontend`.
+- Kiểm tra: `npm run build` thành công; container healthy; trang trả 200; API chấp nhận origin `http://localhost:5173`; `VITE_API_BASE_URL` lấy từ biến môi trường.
+- Chưa kiểm tra bằng trình duyệt thật.
+
+### M2-T05 | Backend Dockerfile + service backend | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `backend/Dockerfile`, `docker-compose.yml`, `app/api/routes/health.py`; mới: `backend/.dockerignore`.
+- `/health` kiểm tra DB (trả 503 khi lỗi). Migration chạy khi container khởi động. Backend chạy bằng `appuser`.
+- Kiểm tra: build và `up` thành công; 200 khi db chạy, 503 khi db dừng, 200 lại khi db trở lại.
+
+### M2-T04 | Kết nối DB + Migration | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `app/database/session.py`, `base.py`, `migrations/env.py`, `script.py.mako`, `versions/0001_enable_pgvector_extension.py`, `alembic.ini`, `core/config.py` (thêm `database_url`).
+- Kiểm tra: `alembic upgrade head` OK; `SELECT 1` qua session ứng dụng OK; extension `vector` 0.8.7 hoạt động; downgrade rồi upgrade lại OK.
+- Lỗi gặp: dùng `localhost` làm chậm 5 giây mỗi kết nối vì Windows thử IPv6 trước trong khi cổng chỉ bind IPv4; đổi sang `127.0.0.1` trong `.env.example`.
+- Chưa kiểm chứng: hành vi RESTRICT của PostgreSQL khi xóa user (mục 12 của báo cáo rà soát), sẽ kiểm chứng khi có migration cho các bảng.
+
+### M2-T03 | Docker Compose + PostgreSQL/pgvector | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `docker-compose.yml`. Image `pgvector/pgvector:pg16`, volume `pgdata`, healthcheck `pg_isready`, cổng chỉ bind `127.0.0.1`.
+- Kiểm tra: db healthy; tạo bảng, ghi dữ liệu, `docker compose down` rồi `up`, dữ liệu vẫn còn. Đã sửa `06_deployment_tech.md` cho khớp việc công bố cổng db ở `127.0.0.1`.
+- Chuẩn bị: Docker Desktop chưa chạy lúc đầu, mình khởi động nó.
+
+### M2-T02 | Backend skeleton + /health | 2026-11-05
+- Trạng thái: Hoàn thành
+- File: `requirements.txt` (pin phiên bản), `app/core/config.py`, `app/api/routes/health.py`, `app/main.py`.
+- Kiểm tra: chạy uvicorn, `GET /health` trả 200; CORS preflight cho origin của frontend đúng.
+
+### M2-T01 | Khởi tạo Git repository | 2026-11-05
+- Trạng thái: Hoàn thành một phần: **chưa push** vì chưa có remote GitHub.
+- File: `.gitignore`, `.env.example`, `README.md`. Đã `git init`, nhánh `main`, quy ước commit và branch ghi trong README.
+- Kiểm tra: `.env` bị ignore (`git check-ignore`), không có `.env` trong danh sách file được theo dõi.
+
+---
+
 ### M1-T11 | GATE M1: rà soát và duyệt thiết kế | 2026-11-05
 - Trạng thái: Hoàn thành. Số mâu thuẫn còn lại theo kết quả rà soát: 0 trong các mục đã xác nhận.
 - Cách làm: một agent độc lập đọc lại `docs/01` đến `docs/10` và `CLAUDE.md` rồi báo 26 mục (2 HIGH, 9 MEDIUM, 15 LOW). Mình đối chiếu lại các mục chính với văn bản thật trước khi sửa. Mình cũng tự kiểm tra đường dẫn trong manifest với cây thư mục thật.

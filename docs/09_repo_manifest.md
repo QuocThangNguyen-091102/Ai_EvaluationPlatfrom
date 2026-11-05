@@ -133,10 +133,10 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
 | `CLAUDE.md` | Ràng buộc làm việc của dự án | Không | Claude Code | | | Implemented | M1 |
-| `README.md` | Hướng dẫn cài, chạy, test, kiến trúc, giới hạn | Mọi phần | Người đọc repo | | | Created | M2, hoàn thiện M9 |
-| `docker-compose.yml` | Định nghĩa service db, backend, frontend, volume, healthcheck | `backend/Dockerfile`, `frontend/Dockerfile`, `.env` | Dev, demo | `.env` | Stack chạy được | Created | M2 |
-| `.env.example` | Mẫu biến môi trường, không chứa secret | Không | Dev | | | Created | M2 |
-| `.gitignore` | Loại `.env`, cache, file upload khỏi Git | Không | Git | | | Created | M2 |
+| `README.md` | Hướng dẫn cài, chạy, test, kiến trúc, giới hạn | Mọi phần | Người đọc repo | | | Implemented | M2, hoàn thiện M9 |
+| `docker-compose.yml` | Định nghĩa service db, backend, frontend, volume, healthcheck | `backend/Dockerfile`, `frontend/Dockerfile`, `.env` | Dev, demo | `.env` | Stack chạy được | Implemented | M2 |
+| `.env.example` | Mẫu biến môi trường, không chứa secret | Không | Dev | | | Implemented | M2 |
+| `.gitignore` | Loại `.env`, cache, file upload khỏi Git | Không | Git | | | Implemented | M2 |
 | `configs/models.yaml` | Model được hỗ trợ, bảng giá kèm thời điểm lấy | Không | `cost_estimator.py`, `model_config_service.py` | | Danh sách model, giá | Created | M3 |
 | `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Created | M3 |
 | `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Created | M9 |
@@ -154,19 +154,25 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
-| `backend/Dockerfile` | Build image backend | `requirements.txt` | `docker-compose.yml` | | Image | Created | M2 |
-| `backend/requirements.txt` | Danh sách dependency Python | Không | Dockerfile, dev | | | Created | M2 |
-| `backend/alembic.ini` | Cấu hình Alembic | `database/migrations/` | Alembic | | | Created | M2 |
-| `backend/app/main.py` | Khởi tạo FastAPI, đăng ký router, middleware lỗi và CORS | `api/routes/*`, `core/*` | uvicorn | | App FastAPI | Created | M2 |
-| `backend/app/core/config.py` | Đọc cấu hình từ biến môi trường | `configs/*.yaml` | Mọi module backend | Biến môi trường | Đối tượng settings | Created | M2 |
+| `backend/Dockerfile` | Build image backend | `requirements.txt` | `docker-compose.yml` | | Image | Implemented | M2 |
+| `backend/requirements.txt` | Danh sách dependency Python | Không | Dockerfile, dev | | | Implemented | M2 |
+| `backend/alembic.ini` | Cấu hình Alembic | `database/migrations/` | Alembic | | | Implemented | M2 |
+| `backend/app/main.py` | Khởi tạo FastAPI, đăng ký router, middleware lỗi và CORS | `api/routes/*`, `core/*` | uvicorn | | App FastAPI | Implemented | M2 |
+| `backend/app/core/config.py` | Đọc cấu hình từ biến môi trường | `configs/*.yaml` | Mọi module backend | Biến môi trường | Đối tượng settings | Implemented | M2 |
 | `backend/app/core/security.py` | Hash mật khẩu, tạo và kiểm tra JWT | `config.py` | `auth_service.py`, `api/dependencies.py` | Mật khẩu, token | Hash, token, claims | Created | M3 |
-| `backend/app/core/logging.py` | Cấu hình log, không ghi dữ liệu nhạy cảm | `config.py` | `main.py` | | Logger | Created | M2 |
-| `backend/app/core/exceptions.py` | Lỗi nghiệp vụ và bộ chuyển thành JSON lỗi thống nhất | Không | Service, `main.py` | | Phản hồi lỗi chuẩn | Created | M2 |
+| `backend/app/core/logging.py` | Cấu hình log, không ghi dữ liệu nhạy cảm | `config.py` | `main.py` | | Logger | Implemented | M2 |
+| `backend/app/core/exceptions.py` | Lỗi nghiệp vụ và bộ chuyển thành JSON lỗi thống nhất | Không | Service, `main.py` | | Phản hồi lỗi chuẩn | Tested | M2 |
 | `backend/app/core/file_storage.py` | Lưu, đọc, xóa file gốc trong volume | `config.py` | `document_service.py` | File, đường dẫn | Đường dẫn lưu | Planned | M3 |
-| `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Created | M2 |
-| `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Created | M2 |
-| `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Created (chỉ `.gitkeep`) | M2 trở đi |
-| `backend/app/database/migrations/env.py`, `script.py.mako`, `versions/` | Cấu hình chạy Alembic và các file migration | `models/*`, `core/config.py` | Alembic | `DATABASE_URL` | Schema DB | Planned | M2 |
+| `backend/.dockerignore` | Loại `.venv`, test, cache khỏi build context của backend | Không | Docker build | | | Implemented | M2 |
+| `backend/requirements-dev.txt` | Dependency chỉ dùng khi phát triển (pytest, httpx), tách khỏi image chạy thật | `requirements.txt` | Dev | | | Implemented | M2 |
+| `backend/pytest.ini` | Cấu hình pytest, marker `integration` | Không | pytest | | | Implemented | M2 |
+| `backend/tests/conftest.py` | Fixture `client`, bảo đảm có `DATABASE_URL` khi chạy unit test | `app.main` | Mọi test | | | Tested | M2 |
+| `backend/tests/unit/test_health.py`, `test_error_handling.py` | Unit test `/health` và bộ xử lý lỗi chuẩn | `app.main`, `core/exceptions.py` | pytest | | | Tested | M2 |
+| `backend/tests/integration/test_health_database.py` | Test `/health` với PostgreSQL thật | DB đang chạy | pytest | | | Tested | M2 |
+| `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Implemented | M2 |
+| `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Implemented | M2 |
+| `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Implemented (migration `0001` bật extension vector) | M2 trở đi |
+| `backend/app/database/migrations/env.py`, `script.py.mako`, `versions/` | Cấu hình chạy Alembic và các file migration | `models/*`, `core/config.py` | Alembic | `DATABASE_URL` | Schema DB | Implemented | M2 |
 | `backend/app/api/dependencies.py` | Dependency xác thực, lấy current user và session | `core/security.py`, `database/session.py` | Mọi router | Request | `current_user`, session | Created | M3 |
 
 ### 5.3 Backend: routes
@@ -175,7 +181,7 @@ Tất cả route: phụ thuộc vào service tương ứng và schema tương �
 
 | Đường dẫn | Trách nhiệm | Service dùng | Trạng thái | Milestone |
 |-----------|-------------|--------------|------------|-----------|
-| `backend/app/api/routes/health.py` | `GET /health` | (kiểm tra DB trực tiếp qua session) | Created | M2 |
+| `backend/app/api/routes/health.py` | `GET /health` | (kiểm tra DB trực tiếp qua session) | Tested | M2 |
 | `backend/app/api/routes/auth.py` | Register, login, me | `auth_service.py` | Created | M3 |
 | `backend/app/api/routes/documents.py` | Upload, list, detail, delete, reprocess | `document_service.py` | Created | M3 |
 | `backend/app/api/routes/chat.py` | Hỏi đáp, session, message | `chat_service.py` | Created | M4 |
@@ -265,10 +271,12 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|------------|-----------|
-| `frontend/Dockerfile`, `package.json`, `index.html`, `vite.config.js` | Build và chạy frontend | | `docker-compose.yml` | Created | M2 |
-| `frontend/src/main.jsx` | Điểm vào, gắn App | `App.jsx` | Trình duyệt | Created | M2 |
-| `frontend/src/App.jsx` | Định tuyến các trang | Pages, layouts, `AuthContext.jsx` | `main.jsx` | Created | M2, hoàn thiện M3 |
-| `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Created | M2 |
+| `frontend/Dockerfile`, `package.json`, `index.html`, `vite.config.js` | Build và chạy frontend | | `docker-compose.yml` | Implemented | M2 |
+| `frontend/src/main.jsx` | Điểm vào, gắn App | `App.jsx` | Trình duyệt | Implemented | M2 |
+| `frontend/src/App.jsx` | Định tuyến các trang | Pages, layouts, `AuthContext.jsx` | `main.jsx` | Implemented | M2, hoàn thiện M3 |
+| `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Implemented | M2 |
+| `frontend/.dockerignore` | Loại `node_modules`, `dist` khỏi build context | Không | Docker build | Implemented | M2 |
+| `frontend/src/services/api/healthApi.js` | Gọi `GET /health` | `httpClient.js` | `App.jsx` | Implemented | M2 |
 | `frontend/src/services/api/authApi.js` | Gọi `/auth/*` | `httpClient.js` | `AuthContext.jsx`, `LoginPage.jsx` | Created | M3 |
 | `frontend/src/services/api/documentApi.js` | Gọi `/documents*` | `httpClient.js` | `DocumentsPage.jsx` | Created | M3 |
 | `frontend/src/services/api/chatApi.js` | Gọi `/chat/*` | `httpClient.js` | `ChatPage.jsx` | Created | M4 |

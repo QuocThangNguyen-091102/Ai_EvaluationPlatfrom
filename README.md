@@ -2,7 +2,7 @@
 
 Nền tảng đánh giá RAG (Retrieval-Augmented Generation), kiểm soát chất lượng LLM và kiểm thử bảo mật AI. Gồm một ứng dụng RAG mẫu (hỏi đáp có trích dẫn trên tài liệu của người dùng) và một nền tảng đo chất lượng truy xuất, chất lượng câu trả lời, hành vi bảo mật, độ trễ và chi phí.
 
-Trạng thái: **đang ở Milestone 2 (Foundation)**. Chưa có tính năng nào cho người dùng cuối. Tiến độ chi tiết xem [docs/progress_log.md](docs/progress_log.md).
+Trạng thái: **Milestone 2 (Foundation) đã xong, chờ duyệt gate; tiếp theo là Milestone 3 (Ingestion)**. Stack chạy được và có health check, nhưng chưa có tính năng nào cho người dùng cuối. Tiến độ chi tiết xem [docs/progress_log.md](docs/progress_log.md).
 
 ## Công nghệ
 
