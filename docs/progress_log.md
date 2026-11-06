@@ -18,6 +18,12 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M4-T02 | Retriever có kiểm soát quyền | 2026-11-06
+- Trạng thái: Hoàn thành.
+- File: `ai_engine/retrieval/metadata_filters.py` (`RetrievalScope` bắt buộc có `user_id`, `build_scope_filter`), `ai_engine/retrieval/vector_retriever.py` (`retrieve`), `tests/integration/test_vector_retriever.py`.
+- Thiết kế: điều kiện `user_id` (trên cả chunk và document), trạng thái `ready` và bộ lọc tài liệu nằm trong câu SQL; mọi giá trị qua tham số; quét chính xác, chưa dùng chỉ mục gần đúng; không import backend, nhận session từ caller.
+- Kiểm tra thật: 11 test pass, gồm user A hỏi đúng nội dung "canary" của user B mà không nhận được chunk nào của B, bộ lọc tài liệu không với tới tài liệu của người khác, chỉ tìm tài liệu `ready`.
+
 ### M3-T10 | GATE M3: Ingestion | 2026-11-06
 - Trạng thái: **Đạt** (đóng sau khi làm trước M4-T01, M4-T03; xem mục ĐI TRƯỚC GATE).
 - Điều kiện và bằng chứng: test unit và integration của ingestion xanh (239 backend, 53 giao diện); user A không thấy, sửa, xóa, xử lý lại tài liệu của user B (test 404 ở list, detail, delete, reprocess; chunk mang `user_id` của chủ và DB chặn sai chủ); manifest đã cập nhật.
