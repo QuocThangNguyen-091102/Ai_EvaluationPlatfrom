@@ -12,6 +12,7 @@ from app.repositories.chat_repository import ChatRepository
 from app.repositories.dataset_repository import DatasetRepository
 from app.repositories.document_repository import DocumentRepository
 from app.repositories.evaluation_repository import EvaluationRepository
+from app.repositories.security_repository import SecurityRepository
 from app.repositories.model_config_repository import ModelConfigRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
@@ -19,6 +20,7 @@ from app.services.chat_service import ChatService
 from app.services.dataset_service import DatasetService
 from app.services.document_service import DocumentService
 from app.services.evaluation_service import EvaluationRunService, EvaluationService
+from app.services.security_service import SecurityRunService, SecurityService
 from app.services.ingestion_service import IngestionService
 from app.services.model_config_service import ModelConfigService
 
@@ -67,6 +69,16 @@ def get_evaluation_service(session: Session = Depends(get_session)) -> Evaluatio
 
 def get_evaluation_run_service() -> EvaluationRunService:
     return EvaluationRunService(session_factory=open_session, pipeline_provider=get_pipeline, judge_client_for=llm_client_for_model)
+
+
+def get_security_service(session: Session = Depends(get_session)) -> SecurityService:
+    return SecurityService(SecurityRepository(session), ModelConfigService(ModelConfigRepository(session), get_rag_defaults()))
+
+
+def get_security_run_service() -> SecurityRunService:
+    return SecurityRunService(
+        session_factory=open_session, pipeline_provider=get_pipeline, embedder_provider=get_embedder, judge_client_for=llm_client_for_model
+    )
 
 
 def get_current_user(

@@ -22,12 +22,13 @@ from sqlalchemy.orm import Session
 
 from ai_engine.generation.cost_estimator import PriceTable
 from ai_engine.pipeline.rag_pipeline import RagPipeline
-from app.api.dependencies import get_evaluation_run_service, get_ingestion_service, get_pipeline
+from app.api.dependencies import get_evaluation_run_service, get_ingestion_service, get_pipeline, get_security_run_service
 from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_engine, get_session
 from app.main import app
 from app.services.evaluation_service import EvaluationRunService
 from app.services.ingestion_service import IngestionService
+from app.services.security_service import SecurityRunService
 from tests.fakes import HashEmbedder, ScriptedLlm
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -79,14 +80,29 @@ def evaluation_run_service(db_session, rag_pipeline, judge_llm) -> EvaluationRun
     )
 
 
+TEST_SECRETS = {"JWT_SECRET": "test-secret-value-xyz"}
+
+
 @pytest.fixture
-def api_client(db_session, ingestion_service, rag_pipeline, evaluation_run_service) -> Iterator[TestClient]:
+def security_run_service(db_session, rag_pipeline, test_embedder, judge_llm) -> SecurityRunService:
+    return SecurityRunService(
+        session_factory=lambda: nullcontext(db_session),
+        pipeline_provider=lambda: rag_pipeline,
+        embedder_provider=lambda: test_embedder,
+        judge_client_for=lambda model: judge_llm,
+        secrets_provider=lambda: TEST_SECRETS,
+    )
+
+
+@pytest.fixture
+def api_client(db_session, ingestion_service, rag_pipeline, evaluation_run_service, security_run_service) -> Iterator[TestClient]:
     """Client gọi API thật nhưng mọi truy cập DB đi qua db_session (rollback cuối test, không để lại dữ liệu)."""
     overrides = {
         get_session: lambda: db_session,
         get_ingestion_service: lambda: ingestion_service,
         get_pipeline: lambda: rag_pipeline,
         get_evaluation_run_service: lambda: evaluation_run_service,
+        get_security_run_service: lambda: security_run_service,
     }
     app.dependency_overrides.update(overrides)
     try:

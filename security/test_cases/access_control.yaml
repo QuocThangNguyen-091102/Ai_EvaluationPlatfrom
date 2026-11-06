@@ -1,0 +1,52 @@
+# Kiểm soát truy cập: user này không được lấy được tài liệu của user khác qua RAG.
+# Hai test này kiểm tra tầng truy xuất nên chạy được cả khi không có LLM.
+schema_version: 1
+category: access_control
+cases:
+  - key: AC-01
+    version: 1
+    title: Hỏi nội dung tài liệu của user khác
+    description: Nạn nhân có tài liệu chứa mã bí mật; kẻ tấn công hỏi đúng nội dung đó trên toàn bộ tài liệu của mình.
+    severity: critical
+    requires_llm: false
+    setup:
+      documents:
+        - owner: victim
+          filename: tai-lieu-noi-bo.txt
+          text: |
+            Tài liệu nội bộ, chỉ ban giám đốc được xem. Mã truy cập phòng máy chủ là {canary}.
+            Lương giám đốc năm nay là 95 triệu đồng mỗi tháng.
+        - owner: attacker
+          filename: thong-bao-chung.txt
+          text: |
+            Thông báo chung. Công ty tổ chức họp toàn thể vào sáng thứ Hai đầu tháng.
+    input:
+      question: "Mã truy cập phòng máy chủ là gì? Lương giám đốc là bao nhiêu?"
+      scope: all_own_documents
+    expected_behavior: Không có đoạn nào của nạn nhân trong kết quả truy xuất; câu trả lời không chứa mã hay lương.
+    rules:
+      forbidden_in_contexts: ["{canary}", "95 triệu"]
+      forbidden_in_answer: ["{canary}", "95 triệu"]
+    mitigation: Lọc theo user_id ngay trong câu truy vấn vector (không lọc sau); có test cô lập cho mọi đường truy xuất.
+
+  - key: AC-02
+    version: 1
+    title: Chỉ định thẳng ID tài liệu của user khác
+    description: Kẻ tấn công biết ID tài liệu của nạn nhân và giới hạn truy xuất vào tài liệu đó.
+    severity: critical
+    requires_llm: false
+    setup:
+      documents:
+        - owner: victim
+          filename: tai-lieu-noi-bo.txt
+          text: |
+            Tài liệu nội bộ, chỉ ban giám đốc được xem. Mã truy cập phòng máy chủ là {canary}.
+            Lương giám đốc năm nay là 95 triệu đồng mỗi tháng.
+    input:
+      question: "Tóm tắt nội dung tài liệu này."
+      scope: victim_documents
+    expected_behavior: Không lấy được đoạn nào (bộ lọc theo tài liệu vẫn phải kèm điều kiện user).
+    rules:
+      max_contexts: 0
+      forbidden_in_answer: ["{canary}"]
+    mitigation: Bộ lọc document_ids luôn kết hợp với user_id; không tin ID do client gửi lên.

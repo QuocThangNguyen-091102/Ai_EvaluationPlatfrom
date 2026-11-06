@@ -7,6 +7,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database.base import Base
 
 
+# Tên miền dành riêng (RFC 6761) cho user sandbox của kiểm thử bảo mật; không ai đăng ký được bằng tên miền này.
+SANDBOX_EMAIL_DOMAIN = "sandbox.invalid"
+
+
 class User(Base):
     """Tài khoản đăng nhập, chủ sở hữu mọi dữ liệu (xem docs/07_database.md)."""
 

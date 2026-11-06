@@ -16,6 +16,7 @@ COPY backend/alembic.ini .
 COPY backend/app ./app
 COPY ai_engine ./ai_engine
 COPY evaluation ./evaluation
+COPY security ./security
 COPY configs ./configs
 
 # Chạy bằng user thường, không dùng root. Thư mục upload và cache model phải thuộc user này để volume ghi được.

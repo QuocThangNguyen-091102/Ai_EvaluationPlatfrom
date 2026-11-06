@@ -6,6 +6,7 @@ from app.models.document_chunk import DocumentChunk
 from app.models.evaluation import EvaluationResult, EvaluationRun, MetricResult
 from app.models.model_config import ModelConfiguration
 from app.models.retrieved_context import RetrievedContext
+from app.models.security_test import SecurityTestCase, SecurityTestResult, SecurityTestRun
 from app.models.user import User
 
 __all__ = [
@@ -21,5 +22,8 @@ __all__ = [
     "MetricResult",
     "ModelConfiguration",
     "RetrievedContext",
+    "SecurityTestCase",
+    "SecurityTestResult",
+    "SecurityTestRun",
     "User",
 ]

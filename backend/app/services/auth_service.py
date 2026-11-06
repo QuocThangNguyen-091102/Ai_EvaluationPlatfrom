@@ -7,7 +7,7 @@ from app.core.security import (
     spend_password_check_time,
     verify_password,
 )
-from app.models.user import User
+from app.models.user import SANDBOX_EMAIL_DOMAIN, User
 from app.repositories.user_repository import DuplicateEmailError, UserRepository
 
 _BEARER_HEADERS = {"WWW-Authenticate": "Bearer"}
@@ -29,6 +29,8 @@ class AuthService:
 
     def register(self, email: str, password: str) -> User:
         normalized = _normalize_email(email)
+        if normalized.endswith("@" + SANDBOX_EMAIL_DOMAIN):
+            raise AppError(422, "validation_error", "Tên miền email này dành riêng cho hệ thống")
         if self._users.get_by_email(normalized) is not None:
             raise AppError(409, "conflict", "Email đã được đăng ký")
         try:

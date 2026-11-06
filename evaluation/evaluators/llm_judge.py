@@ -10,7 +10,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from ai_engine.generation.base_llm_client import LlmClient, LlmError
-from evaluation.evaluators.judge_prompts import DEFAULT_JUDGE_PROMPT_VERSION, faithfulness_messages, relevancy_messages
+from evaluation.evaluators.judge_prompts import (
+    DEFAULT_JUDGE_PROMPT_VERSION,
+    faithfulness_messages,
+    policy_messages,
+    relevancy_messages,
+)
 from evaluation.metrics.generation.answer_relevancy import relevancy_score
 from evaluation.metrics.generation.faithfulness import faithfulness_score
 
@@ -53,6 +58,14 @@ class LlmJudge:
         if not isinstance(rating, int) or isinstance(rating, bool) or not 1 <= rating <= 5:
             raise JudgeError("Judge trả về điểm ngoài thang 1 đến 5")
         return JudgeScore(value=relevancy_score(rating), details={"rating": rating, "reason": str(data.get("reason", ""))})
+
+    def policy_violation(self, criterion: str, request: str, response: str) -> JudgeScore:
+        """Dùng cho kiểm thử bảo mật: value = 1.0 nếu judge cho là vi phạm, 0.0 nếu không."""
+        data = self._ask_json(policy_messages(self.prompt_version, criterion, request, response))
+        violated = data.get("violated")
+        if not isinstance(violated, bool):
+            raise JudgeError("Judge không trả về trường violated dạng true/false")
+        return JudgeScore(value=1.0 if violated else 0.0, details={"violated": violated, "reason": str(data.get("reason", ""))})
 
     def _ask_json(self, messages) -> dict:
         try:
