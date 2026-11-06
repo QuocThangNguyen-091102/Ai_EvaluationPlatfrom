@@ -20,3 +20,11 @@ export function uploadDocument(file) {
 export function deleteDocument(documentId) {
   return request(`${BASE}/${documentId}`, { method: "DELETE" });
 }
+
+// Trả document với status "processing"; chunkSize, chunkOverlap tính bằng từ, bỏ trống thì dùng mặc định.
+export function reprocessDocument(documentId, { chunkSize, chunkOverlap } = {}) {
+  const json = {};
+  if (chunkSize !== undefined) json.chunk_size = chunkSize;
+  if (chunkOverlap !== undefined) json.chunk_overlap = chunkOverlap;
+  return request(`${BASE}/${documentId}/reprocess`, { method: "POST", json });
+}

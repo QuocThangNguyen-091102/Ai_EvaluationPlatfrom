@@ -1,6 +1,7 @@
 import uuid
+from typing import Any
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -44,6 +45,32 @@ class DocumentRepository:
             .offset(offset)
         ).all()
         return [(document, chunk_count) for document, chunk_count in rows], total
+
+    def get_by_id(self, document_id: uuid.UUID) -> Document | None:
+        """Chỉ dùng cho tác vụ nền đã biết document_id do chính hệ thống tạo; request của user dùng get_for_user."""
+        return self._session.get(Document, document_id, populate_existing=True)
+
+    def set_status(
+        self,
+        document: Document,
+        status: str,
+        *,
+        error_message: str | None = None,
+        processing_config: dict[str, Any] | None = None,
+    ) -> None:
+        document.status = status
+        document.error_message = error_message
+        if processing_config is not None:
+            document.processing_config = processing_config
+        self._session.flush()
+
+    def mark_unfinished_as_failed(self, message: str) -> int:
+        result = self._session.execute(
+            update(Document)
+            .where(Document.status.in_(("uploaded", "processing")))
+            .values(status="failed", error_message=message)
+        )
+        return result.rowcount
 
     def find_by_hash(self, user_id: uuid.UUID, content_hash: str) -> Document | None:
         return self._session.scalar(

@@ -18,6 +18,19 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M3-T10 | GATE M3: Ingestion | 2026-11-06
+- Trạng thái: **Đạt** (đóng sau khi làm trước M4-T01, M4-T03; xem mục ĐI TRƯỚC GATE).
+- Điều kiện và bằng chứng: test unit và integration của ingestion xanh (239 backend, 53 giao diện); user A không thấy, sửa, xóa, xử lý lại tài liệu của user B (test 404 ở list, detail, delete, reprocess; chunk mang `user_id` của chủ và DB chặn sai chủ); manifest đã cập nhật.
+- Trên stack Docker với model thật: PDF tiếng Việt và TXT dài xử lý tới `ready`; reprocess đổi kích thước chunk không tạo trùng; khởi động lại backend thì tài liệu dở thành `failed` kèm hướng dẫn và xử lý lại được.
+
+### M3-T07 và M3-T08 (phần 2) | Ingestion chạy nền và xử lý lại | 2026-11-06
+- Trạng thái: Hoàn thành (làm bằng Opus 5.5 theo quy tắc của user).
+- File: `ai_engine/ingestion/ingestion_pipeline.py`; `backend/app/services/ingestion_service.py` (mới, đúng tên trong danh sách task), `repositories/chunk_repository.py`, `core/rag_defaults.py` (mới), `core/providers.py` (mới), `configs/rag_default.yaml` (nguồn duy nhất cho giá trị mặc định); route upload thêm tác vụ nền, route mới `POST /documents/{id}/reprocess`; `main.py` phục hồi lúc khởi động; `database/session.py` thêm `open_session` và thời gian chờ kết nối 10 giây; Docker copy `configs/`; giao diện có nút "Xử lý lại".
+- Thiết kế: pipeline thuần trong `ai_engine` (không biết DB); service mở session riêng, đọc các trường cần trước khi commit để không giữ transaction trong lúc embed; thay chunk và đặt `ready` trong một transaction; mọi lỗi kết thúc bằng `failed` với lý do an toàn; xóa tài liệu giữa chừng thì bỏ qua êm; reprocess trả 409 khi đang xử lý. Mặc định 250 từ, chồng 50 (khoảng 300 token, dưới giới hạn 512).
+- Kiểm tra thật: 239 test backend pass (27 test mới), 53 test giao diện pass; kiểm tra trên stack thật như ở gate.
+- Giới hạn: tác vụ nền mất khi khởi động lại (đã có phục hồi); chỉ đúng với một tiến trình backend.
+- Sự cố môi trường: Docker Desktop tự tắt thêm một lần; test treo 2 phút vì không có thời gian chờ kết nối, đã thêm.
+
 ### M4-T03 | Adapter LLM, prompt có phiên bản, ước tính chi phí, retry | 2026-11-06
 - Trạng thái: Hoàn thành (chưa gọi LLM thật vì chưa chọn provider; mọi test dùng HTTP giả).
 - File: `ai_engine/generation/base_llm_client.py` (interface, các loại lỗi), `openai_compatible_client.py` (đổi tên từ `openai_llm_client.py`: một adapter cho mọi API chuẩn OpenAI, gồm nhiều gói miễn phí và LLM chạy cục bộ), `prompt_templates.py` (phiên bản `rag-v1`), `cost_estimator.py`, `ai_engine/provider_retry.py`, `configs/models.yaml`; `requirements.txt` thêm `httpx`, `PyYAML`.

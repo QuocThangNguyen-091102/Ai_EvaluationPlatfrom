@@ -27,6 +27,17 @@ class Settings(BaseSettings):
     upload_dir: str = "uploads"
     max_upload_size_mb: int = Field(default=20, gt=0)
 
+    # Thư mục chứa rag_default.yaml và models.yaml; để trống thì tự tìm cạnh mã nguồn.
+    config_dir: str | None = None
+
+    # LLM theo chuẩn OpenAI-compatible. Để trống LLM_BASE_URL thì hệ thống dùng chế độ "không LLM"
+    # (trả các đoạn liên quan nhất kèm nguồn), để chạy được mà không cần tài khoản hay API key.
+    llm_base_url: str | None = None
+    llm_model: str | None = None
+    llm_api_key: str | None = None
+    llm_provider_name: str = "openai-compatible"
+    llm_timeout_seconds: float = Field(default=60.0, gt=0)
+
     log_level: str = "INFO"
 
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.

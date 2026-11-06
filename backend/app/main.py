@@ -1,6 +1,9 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.dependencies import get_ingestion_service
 from app.api.routes import auth, documents, health
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
@@ -8,7 +11,15 @@ from app.core.logging import configure_logging
 
 configure_logging(settings.log_level)
 
-app = FastAPI(title="AI Evaluation Platform")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Tác vụ nền của lần chạy trước đã mất khi tiến trình dừng: đánh dấu để người dùng xử lý lại (R9).
+    get_ingestion_service().recover_interrupted()
+    yield
+
+
+app = FastAPI(title="AI Evaluation Platform", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

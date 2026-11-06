@@ -137,8 +137,8 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `docker-compose.yml` | Định nghĩa service db, backend, frontend, volume, healthcheck | `backend/Dockerfile`, `frontend/Dockerfile`, `.env` | Dev, demo | `.env` | Stack chạy được | Implemented | M2 |
 | `.env.example` | Mẫu biến môi trường, không chứa secret | Không | Dev | | | Implemented | M2 |
 | `.gitignore` | Loại `.env`, cache, file upload khỏi Git | Không | Git | | | Implemented | M2 |
-| `configs/models.yaml` | Model được hỗ trợ, bảng giá kèm thời điểm lấy | Không | `cost_estimator.py`, `model_config_service.py` | | Danh sách model, giá | Created | M3 |
-| `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Created | M3 |
+| `configs/models.yaml` | Model được hỗ trợ, bảng giá kèm thời điểm lấy | Không | `cost_estimator.py`, `model_config_service.py` | | Danh sách model, giá | Tested | M3 |
+| `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Tested | M3 |
 | `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Created | M9 |
 | `docs/01_feasibility.md` … `docs/10_test_risk_learning.md` | Tài liệu thiết kế M1 | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1 |
 | `docs/11_free_deployment.md` | Kế hoạch triển khai miễn phí lên internet (Vercel cho giao diện, máy chủ container cho backend) | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1, thực hiện M9-T04 |
@@ -181,6 +181,12 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/tests/unit/test_parsers.py`, `test_text_cleaner.py`, `test_chunker.py`, `test_local_embedder.py` | Unit test parser, làm sạch, chunker, adapter embedding (model giả; 5 test model thật chạy khi `RUN_MODEL_TESTS=1`) | `ai_engine/*` | pytest | | | Tested | M3 |
 | `backend/tests/fixtures/vi_two_pages.pdf` | PDF mẫu tiếng Việt có dấu, 2 trang, để test parser | Không | `test_parsers.py`, `test_chunker.py` | | | Implemented | M3 |
 | `backend/tests/integration/test_document_management_api.py` | Test API danh sách, chi tiết, xóa tài liệu (có cô lập user, phân trang) | DB đang chạy | pytest | | | Tested | M3 |
+| `backend/app/services/ingestion_service.py` | Xử lý tài liệu ở nền (parse, chunk, embed, lưu), trạng thái, phục hồi sau khởi động lại | `ai_engine/ingestion`, repositories | Route documents, `main.py` | document_id | Chunk và trạng thái trong DB | Tested | M3 |
+| `backend/app/repositories/chunk_repository.py` | Thay toàn bộ chunk của một tài liệu trong một transaction | `models/document_chunk.py` | `ingestion_service.py` | Chunk đã embed | Hàng trong DB | Tested | M3 |
+| `backend/app/core/rag_defaults.py` | Đọc `configs/rag_default.yaml`, tìm thư mục configs | `config.py` | Providers, services | | `RagDefaults` | Tested | M3 |
+| `backend/app/core/providers.py` | Tạo một lần model embedding, LLM client, bảng giá cho cả tiến trình | `ai_engine`, `rag_defaults.py` | Dependencies | | Đối tượng dùng chung | Implemented | M3 |
+| `backend/tests/fakes.py` | Embedder giả kiểu túi từ (xác định, có tính gần nghĩa theo từ) và LLM giả | `ai_engine` interfaces | Test | | | Implemented | M3 |
+| `backend/tests/integration/test_ingestion_api.py`, `tests/unit/test_ingestion_pipeline.py`, `test_llm_client.py`, `test_prompt_and_cost.py`, `integration/test_chat_schema.py` | Test ingestion, reprocess, phục hồi, LLM client, prompt, chi phí, bảng chat | | pytest | | | Tested | M3, M4 |
 | `backend/app/database/session.py` | Tạo engine và session DB, dependency lấy session | `config.py` | Repository, `api/dependencies.py` | `DATABASE_URL` | Session | Implemented | M2 |
 | `backend/app/database/base.py` | Lớp Base của ORM | Không | `models/*` | | | Implemented | M2 |
 | `backend/app/database/migrations/` | Lịch sử migration Alembic | `models/*` | Alembic | | Schema DB | Implemented (migration `0001` bật extension vector) | M2 trở đi |
@@ -195,7 +201,7 @@ Tất cả route: phụ thuộc vào service tương ứng và schema tương �
 |-----------|-------------|--------------|------------|-----------|
 | `backend/app/api/routes/health.py` | `GET /health` | (kiểm tra DB trực tiếp qua session) | Tested | M2 |
 | `backend/app/api/routes/auth.py` | Register, login, me | `auth_service.py` | Tested | M3 |
-| `backend/app/api/routes/documents.py` | Upload, list, detail, delete, reprocess | `document_service.py` | Created (upload: Tested) | M3 |
+| `backend/app/api/routes/documents.py` | Upload, list, detail, delete, reprocess | `document_service.py`, `ingestion_service.py` | Tested | M3 |
 | `backend/app/api/routes/chat.py` | Hỏi đáp, session, message | `chat_service.py` | Created | M4 |
 | `backend/app/api/routes/model_configs.py` | Cấu hình model | `model_config_service.py` | Planned | M4 |
 | `backend/app/api/routes/datasets.py` | Dataset, version, test case, import | `dataset_service.py` | Created | M5 |
@@ -226,21 +232,21 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
-| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider mạng (LLM ở M4; model embedding cục bộ không cần) | Không | `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Planned | M3 |
+| `ai_engine/provider_retry.py` | Retry có giới hạn và backoff cho lỗi tạm thời của provider mạng (LLM ở M4; model embedding cục bộ không cần) | Không | `openai_llm_client.py`, `llm_judge.py` | Hàm gọi, chính sách retry | Kết quả hoặc lỗi cuối | Tested | M3 |
 | `ai_engine/ingestion/pdf_parser.py` | Trích văn bản và số trang từ PDF | Thư viện parse PDF | `ingestion_pipeline.py` | File PDF | Văn bản theo trang | Tested | M3 |
 | `ai_engine/ingestion/docx_parser.py` | Trích văn bản từ DOCX | Thư viện parse DOCX | `ingestion_pipeline.py` | File DOCX | Văn bản | Tested | M3 |
 | `ai_engine/ingestion/txt_parser.py` | Đọc TXT, xử lý encoding | Không | `ingestion_pipeline.py` | File TXT | Văn bản | Tested | M3 |
 | `ai_engine/ingestion/text_cleaner.py` | Chuẩn hóa văn bản | Không | `ingestion_pipeline.py` | Văn bản thô | Văn bản sạch | Tested | M3 |
-| `ai_engine/ingestion/ingestion_pipeline.py` | Ghép parse, làm sạch, chunk, embed; trả danh sách chunk kèm vector | Parsers, cleaner, chunker, embedder | `document_service.py` | File, cấu hình chunk | Chunk và vector | Created | M3 |
+| `ai_engine/ingestion/ingestion_pipeline.py` | Ghép parse, làm sạch, chunk, embed; trả danh sách chunk kèm vector | Parsers, cleaner, chunker, embedder | `document_service.py` | File, cấu hình chunk | Chunk và vector | Tested | M3 |
 | `ai_engine/chunking/fixed_size_chunker.py` | Chia chunk theo kích thước và overlap, gắn metadata (trang, vị trí ký tự) | Không | `ingestion_pipeline.py` | Văn bản, chunk size, overlap | Danh sách chunk | Tested | M3 |
 | `ai_engine/embeddings/base_embedder.py` | Interface embedding provider | Không | `local_embedder.py`, test (provider giả), pipeline | Danh sách văn bản | Danh sách vector | Tested | M3 |
 | `ai_engine/embeddings/local_embedder.py` | Cài interface bằng model chạy cục bộ `intfloat/multilingual-e5-small` (384 chiều); thêm tiền tố `query: ` và `passage: ` (quyết định A3 ở `06_deployment_tech.md`) | `base_embedder.py`, `provider_retry.py` | Ingestion, pipeline | Văn bản | Vector | Tested | M3 |
 | `ai_engine/retrieval/vector_retriever.py` | Tìm vector gần nhất kèm điều kiện quyền, trả chunk và điểm | DB (pgvector), `metadata_filters.py` | `rag_pipeline.py` | Vector, `user_id`, Top-K | Chunk kèm điểm | Created | M4 |
 | `ai_engine/retrieval/metadata_filters.py` | Dựng điều kiện lọc user và document | Không | `vector_retriever.py` | `user_id`, `document_ids` | Điều kiện lọc | Created | M4 |
-| `ai_engine/generation/base_llm_client.py` | Interface LLM provider | Không | `openai_llm_client.py`, test, pipeline | Prompt, tham số | Câu trả lời, token | Created | M4 |
-| `ai_engine/generation/openai_llm_client.py` | Cài interface cho provider đã chọn (tên sẽ chốt ở M4 theo LLM provider) | `base_llm_client.py`, `provider_retry.py` | Pipeline, `llm_judge.py` | Prompt | Answer, token usage | Created | M4 |
-| `ai_engine/generation/prompt_templates.py` | Prompt hệ thống và prompt hỏi đáp có mã phiên bản | Không | `rag_pipeline.py` | Câu hỏi, context | Prompt | Created | M4 |
-| `ai_engine/generation/cost_estimator.py` | Ước tính chi phí từ token và bảng giá | `configs/models.yaml` | `rag_pipeline.py` | Token, model | Chi phí ước tính | Planned | M4 |
+| `ai_engine/generation/base_llm_client.py` | Interface LLM provider | Không | `openai_llm_client.py`, test, pipeline | Prompt, tham số | Câu trả lời, token | Tested | M4 |
+| `ai_engine/generation/openai_compatible_client.py` | Cài interface cho provider đã chọn (tên sẽ chốt ở M4 theo LLM provider) | `base_llm_client.py`, `provider_retry.py` | Pipeline, `llm_judge.py` | Prompt | Answer, token usage | Tested | M4 |
+| `ai_engine/generation/prompt_templates.py` | Prompt hệ thống và prompt hỏi đáp có mã phiên bản | Không | `rag_pipeline.py` | Câu hỏi, context | Prompt | Tested | M4 |
+| `ai_engine/generation/cost_estimator.py` | Ước tính chi phí từ token và bảng giá | `configs/models.yaml` | `rag_pipeline.py` | Token, model | Chi phí ước tính | Tested | M4 |
 | `ai_engine/pipeline/rag_config.py` | Kiểu dữ liệu cấu hình pipeline | Không | Pipeline, service, runner | | `RAGConfig` | Planned | M4 |
 | `ai_engine/pipeline/rag_result.py` | Kiểu dữ liệu kết quả pipeline (answer, citations, contexts, metrics) | Không | Pipeline, service, runner | | `RagResult` | Planned | M4 |
 | `ai_engine/pipeline/context_builder.py` | Dựng context từ chunk, kiểm soát độ dài | Không | `rag_pipeline.py` | Danh sách chunk | Chuỗi context | Created | M4 |

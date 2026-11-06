@@ -376,6 +376,17 @@ th {
   white-space: nowrap;
 }
 
+.cell-actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.button--small {
+  padding: 0.3rem 0.7rem;
+}
+
 .cell-error {
   margin-top: 0.25rem;
   color: var(--danger);

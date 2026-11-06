@@ -1,5 +1,6 @@
 import os
 from collections.abc import Iterator
+from contextlib import nullcontext
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -19,8 +20,12 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import get_ingestion_service
+from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_engine, get_session
 from app.main import app
+from app.services.ingestion_service import IngestionService
+from tests.fakes import HashEmbedder
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,13 +36,30 @@ def client() -> TestClient:
 
 
 @pytest.fixture
-def api_client(db_session) -> Iterator[TestClient]:
+def test_embedder() -> HashEmbedder:
+    return HashEmbedder()
+
+
+@pytest.fixture
+def ingestion_service(db_session, test_embedder) -> IngestionService:
+    """Xử lý nền dùng chung session của test và embedder giả (không tải model thật)."""
+    return IngestionService(
+        session_factory=lambda: nullcontext(db_session),
+        embedder_provider=lambda: test_embedder,
+        defaults=get_rag_defaults(),
+    )
+
+
+@pytest.fixture
+def api_client(db_session, ingestion_service) -> Iterator[TestClient]:
     """Client gọi API thật nhưng mọi truy cập DB đi qua db_session (rollback cuối test, không để lại dữ liệu)."""
     app.dependency_overrides[get_session] = lambda: db_session
+    app.dependency_overrides[get_ingestion_service] = lambda: ingestion_service
     try:
         yield TestClient(app, raise_server_exceptions=False)
     finally:
         app.dependency_overrides.pop(get_session, None)
+        app.dependency_overrides.pop(get_ingestion_service, None)
 
 
 @pytest.fixture(scope="session")

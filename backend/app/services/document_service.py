@@ -93,6 +93,15 @@ class DocumentService:
         self._remove_quietly(storage_path)
         logger.info("Document deleted: id=%s user_id=%s", document_id, user.id)
 
+    def start_reprocess(self, user: User, document_id: uuid.UUID) -> Document:
+        document, _ = self.get_document(user, document_id)
+        if document.status in ("uploaded", "processing"):
+            raise AppError(409, "conflict", "Tài liệu đang được xử lý, hãy chờ xong rồi thử lại")
+        self._documents.set_status(document, "processing")
+        self._documents.commit()
+        self._documents.refresh(document)
+        return document
+
     def _read_with_limit(self, stream: BinaryIO) -> bytes:
         limit = settings.max_upload_size_mb * 1024 * 1024
         parts: list[bytes] = []

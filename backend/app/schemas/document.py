@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class DocumentResponse(BaseModel):
@@ -28,3 +28,16 @@ class DocumentListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class ReprocessRequest(BaseModel):
+    """Để trống thì dùng giá trị mặc định ở configs/rag_default.yaml. Đơn vị là từ."""
+
+    chunk_size: int | None = Field(default=None, ge=20, le=400)
+    chunk_overlap: int | None = Field(default=None, ge=0, le=200)
+
+    @model_validator(mode="after")
+    def overlap_smaller_than_size(self):
+        if self.chunk_size is not None and self.chunk_overlap is not None and self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk_overlap phải nhỏ hơn chunk_size")
+        return self

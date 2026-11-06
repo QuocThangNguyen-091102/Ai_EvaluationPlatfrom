@@ -1,0 +1,22 @@
+# Giá trị mặc định của RAG. Một chỗ duy nhất; backend đọc qua app/core/rag_defaults.py.
+#
+# Đây là điểm xuất phát (baseline), KHÔNG phải giá trị đã được chứng minh là tốt nhất. Benchmark (M8) mới so sánh.
+
+embedding:
+  provider: local
+  model: intfloat/multilingual-e5-small
+  # Phải khớp cột vector(384) trong database (migration 0002).
+  dimensions: 384
+
+chunking:
+  # Tính bằng TỪ. Model embedding nhận tối đa 512 token và đã đo khoảng 1,2 token mỗi từ tiếng Việt,
+  # nên 250 từ (khoảng 300 token) còn khoảng cách an toàn. Chunk vượt giới hạn sẽ bị từ chối, không bị cắt âm thầm.
+  chunk_size: 250
+  chunk_overlap: 50
+
+retrieval:
+  top_k: 5
+
+generation:
+  prompt_version: rag-v1
+  temperature: 0.0

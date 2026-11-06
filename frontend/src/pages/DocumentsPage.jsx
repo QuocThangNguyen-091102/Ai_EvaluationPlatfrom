@@ -7,7 +7,7 @@ import {
   formatDateTime,
   formatFileSize,
 } from "../formatting.js";
-import { deleteDocument, listDocuments, uploadDocument } from "../services/api/documentApi.js";
+import { deleteDocument, listDocuments, reprocessDocument, uploadDocument } from "../services/api/documentApi.js";
 
 const PAGE_SIZE = 10;
 const ACCEPTED_EXTENSIONS = [".pdf", ".docx", ".txt"];
@@ -90,6 +90,16 @@ export default function DocumentsPage() {
     if (!window.confirm(`Xóa tài liệu "${document.filename}"? Thao tác này không hoàn tác được.`)) return;
     try {
       await deleteDocument(document.id);
+      await load();
+    } catch (error) {
+      setLoadError(describeError(error));
+    }
+  }
+
+  async function handleReprocess(document) {
+    try {
+      await reprocessDocument(document.id);
+      setPollCount(0);
       await load();
     } catch (error) {
       setLoadError(describeError(error));
@@ -193,7 +203,12 @@ export default function DocumentsPage() {
                   </td>
                   <td>{document.chunk_count}</td>
                   <td>{formatDateTime(document.created_at)}</td>
-                  <td>
+                  <td className="cell-actions">
+                    {(document.status === "ready" || document.status === "failed") && (
+                      <button type="button" className="button button--ghost button--small" onClick={() => handleReprocess(document)}>
+                        Xử lý lại
+                      </button>
+                    )}
                     <button type="button" className="button button--danger" onClick={() => handleDelete(document)}>
                       Xóa
                     </button>

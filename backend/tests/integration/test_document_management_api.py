@@ -6,7 +6,6 @@ from sqlalchemy import func, select
 
 from app.core.config import settings
 from app.models import Document, DocumentChunk
-from app.models.document_chunk import EMBEDDING_DIMENSIONS
 
 pytestmark = pytest.mark.integration
 
@@ -29,25 +28,6 @@ def _upload(client, headers, name="tai-lieu.txt", text=None) -> dict:
 def _created_minutes_ago(db_session, document_id: str, minutes: int) -> None:
     """Trong test mọi bản ghi chung một transaction nên now() giống hệt nhau; đặt giờ tạo rõ ràng để thứ tự có nghĩa."""
     db_session.get(Document, uuid.UUID(document_id)).created_at = datetime.now(timezone.utc) - timedelta(minutes=minutes)
-    db_session.flush()
-
-
-def _add_chunks(db_session, document_id: str, count: int) -> None:
-    document = db_session.get(Document, uuid.UUID(document_id))
-    for index in range(count):
-        db_session.add(
-            DocumentChunk(
-                document_id=document.id,
-                user_id=document.user_id,
-                chunk_index=index,
-                content=f"chunk {index}",
-                page_number=None,
-                char_start=0,
-                char_end=7,
-                embedding=[0.1] * EMBEDDING_DIMENSIONS,
-                embedding_model="test-model",
-            )
-        )
     db_session.flush()
 
 
@@ -91,15 +71,15 @@ def test_list_paginates(api_client, make_authenticated_user, db_session):
 
 def test_list_filters_by_status(api_client, make_authenticated_user, db_session):
     headers = make_authenticated_user()
-    ready = _upload(api_client, headers)
+    failed = _upload(api_client, headers)
     _upload(api_client, headers)
-    db_session.get(Document, uuid.UUID(ready["id"])).status = "ready"
+    db_session.get(Document, uuid.UUID(failed["id"])).status = "failed"
     db_session.flush()
 
-    body = api_client.get(DOCUMENTS, headers=headers, params={"status": "ready"}).json()
+    body = api_client.get(DOCUMENTS, headers=headers, params={"status": "failed"}).json()
 
     assert body["total"] == 1
-    assert body["items"][0]["id"] == ready["id"]
+    assert body["items"][0]["id"] == failed["id"]
 
 
 @pytest.mark.parametrize("params", [{"status": "bogus"}, {"limit": 0}, {"limit": 101}, {"offset": -1}])
@@ -110,16 +90,22 @@ def test_list_rejects_invalid_parameters(api_client, make_authenticated_user, pa
     assert response.json()["error"]["code"] == "validation_error"
 
 
+def _chunks_in_db(db_session, document_id: str) -> int:
+    return db_session.scalar(
+        select(func.count()).select_from(DocumentChunk).where(DocumentChunk.document_id == uuid.UUID(document_id))
+    )
+
+
 def test_list_reports_the_real_chunk_count(api_client, make_authenticated_user, db_session):
     headers = make_authenticated_user()
-    with_chunks = _upload(api_client, headers)
-    without_chunks = _upload(api_client, headers)
-    _add_chunks(db_session, with_chunks["id"], 3)
+    long_document = _upload(api_client, headers, text=" ".join(f"từ{i}" for i in range(600)))
+    short_document = _upload(api_client, headers)
 
     items = {item["id"]: item for item in api_client.get(DOCUMENTS, headers=headers).json()["items"]}
 
-    assert items[with_chunks["id"]]["chunk_count"] == 3
-    assert items[without_chunks["id"]]["chunk_count"] == 0
+    # Mặc định 250 từ, chồng 50: 600 từ thành 3 chunk; văn bản ngắn thành 1 chunk.
+    assert items[long_document["id"]]["chunk_count"] == 3 == _chunks_in_db(db_session, long_document["id"])
+    assert items[short_document["id"]]["chunk_count"] == 1 == _chunks_in_db(db_session, short_document["id"])
 
 
 def test_list_requires_authentication(api_client):
@@ -129,15 +115,14 @@ def test_list_requires_authentication(api_client):
 # ---------------------------------------------------------------------------------------------- detail
 def test_detail_returns_my_document_with_chunk_count(api_client, make_authenticated_user, db_session):
     headers = make_authenticated_user()
-    document = _upload(api_client, headers, "ghi-chu.txt")
-    _add_chunks(db_session, document["id"], 2)
+    document = _upload(api_client, headers, "ghi-chu.txt", text=" ".join(f"từ{i}" for i in range(600)))
 
     response = api_client.get(f"{DOCUMENTS}/{document['id']}", headers=headers)
 
     assert response.status_code == 200
     body = response.json()
     assert body["filename"] == "ghi-chu.txt"
-    assert body["chunk_count"] == 2
+    assert body["chunk_count"] == 3 == _chunks_in_db(db_session, document["id"])
 
 
 def test_detail_of_another_users_document_is_404_not_403(api_client, make_authenticated_user):
@@ -172,7 +157,7 @@ def test_detail_with_malformed_id_is_422(api_client, make_authenticated_user):
 def test_delete_removes_record_chunks_and_file(api_client, make_authenticated_user, db_session, isolated_upload_dir):
     headers = make_authenticated_user()
     document = _upload(api_client, headers)
-    _add_chunks(db_session, document["id"], 2)
+    assert _chunks_in_db(db_session, document["id"]) > 0
     assert len([p for p in isolated_upload_dir.rglob("*") if p.is_file()]) == 1
 
     response = api_client.delete(f"{DOCUMENTS}/{document['id']}", headers=headers)

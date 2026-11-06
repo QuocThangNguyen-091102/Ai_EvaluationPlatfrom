@@ -1,13 +1,14 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Body, Depends, Query, Response, UploadFile, status
 
-from app.api.dependencies import get_current_user, get_document_service
+from app.api.dependencies import get_current_user, get_document_service, get_ingestion_service
 from app.models.document import Document
 from app.models.user import User
-from app.schemas.document import DocumentListResponse, DocumentResponse
+from app.schemas.document import DocumentListResponse, DocumentResponse, ReprocessRequest
 from app.services.document_service import DocumentService
+from app.services.ingestion_service import IngestionService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -23,10 +24,14 @@ def _to_response(document: Document, chunk_count: int) -> DocumentResponse:
 @router.post("", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
 def upload_document(
     file: UploadFile,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     service: DocumentService = Depends(get_document_service),
+    ingestion: IngestionService = Depends(get_ingestion_service),
 ) -> DocumentResponse:
     document = service.upload(current_user, file.filename, file.file)
+    # Xử lý (parse, chunk, embed) chạy sau khi đã trả 202; client theo dõi qua trường status.
+    background_tasks.add_task(ingestion.process, document.id)
     return _to_response(document, service.count_chunks(current_user, document))
 
 
@@ -65,3 +70,18 @@ def delete_document(
 ) -> Response:
     service.delete_document(current_user, document_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{document_id}/reprocess", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
+def reprocess_document(
+    document_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    payload: ReprocessRequest | None = Body(default=None),
+    current_user: User = Depends(get_current_user),
+    service: DocumentService = Depends(get_document_service),
+    ingestion: IngestionService = Depends(get_ingestion_service),
+) -> DocumentResponse:
+    options = payload or ReprocessRequest()
+    document = service.start_reprocess(current_user, document_id)
+    background_tasks.add_task(ingestion.process, document.id, options.chunk_size, options.chunk_overlap)
+    return _to_response(document, service.count_chunks(current_user, document))

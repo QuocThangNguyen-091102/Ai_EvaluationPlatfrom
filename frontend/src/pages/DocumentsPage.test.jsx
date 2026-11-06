@@ -6,6 +6,7 @@ vi.mock("../services/api/documentApi.js", () => ({
   listDocuments: vi.fn(),
   uploadDocument: vi.fn(),
   deleteDocument: vi.fn(),
+  reprocessDocument: vi.fn(),
 }));
 
 import { ApiError } from "../services/api/httpClient.js";
@@ -202,5 +203,22 @@ describe("DocumentsPage", () => {
       await vi.advanceTimersByTimeAsync(10000);
     });
     expect(documentApi.listDocuments.mock.calls.length).toBe(callsAfterReady);
+  });
+
+  it("nút Xử lý lại chỉ có ở tài liệu đã xong hoặc lỗi, và gọi API khi bấm", async () => {
+    documentApi.listDocuments.mockResolvedValue(
+      listOf([
+        makeDocument({ id: "loi", filename: "loi.pdf", status: "failed", error_message: "Không đọc được" }),
+        makeDocument({ id: "dang", filename: "dang.pdf", status: "processing" }),
+      ]),
+    );
+    documentApi.reprocessDocument.mockResolvedValue(makeDocument({ id: "loi", status: "processing" }));
+    render(<DocumentsPage />);
+
+    const rows = await screen.findAllByRole("row");
+    expect(within(rows[2]).queryByRole("button", { name: "Xử lý lại" })).not.toBeInTheDocument();
+    await userEvent.click(within(rows[1]).getByRole("button", { name: "Xử lý lại" }));
+
+    await waitFor(() => expect(documentApi.reprocessDocument).toHaveBeenCalledWith("loi"));
   });
 });
