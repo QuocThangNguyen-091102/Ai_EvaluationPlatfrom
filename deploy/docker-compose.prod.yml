@@ -43,6 +43,7 @@ services:
       LLM_MODEL: ${LLM_MODEL:-}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_PROVIDER_NAME: ${LLM_PROVIDER_NAME:-openai-compatible}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
       # Backend chỉ nhận kết nối từ Caddy trong mạng nội bộ, nên tin header X-Forwarded-For để biết IP thật
       # (cần cho giới hạn số lần đăng nhập).
       FORWARDED_ALLOW_IPS: "*"

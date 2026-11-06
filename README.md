@@ -68,7 +68,25 @@ Khi các service đều ở trạng thái healthy (`docker compose ps`):
 - Dữ liệu nằm trong volume nên còn lại sau `docker compose down`; muốn xóa cả dữ liệu thì dùng `docker compose down -v`.
 - Nếu cổng bị chiếm, đổi `DB_HOST_PORT`, `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT` trong `.env`.
 
-Kịch bản demo từng bước: [docs/demo_script.md](docs/demo_script.md).
+### Dùng LLM miễn phí chạy trên máy (Ollama)
+
+1. Cài Ollama từ https://ollama.com/download, rồi tải model:
+   ```bash
+   ollama pull qwen2.5:3b     # trả lời (tiếng Việt tốt, nhẹ, chạy được bằng CPU)
+   ollama pull gemma3:4b      # judge: khác họ model với model trả lời để giảm thiên lệch
+   ```
+2. Thêm vào `.env`, rồi chạy `docker compose up -d backend`:
+   ```
+   LLM_BASE_URL=http://host.docker.internal:11434/v1
+   LLM_MODEL=qwen2.5:3b
+   LLM_PROVIDER_NAME=ollama
+   LLM_TIMEOUT_SECONDS=300
+   ```
+3. Trên trang Đánh giá, Bảo mật hoặc Benchmark, nhập `gemma3:4b` vào ô judge model.
+
+Trên máy thử (i5 thế hệ 11, không GPU, 20 GB RAM), mỗi câu trả lời mất khoảng 2–15 giây và mỗi lần judge chấm khoảng 12–40 giây.
+
+Dữ liệu demo tạo sẵn: `python scripts/seed_demo.py --email ban@example.com --password "mat-khau-dai"`. Kịch bản demo từng bước: [docs/demo_script.md](docs/demo_script.md).
 
 ## Triển khai miễn phí lên internet
 

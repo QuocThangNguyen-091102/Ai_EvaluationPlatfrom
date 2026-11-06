@@ -42,6 +42,18 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture(autouse=True)
+def no_llm_unless_requested(monkeypatch):
+    """Test không phụ thuộc .env của máy đang chạy: mặc định là chưa cấu hình LLM.
+    Test cần LLM tự bật bằng fixture `llm_server` (trỏ tới địa chỉ giả, LLM được thay bằng ScriptedLlm)."""
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "llm_base_url", None)
+    monkeypatch.setattr(settings, "llm_model", None)
+    monkeypatch.setattr(settings, "llm_api_key", None)
+    monkeypatch.setattr(settings, "llm_provider_name", "openai-compatible")
+
+
+@pytest.fixture(autouse=True)
 def fresh_rate_limits():
     from app.api.routes.auth import login_ip_limiter, login_limiter, register_limiter
 
