@@ -11,6 +11,14 @@ export const METRIC_LABELS = {
   mrr: { label: "MRR", hint: "Trung bình 1/(thứ hạng của đoạn đúng đầu tiên); 1 nghĩa là đoạn đúng luôn đứng đầu." },
   reciprocal_rank: { label: "Reciprocal rank", hint: "1/(thứ hạng của đoạn đúng đầu tiên)." },
   ndcg_at_k: { label: "NDCG@k", hint: "Chất lượng thứ tự: đoạn đúng càng đứng trên càng cao điểm." },
+  context_precision: {
+    label: "Context precision",
+    hint: "Các đoạn đúng có được xếp lên đầu không (average precision theo thứ hạng; tính tất định, không cần LLM).",
+  },
+  context_recall: {
+    label: "Context recall",
+    hint: "LLM judge: tỉ lệ ý trong đáp án tham chiếu được các đoạn lấy về hỗ trợ (đoạn lấy về có đủ thông tin không).",
+  },
   faithfulness: {
     label: "Faithfulness",
     hint: "LLM judge: tỉ lệ ý trong câu trả lời được ngữ cảnh hỗ trợ. Judge có thể sai, nên đọc kèm câu trả lời.",

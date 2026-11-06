@@ -15,6 +15,7 @@ from ai_engine.embeddings.base_embedder import EmbeddingError
 from ai_engine.generation.base_llm_client import LlmError
 from ai_engine.pipeline.rag_result import RagResult
 from evaluation.evaluators.llm_judge import JudgeError, LlmJudge
+from evaluation.metrics.generation.context_precision import context_precision
 from evaluation.metrics.retrieval.mrr import reciprocal_rank
 from evaluation.metrics.retrieval.ndcg_at_k import ndcg_at_k
 from evaluation.metrics.retrieval.precision_at_k import precision_at_k
@@ -30,6 +31,8 @@ class CaseInput:
     question: str
     expected_behavior: str  # "answer" | "insufficient_context"
     references: list[Span]
+    # Đáp án tham chiếu do người viết; dùng cho Context Recall.
+    ground_truth: str | None = None
 
 
 @dataclass(frozen=True)
@@ -95,6 +98,7 @@ class EvaluationRunner:
 
         metrics = [self._behavior_metric(case, result)]
         metrics += self._retrieval_metrics(case, result)
+        metrics += self._context_recall(case, result)
         metrics += self._generation_metrics(case, result)
         return CaseOutcome(case.case_id, "ok", categorize(case, result, metrics), metrics, result=result)
 
@@ -122,7 +126,24 @@ class EvaluationRunner:
             MetricValue("recall_at_k", recall_at_k(labels, k), "deterministic", "computed", k=k),
             MetricValue("reciprocal_rank", reciprocal_rank(labels), "deterministic", "computed"),
             MetricValue("ndcg_at_k", ndcg_at_k(labels, k), "deterministic", "computed", k=k),
+            MetricValue("context_precision", context_precision(labels), "deterministic", "computed"),
         ]
+
+    def _context_recall(self, case: CaseInput, result: RagResult) -> list[MetricValue]:
+        """Không cần câu trả lời của LLM: so ĐÁP ÁN THAM CHIẾU với các đoạn lấy về, nên chạy được cả chế độ trích đoạn."""
+        if case.expected_behavior != "answer" or not case.ground_truth:
+            return []
+        if not result.contexts:
+            return [MetricValue("context_recall", 0.0, "llm_judge", "computed", details={"reason": "Không lấy được đoạn nào"})]
+        if self._judge is None:
+            return [MetricValue("context_recall", None, "llm_judge", "skipped", details={"reason": self._judge_unavailable_reason})]
+        try:
+            score = self._judge.faithfulness(case.ground_truth, [c.content for c in result.contexts])
+        except JudgeError as error:
+            return [MetricValue("context_recall", None, "llm_judge", "failed", details={"reason": str(error)})]
+        if score.value is None:
+            return [MetricValue("context_recall", None, "llm_judge", "failed", details={**score.details, "reason": "Không xác định được điểm"})]
+        return [MetricValue("context_recall", score.value, "llm_judge", "computed", details=score.details)]
 
     def _generation_metrics(self, case: CaseInput, result: RagResult) -> list[MetricValue]:
         if case.expected_behavior != "answer" or result.insufficient_context or result.mode != "llm":

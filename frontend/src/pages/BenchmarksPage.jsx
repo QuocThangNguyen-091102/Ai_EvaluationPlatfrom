@@ -13,7 +13,17 @@ const VARIABLES = {
   llm_model: { label: "LLM model", placeholder: "tên các model, cách nhau bằng dấu phẩy" },
   prompt_version: { label: "Prompt version", placeholder: "ví dụ: rag-v1" },
 };
-const COLUMNS = ["behavior_correct", "recall_at_k", "mrr", "ndcg_at_k", "precision_at_k", "faithfulness", "answer_relevancy"];
+const COLUMNS = [
+  "behavior_correct",
+  "recall_at_k",
+  "mrr",
+  "ndcg_at_k",
+  "precision_at_k",
+  "context_precision",
+  "context_recall",
+  "faithfulness",
+  "answer_relevancy",
+];
 
 export default function BenchmarksPage() {
   const [benchmarks, setBenchmarks] = useState([]);

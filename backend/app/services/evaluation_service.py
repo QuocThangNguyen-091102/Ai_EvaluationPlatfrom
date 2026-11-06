@@ -33,7 +33,10 @@ logger = logging.getLogger(__name__)
 
 INTERRUPTED_MESSAGE = "Lượt đánh giá bị gián đoạn vì máy chủ khởi động lại; hãy tạo lượt mới"
 UNEXPECTED_MESSAGE = "Lỗi hệ thống khi chạy đánh giá"
-REPORT_METRICS = ("behavior_correct", "precision_at_k", "recall_at_k", "reciprocal_rank", "ndcg_at_k", "faithfulness", "answer_relevancy")
+REPORT_METRICS = (
+    "behavior_correct", "precision_at_k", "recall_at_k", "reciprocal_rank", "ndcg_at_k", "context_precision", "context_recall",
+    "faithfulness", "answer_relevancy",
+)
 
 
 def _now() -> datetime:
@@ -243,6 +246,7 @@ class EvaluationRunService:
                     case.question,
                     case.expected_behavior,
                     [Span(r["document_content_hash"], r["char_start"], r["char_end"]) for r in case.reference_contexts],
+                    ground_truth=case.ground_truth_answer,
                 )
                 for case in cases
             ]

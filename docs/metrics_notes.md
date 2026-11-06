@@ -50,7 +50,15 @@ Judge trả JSON sai định dạng thì metric là `failed` kèm lý do, không
 - Thiên vị câu trả lời dài, trôi chảy, và câu trả lời do cùng họ mô hình viết (self-preference). Nên dùng judge khác mô hình được chấm.
 - Kết quả phụ thuộc phiên bản prompt judge và model judge: chỉ so sánh các lượt cùng judge và cùng `judge_prompt_version`.
 - Chưa đo độ đồng thuận judge–người. Trước khi tin faithfulness, cần cho người chấm một mẫu khoảng 20–30 câu và so sánh.
-- `context_precision` và `context_recall` kiểu RAGAS chưa làm (FR-17b, hoãn).
+
+## 5b. Context Precision và Context Recall (kiểu RAGAS)
+
+| Metric | Cách tính | Cần LLM |
+|---|---|---|
+| Context Precision | Average precision trên các hạng có đoạn đúng: Σ(precision@k × rel_k) / số đoạn đúng. Đoạn đúng xác định tất định như mục 2 | Không |
+| Context Recall | Judge tách **đáp án tham chiếu** thành các khẳng định và phán định từng khẳng định có được các đoạn lấy về hỗ trợ không; điểm = số được hỗ trợ / tổng. Dùng lại prompt faithfulness `judge-v1` | Có (judge), nhưng **không** cần câu trả lời của LLM nên chạy được cả ở chế độ trích đoạn |
+
+Khác biệt với bản RAGAS gốc: Context Precision ở đây dùng nhãn đúng/sai tất định (theo câu trích tham chiếu) thay vì để LLM phán định từng đoạn, nên rẻ và lặp lại được nhưng phụ thuộc chất lượng câu trích. Context Precision chỉ đo **thứ tự**: lấy ít đoạn không bị phạt, thiếu tham chiếu cũng không bị phạt (xem Recall@k và Context Recall). Không lấy được đoạn nào thì Context Recall = 0 mà không cần gọi judge.
 
 ## 6. Phân loại lỗi mỗi câu
 

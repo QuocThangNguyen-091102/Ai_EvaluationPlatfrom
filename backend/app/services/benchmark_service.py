@@ -27,7 +27,10 @@ from evaluation.reports.report_builder import build_csv
 logger = logging.getLogger(__name__)
 
 INTERRUPTED_MESSAGE = "Benchmark bị gián đoạn vì máy chủ khởi động lại; hãy tạo benchmark mới"
-COMPARED_METRICS = ("behavior_correct", "precision_at_k", "recall_at_k", "mrr", "ndcg_at_k", "faithfulness", "answer_relevancy")
+COMPARED_METRICS = (
+    "behavior_correct", "precision_at_k", "recall_at_k", "mrr", "ndcg_at_k", "context_precision", "context_recall",
+    "faithfulness", "answer_relevancy",
+)
 VARIABLE_LABELS = {"llm_model": "LLM model", "top_k": "top_k", "prompt_version": "prompt version"}
 
 

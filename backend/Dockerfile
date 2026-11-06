@@ -8,8 +8,10 @@ WORKDIR /app
 
 # Build context là thư mục gốc repo (để copy được cả ai_engine/).
 COPY backend/requirements.txt .
+# Image gốc mang pip 24.0 và setuptools 79 có lỗ hổng đã công bố (tra OSV.dev ngày 2026-11-06); nâng trước khi cài gì.
 # PyTorch bản CPU: bản mặc định trên Linux kéo theo CUDA (vài GB), không dùng được trên máy chủ miễn phí.
-RUN pip install --no-cache-dir torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu \
+RUN pip install --no-cache-dir --upgrade pip==26.3 setuptools==84.2.1 \
+    && pip install --no-cache-dir torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu \
     && pip install --no-cache-dir -r requirements.txt
 
 COPY backend/alembic.ini .

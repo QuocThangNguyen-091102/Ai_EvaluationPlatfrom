@@ -43,6 +43,10 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 - `deploy/docker-compose.prod.yml`, `deploy/Caddyfile`, `deploy/production.env.example`: triển khai thật trên một máy chủ, HTTPS qua Caddy.
 - `docs/deployment_guide.md`, `docs/demo_script.md`, `docs/final_audit.md`.
 
+### Sau M9 (user giao toàn quyền, 2026-11-06)
+- `scripts/audit_dependencies.py`: tra lỗ hổng gói Python qua OSV.dev. `scripts/seed_demo.py`: tạo dữ liệu demo qua API.
+- Context Precision, Context Recall đã làm. Đã xóa `backend/app/models/report.py`, `backend/app/services/report_service.py` (file rỗng; tính năng lịch sử báo cáo để sau MVP).
+
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 
 | File | Lý do |
@@ -160,7 +164,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `.gitignore` | Loại `.env`, cache, file upload khỏi Git | Không | Git | | | Implemented | M2 |
 | `configs/models.yaml` | Model được hỗ trợ, bảng giá kèm thời điểm lấy | Không | `cost_estimator.py`, `model_config_service.py` | | Danh sách model, giá | Tested | M3 |
 | `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Tested | M3 |
-| `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Created | M9 |
+| `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Implemented | M9 |
 | `docs/01_feasibility.md` … `docs/10_test_risk_learning.md` | Tài liệu thiết kế M1 | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1 |
 | `docs/11_free_deployment.md` | Kế hoạch triển khai miễn phí lên internet (Vercel cho giao diện, máy chủ container cho backend) | Không | Mọi người | | | Implemented (bản nháp chờ duyệt) | M1, thực hiện M9-T04 |
 | `docs/progress_log.md` | Nhật ký kết quả từng task | Không | Người dùng, Claude | | | Implemented | M1 |
@@ -284,8 +288,8 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `evaluation/metrics/retrieval/ndcg_at_k.py` | NDCG@K | Không | `evaluation_runner.py` | như trên | Giá trị | Implemented | M6 |
 | `evaluation/metrics/generation/faithfulness.py` | Faithfulness (dựa judge) | `llm_judge.py` | `evaluation_runner.py` | Answer, contexts | Điểm kèm lý do | Implemented | M6 |
 | `evaluation/metrics/generation/answer_relevancy.py` | Answer Relevancy | `llm_judge.py` | `evaluation_runner.py` | Câu hỏi, answer | Điểm | Implemented | M6 |
-| `evaluation/metrics/generation/context_precision.py` | Context Precision | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Created | M6 |
-| `evaluation/metrics/generation/context_recall.py` | Context Recall | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Created | M6 |
+| `evaluation/metrics/generation/context_precision.py` | Context Precision | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Implemented | M6 |
+| `evaluation/metrics/generation/context_recall.py` | Context Recall | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Implemented | M6 |
 | `evaluation/evaluators/llm_judge.py` | Gọi LLM làm judge, ghi model và prompt của judge | `base_llm_client.py`, `judge_prompts.py`, `provider_retry.py` | Metric sinh, `security_result_evaluator.py` | Prompt judge | Phán định kèm lý do | Implemented | M6 |
 | `evaluation/evaluators/judge_prompts.py` | Prompt judge có version | Không | `llm_judge.py` | | Prompt | Implemented | M6 |
 | `evaluation/runners/evaluation_runner.py` | Chạy từng case qua pipeline, tính metric, bắt lỗi theo case | `rag_pipeline.py`, metrics | `evaluation_service.py`, `benchmark_runner.py` | Test cases, `RAGConfig` | Kết quả từng case, tổng hợp | Implemented | M6 |

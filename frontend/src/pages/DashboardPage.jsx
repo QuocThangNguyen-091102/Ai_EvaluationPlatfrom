@@ -10,7 +10,7 @@ import { listDocuments } from "../services/api/documentApi.js";
 import { listEvaluations } from "../services/api/evaluationApi.js";
 import { listSecurityRuns } from "../services/api/securityApi.js";
 
-const COLUMNS = ["behavior_correct", "recall_at_k", "mrr", "ndcg_at_k", "faithfulness", "answer_relevancy"];
+const COLUMNS = ["behavior_correct", "recall_at_k", "mrr", "ndcg_at_k", "context_precision", "context_recall", "faithfulness", "answer_relevancy"];
 
 const OVERVIEW = [
   { key: "documents", label: "Tài liệu", to: "/documents", load: () => listDocuments({ limit: 1 }) },

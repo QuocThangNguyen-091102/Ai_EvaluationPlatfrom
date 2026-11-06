@@ -11,7 +11,7 @@ Trạng thái: **đủ chức năng của MVP (M1 đến M9)**. Một số gate 
 | Tài liệu | Upload PDF, DOCX, TXT (kéo thả); xử lý nền: parse, làm sạch, chia chunk, embed; xem trạng thái, xóa, xử lý lại với cấu hình chunk khác |
 | Hỏi đáp | Hỏi trên tài liệu của mình. Câu trả lời có trích dẫn nguồn và trang; hệ thống từ chối khi tài liệu không đủ thông tin; có lịch sử phiên, độ trễ, token, chi phí |
 | Dataset | Bộ câu hỏi đánh giá có phiên bản: câu trích tham chiếu được định vị chính xác trong tài liệu; nhập CSV hoặc JSON; duyệt và đóng băng |
-| Đánh giá | Chạy bộ câu hỏi qua RAG pipeline. Metric: Precision, Recall, MRR, NDCG, hành vi đúng, faithfulness và answer relevancy (LLM judge). Phân loại lỗi từng câu; báo cáo CSV |
+| Đánh giá | Chạy bộ câu hỏi qua RAG pipeline. Metric: Precision, Recall, MRR, NDCG, Context Precision, hành vi đúng; Context Recall, faithfulness, answer relevancy (LLM judge). Phân loại lỗi từng câu; báo cáo CSV |
 | Bảo mật | 12 test trong 5 nhóm: prompt injection, jailbreak, rò rỉ dữ liệu, kiểm soát truy cập, tài liệu độc. Chạy trong sandbox riêng; có bằng chứng, mức độ, cách giảm thiểu và giới hạn của lượt chạy |
 | Benchmark | So sánh nhiều cấu hình (đổi một biến: top_k, LLM model hoặc prompt) trên cùng dataset: chất lượng, độ trễ p50 và p95, token, chi phí |
 | Dashboard | Tổng quan 6 khu vực; so sánh các lượt đánh giá theo phiên bản dataset |
@@ -103,7 +103,7 @@ npm run build
 Nếu bạn đổi `POSTGRES_PASSWORD`, hãy đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
 
 Kết quả lần chạy cuối (2026-11-06):
-- backend 426 test pass (gồm 5 test với model thật);
+- backend 436 test pass (gồm 5 test với model thật);
 - giao diện 85 test pass;
 - E2E trên trình duyệt thật với stack Docker cho mọi trang chính, cả cỡ màn hình điện thoại.
 

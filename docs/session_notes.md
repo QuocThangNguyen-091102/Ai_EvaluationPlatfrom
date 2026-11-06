@@ -33,8 +33,7 @@
    - Sau đó chạy đánh giá baseline và điền `docs/error_analysis.md`, `docs/baseline_manual.md`.
 2. **LLM:** điền `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY` trong `.env`, rồi chạy lại đánh giá, bảo mật (9 test cần LLM) và benchmark theo `llm_model` hoặc `prompt_version`.
 3. **Deploy:** tạo remote GitHub, tài khoản Vercel, máy chủ miễn phí, tên miền; làm theo `docs/deployment_guide.md`.
-4. Cảnh báo `httpx`/`httpx2` của pytest: bỏ qua hay xử lý (lần trước cài `httpx2` bị chặn vì chưa xác minh gói).
-5. Có cho chạy `pip-audit` (kiểm tra lỗ hổng thư viện Python) không.
+4. Cho phép cài **Ollama** (LLM miễn phí chạy cục bộ). Lệnh cài bị bộ kiểm duyệt an toàn chặn; có Ollama thì tự chạy được đánh giá có LLM, 9 test bảo mật còn lại và benchmark theo model.
 
 ### Quy tắc làm việc đã thống nhất
 - Chỉ trả lời tiếng Việt (CLAUDE.md mục 1).

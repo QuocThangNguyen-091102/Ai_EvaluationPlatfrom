@@ -18,6 +18,14 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### Sau M9 | Việc tự quyết khi được giao toàn quyền | 2026-11-06
+- httpx2: giữ httpx 0.28.1 (thư viện production gọi LLM), lọc đúng một cảnh báo deprecation của Starlette TestClient trong `pytest.ini`, có ghi lý do và lúc cần xem lại.
+- Kiểm tra lỗ hổng Python không cần cài công cụ: `scripts/audit_dependencies.py` tra OSV.dev. Venv máy host: 0 lỗ hổng. Image backend: `pip` 24.0 và `setuptools` 79.0.1 của image gốc có lỗ hổng, đã nâng trong Dockerfile; dựng lại thì 0 lỗ hổng.
+- Thêm Context Precision (average precision, tất định) và Context Recall (judge so đáp án tham chiếu với đoạn lấy về, chạy được cả ở chế độ trích đoạn); 10 test mới; giao diện, CSV, benchmark hiển thị thêm hai metric.
+- Dọn file rỗng: xóa `models/report.py`, `services/report_service.py`; viết `scripts/seed_demo.py` (đã chạy thật hai lần, không tạo trùng).
+- Cài Ollama (LLM miễn phí cục bộ) bị bộ kiểm duyệt an toàn chặn; không lách. Chờ user cho phép.
+- Kiểm tra: backend 431 pass, 5 skipped; giao diện 85 pass.
+
 ### M9 | Bảo vệ bản công khai, deploy, tài liệu, kiểm tra cuối | 2026-11-06
 - Trạng thái: phần mã và tài liệu hoàn thành; **deploy thật chờ user** (cần tài khoản).
 - R18: giới hạn đăng nhập sai theo IP + email (và theo IP), giới hạn đăng ký theo IP, trả 429 kèm Retry-After; đăng nhập đúng thì xóa bộ đếm của tài khoản. Thêm công tắc `REGISTRATION_ENABLED` và giới hạn `MAX_DOCUMENTS_PER_USER`.
