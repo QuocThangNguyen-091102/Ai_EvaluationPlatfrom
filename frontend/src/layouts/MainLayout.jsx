@@ -14,6 +14,8 @@ export default function MainLayout() {
           <NavLink to="/documents">Tài liệu</NavLink>
           <NavLink to="/chat">Hỏi đáp</NavLink>
           <NavLink to="/datasets">Dataset</NavLink>
+          <NavLink to="/evaluations">Đánh giá</NavLink>
+          <NavLink to="/dashboard">Dashboard</NavLink>
         </nav>
         <div className="app-header__user">
           <span title={user?.email}>{user?.email}</span>

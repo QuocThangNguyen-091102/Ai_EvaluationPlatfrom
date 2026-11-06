@@ -22,6 +22,12 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 | `docs/diagrams/*.mmd` (9 file) | Sơ đồ Mermaid nằm ngay trong các tài liệu `04`, `05`, `06`, `07`; tránh hai nguồn sự thật |
 | `ai_engine/adapters/` (đề xuất gốc) | Adapter provider đã nằm trong `embeddings/` và `generation/`; không cần thư mục riêng |
 
+### Thêm ở M6 (ngoài bản đề xuất)
+- `backend/app/core/run_environment.py`: ảnh chụp môi trường (Python, phiên bản thư viện) lưu vào mỗi lượt đánh giá.
+- `evaluation/metrics/retrieval/relevance.py`: xác định chunk đúng bằng giao nhau khoảng ký tự với tham chiếu (dùng chung cho mọi metric truy xuất).
+- `frontend/src/metricLabels.js`, `frontend/src/components/MetricBars.jsx`: nhãn metric tiếng Việt và biểu đồ thanh CSS dùng chung cho Đánh giá và Dashboard.
+- Migration `0007_create_evaluation_tables.py`; `report_service.py` và `report_repository.py` chưa tạo: báo cáo CSV dựng trực tiếp trong `evaluation_service.py`, chưa cần lưu lịch sử xuất.
+
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 
 | File | Lý do |
@@ -146,8 +152,8 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `docs/session_notes.md` | Ghi chú cuối phiên | Không | Claude | | | Implemented | M1 |
 | `docs/baseline_manual.md` | Bảng kết quả hỏi đáp thủ công (khoảng 20 câu) làm điểm tham chiếu | Không | Người dùng | | | Planned | M4 |
 | `docs/corpus_sources.md` | Nguồn và quyền sử dụng tài liệu corpus đánh giá | Không | Người dùng | | | Planned | M5 |
-| `docs/metrics_notes.md` | Ghi chú cách tính metric, thiên lệch của judge | Không | Người dùng | | | Planned | M6 |
-| `docs/error_analysis.md` | Phân loại lỗi và mức đồng thuận judge và người | Không | Người dùng | | | Planned | M6 |
+| `docs/metrics_notes.md` | Ghi chú cách tính metric, thiên lệch của judge | Không | Người dùng | | | Implemented | M6 |
+| `docs/error_analysis.md` | Phân loại lỗi và mức đồng thuận judge và người | Không | Người dùng | | | Implemented | M6 |
 | `docs/security_scope.md` | Phạm vi, threat model của kiểm thử bảo mật | Không | Người dùng | | | Planned | M7 |
 | `docs/benchmark_design.md` | Ma trận so sánh cấu hình | Không | Người dùng | | | Planned | M8 |
 
@@ -205,7 +211,7 @@ Tất cả route: phụ thuộc vào service tương ứng và schema tương �
 | `backend/app/api/routes/chat.py` | Hỏi đáp, session, message | `chat_service.py` | Created | M4 |
 | `backend/app/api/routes/model_configs.py` | Cấu hình model | `model_config_service.py` | Planned | M4 |
 | `backend/app/api/routes/datasets.py` | Dataset, version, test case, import | `dataset_service.py` | Created | M5 |
-| `backend/app/api/routes/evaluations.py` | Run, kết quả, báo cáo | `evaluation_service.py`, `report_service.py` | Created | M6 |
+| `backend/app/api/routes/evaluations.py` | Run, kết quả, báo cáo | `evaluation_service.py`, `report_service.py` | Implemented | M6 |
 | `backend/app/api/routes/security_tests.py` | Run bảo mật, kết quả, báo cáo | `security_service.py`, `report_service.py` | Created | M7 |
 | `backend/app/api/routes/benchmarks.py` | Benchmark, báo cáo | `benchmark_service.py`, `report_service.py` | Created | M8 |
 | `backend/app/api/routes/__init__.py` | Đánh dấu package | | Created | M2 |
@@ -221,7 +227,7 @@ Mỗi hàng là một nhóm cùng tên miền. Với `models`: định nghĩa b�
 | Chat | `chat.py`, `retrieved_context.py` [P] | `chat.py` | `chat_repository.py` | `chat_service.py` (gọi `ai_engine/pipeline/rag_pipeline.py`) | Created (trừ [P]) | M4 |
 | Cấu hình model | `model_config.py` | `model_config.py` [P] | `model_config_repository.py` [P] | `model_config_service.py` [P] | Created (trừ [P]) | M4 |
 | Dataset | `dataset.py` | `dataset.py` | `dataset_repository.py` | `dataset_service.py` | Created | M5 |
-| Evaluation | `evaluation.py` (run, result, metric) | `evaluation.py` | `evaluation_repository.py` | `evaluation_service.py` (gọi `evaluation/runners/evaluation_runner.py`) | Created | M6 |
+| Evaluation | `evaluation.py` (run, result, metric) | `evaluation.py` | `evaluation_repository.py` | `evaluation_service.py` (gọi `evaluation/runners/evaluation_runner.py`) | Implemented | M6 |
 | Security | `security_test.py` | `security_test.py` | `security_repository.py` | `security_service.py` (gọi `security/runners/security_runner.py`) | Created | M7 |
 | Benchmark | `benchmark.py` | `benchmark.py` | `benchmark_repository.py` | `benchmark_service.py` (gọi `evaluation/benchmarks/benchmark_runner.py`) | Created | M8 |
 | Báo cáo | `report.py` | (dùng schema của evaluation, security, benchmark) | `report_repository.py` [P] (ghi lịch sử xuất, M6) | `report_service.py` (gọi `evaluation/reports/report_builder.py`, `security/reports/security_report_builder.py`) | Created | M6 đến M8 |
@@ -257,19 +263,19 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | Đường dẫn | Trách nhiệm | Phụ thuộc | Dùng bởi | Input | Output | Trạng thái | Milestone |
 |-----------|-------------|-----------|----------|-------|--------|------------|-----------|
 | `evaluation/datasets/dataset_loader.py` | Đọc và validate file CSV, JSON test case | Không | `dataset_service.py` | File import | Danh sách test case hợp lệ, lỗi theo dòng | Created | M5 |
-| `evaluation/metrics/retrieval/precision_at_k.py` | Precision@K (hàm thuần) | Không | `evaluation_runner.py` | Chunk truy xuất, reference | Giá trị | Created | M6 |
-| `evaluation/metrics/retrieval/recall_at_k.py` | Recall@K | Không | `evaluation_runner.py` | như trên | Giá trị | Created | M6 |
-| `evaluation/metrics/retrieval/mrr.py` | MRR | Không | `evaluation_runner.py` | như trên | Giá trị | Created | M6 |
-| `evaluation/metrics/retrieval/ndcg_at_k.py` | NDCG@K | Không | `evaluation_runner.py` | như trên | Giá trị | Created | M6 |
-| `evaluation/metrics/generation/faithfulness.py` | Faithfulness (dựa judge) | `llm_judge.py` | `evaluation_runner.py` | Answer, contexts | Điểm kèm lý do | Created | M6 |
-| `evaluation/metrics/generation/answer_relevancy.py` | Answer Relevancy | `llm_judge.py` | `evaluation_runner.py` | Câu hỏi, answer | Điểm | Created | M6 |
+| `evaluation/metrics/retrieval/precision_at_k.py` | Precision@K (hàm thuần) | Không | `evaluation_runner.py` | Chunk truy xuất, reference | Giá trị | Implemented | M6 |
+| `evaluation/metrics/retrieval/recall_at_k.py` | Recall@K | Không | `evaluation_runner.py` | như trên | Giá trị | Implemented | M6 |
+| `evaluation/metrics/retrieval/mrr.py` | MRR | Không | `evaluation_runner.py` | như trên | Giá trị | Implemented | M6 |
+| `evaluation/metrics/retrieval/ndcg_at_k.py` | NDCG@K | Không | `evaluation_runner.py` | như trên | Giá trị | Implemented | M6 |
+| `evaluation/metrics/generation/faithfulness.py` | Faithfulness (dựa judge) | `llm_judge.py` | `evaluation_runner.py` | Answer, contexts | Điểm kèm lý do | Implemented | M6 |
+| `evaluation/metrics/generation/answer_relevancy.py` | Answer Relevancy | `llm_judge.py` | `evaluation_runner.py` | Câu hỏi, answer | Điểm | Implemented | M6 |
 | `evaluation/metrics/generation/context_precision.py` | Context Precision | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Created | M6 |
 | `evaluation/metrics/generation/context_recall.py` | Context Recall | `llm_judge.py` | `evaluation_runner.py` | Contexts, ground truth | Điểm | Created | M6 |
-| `evaluation/evaluators/llm_judge.py` | Gọi LLM làm judge, ghi model và prompt của judge | `base_llm_client.py`, `judge_prompts.py`, `provider_retry.py` | Metric sinh, `security_result_evaluator.py` | Prompt judge | Phán định kèm lý do | Created | M6 |
-| `evaluation/evaluators/judge_prompts.py` | Prompt judge có version | Không | `llm_judge.py` | | Prompt | Planned | M6 |
-| `evaluation/runners/evaluation_runner.py` | Chạy từng case qua pipeline, tính metric, bắt lỗi theo case | `rag_pipeline.py`, metrics | `evaluation_service.py`, `benchmark_runner.py` | Test cases, `RAGConfig` | Kết quả từng case, tổng hợp | Created | M6 |
+| `evaluation/evaluators/llm_judge.py` | Gọi LLM làm judge, ghi model và prompt của judge | `base_llm_client.py`, `judge_prompts.py`, `provider_retry.py` | Metric sinh, `security_result_evaluator.py` | Prompt judge | Phán định kèm lý do | Implemented | M6 |
+| `evaluation/evaluators/judge_prompts.py` | Prompt judge có version | Không | `llm_judge.py` | | Prompt | Implemented | M6 |
+| `evaluation/runners/evaluation_runner.py` | Chạy từng case qua pipeline, tính metric, bắt lỗi theo case | `rag_pipeline.py`, metrics | `evaluation_service.py`, `benchmark_runner.py` | Test cases, `RAGConfig` | Kết quả từng case, tổng hợp | Implemented | M6 |
 | `evaluation/benchmarks/benchmark_runner.py` | Chạy nhiều cấu hình qua runner, giữ điều kiện đồng nhất | `evaluation_runner.py` | `benchmark_service.py` | Dataset version, danh sách cấu hình | Các run con | Created | M8 |
-| `evaluation/reports/report_builder.py` | Dựng CSV cho evaluation và benchmark | Dữ liệu run | `report_service.py` | Dữ liệu run | File CSV | Created | M6, mở rộng M8 |
+| `evaluation/reports/report_builder.py` | Dựng CSV cho evaluation và benchmark | Dữ liệu run | `report_service.py` | Dữ liệu run | File CSV | Implemented | M6, mở rộng M8 |
 
 ### 5.7 Security
 
@@ -305,7 +311,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/src/services/api/chatApi.js` | Gọi `/chat/*` | `httpClient.js` | `ChatPage.jsx` | Created | M4 |
 | `frontend/src/services/api/modelConfigApi.js` | Gọi `/model-configurations*` | `httpClient.js` | `ChatPage.jsx`, `EvaluationsPage.jsx`, `SecurityPage.jsx`, `BenchmarksPage.jsx` | Planned | M4 |
 | `frontend/src/services/api/datasetApi.js` | Gọi `/datasets*`, `/dataset-versions*`, `/test-cases*` | `httpClient.js` | `DatasetsPage.jsx` | Created | M5 |
-| `frontend/src/services/api/evaluationApi.js` | Gọi `/evaluations*` | `httpClient.js` | `EvaluationsPage.jsx`, `DashboardPage.jsx` | Created | M6 |
+| `frontend/src/services/api/evaluationApi.js` | Gọi `/evaluations*` | `httpClient.js` | `EvaluationsPage.jsx`, `DashboardPage.jsx` | Implemented | M6 |
 | `frontend/src/services/api/securityApi.js` | Gọi `/security/*` | `httpClient.js` | `SecurityPage.jsx` | Created | M7 |
 | `frontend/src/services/api/benchmarkApi.js` | Gọi `/benchmarks*` | `httpClient.js` | `BenchmarksPage.jsx` | Created | M8 |
 | `frontend/src/contexts/AuthContext.jsx` | Giữ trạng thái đăng nhập và token | `authApi.js` | `App.jsx`, `useAuth.js` | Tested | M3 |
@@ -316,10 +322,10 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/src/pages/DocumentsPage.jsx` | Upload, danh sách, trạng thái, xóa | `documentApi.js` | `App.jsx` | Tested | M3 |
 | `frontend/src/pages/ChatPage.jsx` | Chat và hiển thị citation | `chatApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M4 |
 | `frontend/src/pages/DatasetsPage.jsx` | Dataset, version, test case | `datasetApi.js` | `App.jsx` | Created | M5 |
-| `frontend/src/pages/EvaluationsPage.jsx` | Run, kết quả, biểu đồ | `evaluationApi.js`, `datasetApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M6 |
+| `frontend/src/pages/EvaluationsPage.jsx` | Run, kết quả, biểu đồ | `evaluationApi.js`, `datasetApi.js`, `modelConfigApi.js` | `App.jsx` | Implemented | M6 |
 | `frontend/src/pages/SecurityPage.jsx` | Run bảo mật, kết quả, evidence | `securityApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M7 |
 | `frontend/src/pages/BenchmarksPage.jsx` | So sánh cấu hình, lịch sử | `benchmarkApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M8 |
-| `frontend/src/pages/DashboardPage.jsx` | Tổng quan | Các `*Api.js` | `App.jsx` | Created | M6, hoàn thiện M8 |
+| `frontend/src/pages/DashboardPage.jsx` | Tổng quan | Các `*Api.js` | `App.jsx` | Implemented | M6, hoàn thiện M8 |
 
 ## 6. Điều kiện kiểm chứng
 

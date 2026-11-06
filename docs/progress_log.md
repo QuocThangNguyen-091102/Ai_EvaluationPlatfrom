@@ -18,6 +18,16 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M6-T01 đến M6-T09 | Đánh giá RAG: metric, judge, runner, API, giao diện, gate M6 | 2026-11-06
+- Trạng thái: phần mã hoàn thành; **gate M6 đạt một phần** (thiếu baseline trên dataset thật, cần người).
+- Backend: bảng `evaluation_runs`, `evaluation_results`, `metric_results` (migration 0007, FK deferred); `retrieved_contexts` thêm `evaluation_result_id` (đúng một trong chat hoặc evaluation). Metric truy xuất (Precision@k chia cho k, Recall@k theo tham chiếu, MRR, NDCG@k), `behavior_correct`, LLM judge (faithfulness, answer relevancy, prompt `judge-v1`). Runner chạy qua RAG pipeline dùng chung, lưu từng câu ngay khi xong, câu lỗi không dừng lượt. API: tạo (202, chạy nền), danh sách, chi tiết, kết quả từng câu (lọc theo trạng thái, phân loại), báo cáo CSV (409 nếu chưa xong). Khởi động lại thì lượt dở bị đánh dấu `failed`.
+- Quyết định: metric không tính được thì không điền số (`skipped`/`failed`, có CHECK trong DB). Tổng hợp vẫn có dòng `value=null` để giao diện ghi "bỏ qua" thay vì ẩn. Chỉ đánh giá được version đã duyệt. Cảnh báo khi cấu hình chunk của tài liệu khác cấu hình đánh giá.
+- Giao diện: trang "Đánh giá" (tạo lượt, tiến độ tự cập nhật, metric dạng thanh, phân loại lỗi bấm để lọc, chi tiết từng câu kèm đoạn lấy về đúng/sai, tải CSV) và "Dashboard" (so sánh các lượt theo từng phiên bản dataset, không tô màu đạt/không đạt vì chưa có baseline).
+- Kiểm tra thật: backend 369 pass, 5 skipped (31 unit metric và runner, 9 integration API mới); giao diện 78 pass; `npm run build` ok. E2E trên Docker với model embedding thật và dataset MẪU 6 câu: lượt chạy tới Hoàn tất, CSV tải được, dashboard đúng, điện thoại không tràn ngang, không lỗi JS. Số liệu E2E chỉ để kiểm tra luồng, **không phải kết quả chất lượng**.
+- Phát hiện: chế độ extractive không biết từ chối, nên 2/2 câu không có đáp án bị xếp `hallucination`. Đây là giới hạn của chế độ, ghi trong `docs/metrics_notes.md`.
+- Tài liệu: `docs/metrics_notes.md` (cách tính, thiên lệch judge, giới hạn), `docs/error_analysis.md` (mẫu cho M6-T07, cần người điền).
+- **Cần người:** baseline đánh giá trên dataset thật (M6 gate), phân tích lỗi M6-T07, đo đồng thuận judge và người khi có LLM.
+
 ### M5-T06, M5-T07 | Giao diện Dataset và gate M5 | 2026-11-06
 - M5-T06 hoàn thành: `pages/DatasetsPage.jsx`, `components/TestCaseForm.jsx`, `services/api/datasetApi.js`, CSS, menu "Dataset"; tạo dataset, chọn phiên bản, tạo phiên bản mới (sao chép), duyệt và đóng băng (có xác nhận), thêm, sửa, xóa câu hỏi với chọn tài liệu và dán câu trích, nhập CSV hoặc JSON (lỗi hiện theo dòng), lọc theo loại và độ khó. 72 test giao diện pass (9 test mới).
 - **Gate M5: chưa đạt, cần người.** Điều kiện là có ít nhất một phiên bản dataset thật do người viết và duyệt. Công cụ đã đủ; còn thiếu nội dung (M5-T03, M5-T04).

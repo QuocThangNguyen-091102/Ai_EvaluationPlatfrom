@@ -3,8 +3,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
 import DatasetsPage from "./pages/DatasetsPage.jsx";
 import DocumentsPage from "./pages/DocumentsPage.jsx";
+import EvaluationsPage from "./pages/EvaluationsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="documents" element={<DocumentsPage />} />
         <Route path="chat" element={<ChatPage />} />
         <Route path="datasets" element={<DatasetsPage />} />
+        <Route path="evaluations" element={<EvaluationsPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

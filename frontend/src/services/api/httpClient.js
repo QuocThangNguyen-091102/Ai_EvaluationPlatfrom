@@ -25,7 +25,8 @@ export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler ?? (() => {});
 }
 
-export async function request(path, { method = "GET", json, formData, auth = true } = {}) {
+// `responseType: "blob"` dùng cho tải file (báo cáo CSV); lỗi vẫn đọc dạng JSON như mọi request khác.
+export async function request(path, { method = "GET", json, formData, auth = true, responseType = "json" } = {}) {
   const headers = {};
   let body;
   if (json !== undefined) {
@@ -48,6 +49,9 @@ export async function request(path, { method = "GET", json, formData, auth = tru
 
   if (response.status === 204) {
     return null;
+  }
+  if (response.ok && responseType === "blob") {
+    return response.blob();
   }
   const payload = await response.json().catch(() => null);
 
