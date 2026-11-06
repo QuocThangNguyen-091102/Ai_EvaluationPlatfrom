@@ -29,6 +29,11 @@ services:
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
       UPLOAD_DIR: /app/uploads
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-20}
+      # LLM tùy chọn: để trống LLM_BASE_URL thì chạy chế độ trích đoạn.
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER_NAME: ${LLM_PROVIDER_NAME:-openai-compatible}
     volumes:
       - uploads:/app/uploads
       - models:/app/model-cache

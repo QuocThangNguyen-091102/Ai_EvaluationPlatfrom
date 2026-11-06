@@ -27,5 +27,6 @@ USER appuser
 
 EXPOSE 8000
 
-# Áp dụng migration rồi mới khởi động API.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Áp dụng migration rồi mới khởi động API. Một worker: tác vụ nền và bộ đếm giới hạn đăng nhập nằm trong tiến trình.
+# FORWARDED_ALLOW_IPS: chỉ tin header X-Forwarded-For từ các IP này (bản production đặt "*" vì chỉ Caddy gọi được backend).
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS:-127.0.0.1}\""]

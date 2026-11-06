@@ -1,0 +1,84 @@
+# Triển khai thật trên MỘT máy chủ (phương án A trong docs/11_free_deployment.md).
+# Giao diện chạy trên Vercel; máy chủ này chỉ chạy API sau Caddy (HTTPS tự động), database không mở ra ngoài.
+#
+# Chạy từ gốc repo:
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/production.env up -d --build
+# Hướng dẫn đầy đủ: docs/deployment_guide.md
+
+name: ai-eval-prod
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?thiếu POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?thiếu POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?thiếu POSTGRES_DB}
+    # Không có "ports": chỉ backend trong mạng nội bộ của Compose gọi được database.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?thiếu CORS_ALLOWED_ORIGINS (địa chỉ giao diện trên Vercel)}
+      JWT_SECRET: ${JWT_SECRET:?thiếu JWT_SECRET (ít nhất 32 ký tự)}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      UPLOAD_DIR: /app/uploads
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+      MAX_DOCUMENTS_PER_USER: ${MAX_DOCUMENTS_PER_USER:-30}
+      REGISTRATION_ENABLED: ${REGISTRATION_ENABLED:-true}
+      LOGIN_MAX_FAILURES: ${LOGIN_MAX_FAILURES:-10}
+      REGISTER_MAX_ATTEMPTS: ${REGISTER_MAX_ATTEMPTS:-5}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER_NAME: ${LLM_PROVIDER_NAME:-openai-compatible}
+      # Backend chỉ nhận kết nối từ Caddy trong mạng nội bộ, nên tin header X-Forwarded-For để biết IP thật
+      # (cần cho giới hạn số lần đăng nhập).
+      FORWARDED_ALLOW_IPS: "*"
+    volumes:
+      - uploads:/app/uploads
+      - models:/app/model-cache
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?thiếu API_DOMAIN (tên miền trỏ về máy chủ này)}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:
+  models:
+  caddy_data:
+  caddy_config:

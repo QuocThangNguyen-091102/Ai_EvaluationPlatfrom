@@ -23,6 +23,10 @@ class DocumentService:
         self._documents = documents
 
     def upload(self, user: User, filename: str | None, stream: BinaryIO) -> Document:
+        if self._documents.count_for_user(user.id) >= settings.max_documents_per_user:
+            raise AppError(
+                409, "conflict", f"Đã đạt giới hạn {settings.max_documents_per_user} tài liệu mỗi tài khoản; hãy xóa bớt tài liệu cũ"
+            )
         content = self._read_with_limit(stream)
         if not content:
             raise AppError(422, "validation_error", "File rỗng")

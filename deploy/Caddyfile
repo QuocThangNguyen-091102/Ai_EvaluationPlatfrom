@@ -1,0 +1,19 @@
+# Caddy tự xin và gia hạn chứng chỉ HTTPS miễn phí cho API_DOMAIN (cần tên miền trỏ về máy chủ, mở cổng 80 và 443).
+{$API_DOMAIN} {
+	encode gzip
+
+	# Chặn body quá lớn ngay ở cửa (backend vẫn kiểm tra MAX_UPLOAD_SIZE_MB).
+	request_body {
+		max_size 25MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	reverse_proxy backend:8000
+}

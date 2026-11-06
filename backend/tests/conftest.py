@@ -41,6 +41,15 @@ from tests.fakes import HashEmbedder, ScriptedLlm
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
+@pytest.fixture(autouse=True)
+def fresh_rate_limits():
+    from app.api.routes.auth import login_ip_limiter, login_limiter, register_limiter
+
+    for limiter in (login_limiter, login_ip_limiter, register_limiter):
+        limiter.clear()
+    yield
+
+
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False)

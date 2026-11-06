@@ -77,6 +77,9 @@ class DocumentRepository:
             select(Document).where(Document.user_id == user_id, Document.content_hash == content_hash)
         )
 
+    def count_for_user(self, user_id: uuid.UUID) -> int:
+        return self._session.scalar(select(func.count()).select_from(Document).where(Document.user_id == user_id))
+
     def count_chunks(self, user_id: uuid.UUID, document_id: uuid.UUID) -> int:
         return self._session.scalar(
             select(func.count())

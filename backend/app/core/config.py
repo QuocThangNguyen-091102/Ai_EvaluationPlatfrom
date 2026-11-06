@@ -40,6 +40,15 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
+    # Bảo vệ bản demo công khai (R18). Đăng nhập sai quá LOGIN_MAX_FAILURES lần trong cửa sổ thì tạm khóa theo
+    # IP + email (và gấp 5 lần theo riêng IP); đăng ký tối đa REGISTER_MAX_ATTEMPTS lần mỗi cửa sổ theo IP.
+    rate_limit_window_seconds: int = Field(default=900, gt=0)
+    login_max_failures: int = Field(default=10, gt=0)
+    register_max_attempts: int = Field(default=5, gt=0)
+    # Tắt đăng ký khi đã tạo xong tài khoản của mình trên bản công khai.
+    registration_enabled: bool = True
+    max_documents_per_user: int = Field(default=100, gt=0)
+
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.
     cors_allowed_origins: str = "http://localhost:5173"
 
