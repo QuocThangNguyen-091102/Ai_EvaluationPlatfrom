@@ -18,6 +18,18 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M5-T01, M5-T02, M5-T05 | Bảng dataset, Dataset API, import, duyệt và đóng băng | 2026-11-06
+- Trạng thái: Hoàn thành.
+- File: `models/dataset.py`, migration `0006`, `evaluation/datasets/reference_locator.py`, `evaluation/datasets/dataset_loader.py`, `schemas/dataset.py`, `repositories/dataset_repository.py`, `services/dataset_service.py`, `api/routes/datasets.py`; Docker copy thêm `evaluation/`; test `unit/test_dataset_tools.py`, `integration/test_dataset_api.py`.
+- Thiết kế reference context: người viết chép nguyên văn câu trích và chọn tài liệu (theo tên hoặc id); hệ thống tìm vị trí ký tự trong văn bản đã làm sạch (dựng lại từ chunk, so khớp sau khi gộp khoảng trắng và chuẩn hóa NFC). Không tìm thấy hoặc xuất hiện nhiều lần thì từ chối. Vị trí không phụ thuộc cách chia chunk.
+- Kiểm tra nhất quán: câu "answer" phải có đáp án chuẩn và ít nhất một tham chiếu; câu "unanswerable" phải đi cùng "insufficient_context" và không có đáp án (CHECK trong DB và kiểm tra ở service).
+- Import CSV, JSON theo nguyên tắc **tất cả hoặc không gì**, lỗi báo theo dòng. Version đã duyệt bất biến (409 cho mọi thao tác sửa), tạo version mới có thể sao chép từ version cũ.
+- Kiểm tra thật: 329 test backend pass (43 test mới), gồm cô lập user ở mọi endpoint dataset.
+- Thêm: `evaluation/datasets/sample_cases_vi_two_pages.json` (6 câu MẪU do AI soạn cho PDF mẫu, ghi rõ chưa duyệt, chỉ để thử luồng) và `docs/corpus_sources.md` (mẫu để người điền).
+
+### M5-T03, M5-T04 | Corpus và viết dataset thật | 2026-11-06
+- Trạng thái: **Chờ người làm.** Chọn tài liệu có quyền sử dụng (ghi vào `docs/corpus_sources.md`), viết khoảng 100 câu hỏi có tham chiếu kiểm chứng được, có tỷ lệ câu không có đáp án. Mình không viết thay vì dataset dùng để đo phải do người viết và duyệt.
+
 ### M4-T09 | GATE M4: RAG | 2026-11-06
 - Trạng thái: **Đạt một phần, có ngoại lệ ghi rõ.** User giao làm hết phần còn lại; mình đi tiếp và báo phần còn thiếu.
 - Đạt: chat chạy từ đầu đến cuối trên trình duyệt thật (upload PDF tiếng Việt, xử lý bằng model thật, hỏi, trả lời đúng "30 ngày" kèm nguồn và trang, lịch sử còn sau khi tải lại); test cô lập quyền xanh ở retriever, pipeline và API; mỗi lượt hỏi ghi chunk kèm điểm, cấu hình, latency, token, chi phí.

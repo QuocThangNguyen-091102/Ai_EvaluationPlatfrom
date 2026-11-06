@@ -9,11 +9,13 @@ from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_session, open_session
 from app.models.user import User
 from app.repositories.chat_repository import ChatRepository
+from app.repositories.dataset_repository import DatasetRepository
 from app.repositories.document_repository import DocumentRepository
 from app.repositories.model_config_repository import ModelConfigRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from app.services.chat_service import ChatService
+from app.services.dataset_service import DatasetService
 from app.services.document_service import DocumentService
 from app.services.ingestion_service import IngestionService
 from app.services.model_config_service import ModelConfigService
@@ -47,6 +49,10 @@ def get_chat_service(
     pipeline: RagPipeline = Depends(get_pipeline),
 ) -> ChatService:
     return ChatService(ChatRepository(session), ModelConfigService(ModelConfigRepository(session), get_rag_defaults()), pipeline)
+
+
+def get_dataset_service(session: Session = Depends(get_session)) -> DatasetService:
+    return DatasetService(DatasetRepository(session))
 
 
 def get_current_user(

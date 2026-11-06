@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir torch==2.15.0 --index-url https://download.pytorc
 COPY backend/alembic.ini .
 COPY backend/app ./app
 COPY ai_engine ./ai_engine
+COPY evaluation ./evaluation
 COPY configs ./configs
 
 # Chạy bằng user thường, không dùng root. Thư mục upload và cache model phải thuộc user này để volume ghi được.

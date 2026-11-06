@@ -1,5 +1,6 @@
 # Import mọi model để Base.metadata biết đầy đủ các bảng (Alembic dựa vào đó).
 from app.models.chat import ChatMessage, ChatSession
+from app.models.dataset import DatasetVersion, EvaluationDataset, EvaluationTestCase
 from app.models.document import Document
 from app.models.document_chunk import DocumentChunk
 from app.models.model_config import ModelConfiguration
@@ -9,8 +10,11 @@ from app.models.user import User
 __all__ = [
     "ChatMessage",
     "ChatSession",
+    "DatasetVersion",
     "Document",
     "DocumentChunk",
+    "EvaluationDataset",
+    "EvaluationTestCase",
     "ModelConfiguration",
     "RetrievedContext",
     "User",

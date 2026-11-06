@@ -1,0 +1,63 @@
+{
+  "_ghi_chu": "MẪU do AI soạn cho file backend/tests/fixtures/vi_two_pages.pdf, CHƯA được người duyệt. Chỉ dùng để thử luồng import và đánh giá; KHÔNG dùng làm số đo chất lượng. Dataset thật phải do người viết và duyệt (M5-T04, M5-T05).",
+  "test_cases": [
+    {
+      "question": "Hồ sơ xin cấp giấy phép phải được nộp trong thời hạn bao lâu?",
+      "ground_truth_answer": "Trong vòng 30 ngày kể từ ngày nhận được thông báo chấp thuận.",
+      "reference_contexts": [{"filename": "vi_two_pages.pdf", "quote": "phải được nộp trong vòng 30 ngày kể từ ngày nhận được thông báo chấp thuận"}],
+      "question_type": "fact",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "source_note": "Mẫu do AI soạn, chưa duyệt"
+    },
+    {
+      "question": "Trong năm đầu tiên người nộp hồ sơ có phải đóng lệ phí không?",
+      "ground_truth_answer": "Không, người nộp hồ sơ không phải đóng lệ phí trong năm đầu tiên.",
+      "reference_contexts": [{"filename": "vi_two_pages.pdf", "quote": "không phải đóng lệ phí trong năm đầu tiên"}],
+      "question_type": "fact",
+      "difficulty": "easy",
+      "expected_behavior": "answer",
+      "source_note": "Mẫu do AI soạn, chưa duyệt"
+    },
+    {
+      "question": "Thời hạn nộp hồ sơ là bao lâu và năm đầu có mất lệ phí không?",
+      "ground_truth_answer": "Phải nộp trong vòng 30 ngày kể từ ngày nhận thông báo chấp thuận, và năm đầu không phải đóng lệ phí.",
+      "reference_contexts": [
+        {"filename": "vi_two_pages.pdf", "quote": "phải được nộp trong vòng 30 ngày"},
+        {"filename": "vi_two_pages.pdf", "quote": "không phải đóng lệ phí trong năm đầu tiên"}
+      ],
+      "question_type": "multi_hop",
+      "difficulty": "medium",
+      "expected_behavior": "answer",
+      "source_note": "Mẫu do AI soạn, chưa duyệt"
+    },
+    {
+      "question": "Tóm tắt các quy định trong tài liệu.",
+      "ground_truth_answer": "Hồ sơ xin giấy phép phải nộp trong vòng 30 ngày kể từ ngày nhận thông báo chấp thuận; năm đầu tiên không thu lệ phí.",
+      "reference_contexts": [
+        {"filename": "vi_two_pages.pdf", "quote": "Hồ sơ xin cấp giấy phép phải được nộp"},
+        {"filename": "vi_two_pages.pdf", "quote": "Người nộp hồ sơ không phải đóng lệ phí"}
+      ],
+      "question_type": "summarization",
+      "difficulty": "medium",
+      "expected_behavior": "answer",
+      "source_note": "Mẫu do AI soạn, chưa duyệt"
+    },
+    {
+      "question": "Hồ sơ phải nộp ở cơ quan nào?",
+      "ground_truth_answer": null,
+      "question_type": "unanswerable",
+      "difficulty": "medium",
+      "expected_behavior": "insufficient_context",
+      "source_note": "Mẫu do AI soạn, chưa duyệt. Tài liệu không nói nơi nộp."
+    },
+    {
+      "question": "Lệ phí từ năm thứ hai là bao nhiêu?",
+      "ground_truth_answer": null,
+      "question_type": "unanswerable",
+      "difficulty": "hard",
+      "expected_behavior": "insufficient_context",
+      "source_note": "Mẫu do AI soạn, chưa duyệt. Câu bẫy: tài liệu chỉ nói năm đầu miễn phí, không nói mức phí năm sau."
+    }
+  ]
+}
