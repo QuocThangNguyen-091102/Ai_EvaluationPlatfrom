@@ -18,6 +18,13 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M8 | Benchmark, dashboard tổng quan, gate M8 | 2026-11-06
+- Trạng thái: hoàn thành; **gate M8 đạt một phần**: chỉ so sánh được `top_k` vì chưa có LLM (so `llm_model` hoặc `prompt_version` có nghĩa cần LLM).
+- Backend: bảng `benchmark_runs`, `evaluation_runs.benchmark_run_id` (migration 0009). Mỗi cấu hình là một lượt đánh giá bình thường, chạy tuần tự trong nền. Kiểm tra version đã duyệt và mọi cấu hình trước khi ghi (một transaction). Cấu hình phải khác nhau ở biến đã khai báo (nếu không: 422); khác thêm biến khác thì ghi cảnh báo. Thống kê: độ trễ trung bình, p50, p95 (nearest-rank), tổng token, chi phí; thiếu giá thì cờ `cost_incomplete`, không cộng như 0. API: tạo (202), danh sách, chi tiết, CSV. Thiết kế: `docs/benchmark_design.md`.
+- Giao diện: trang "Benchmark" (chọn cấu hình gốc, biến và các giá trị; giao diện tự tạo cấu hình chỉ đổi đúng biến đó; bảng chất lượng, độ trễ, token, chi phí; CSV). Dashboard thêm phần tổng quan 6 khu vực (tài liệu, hỏi đáp, dataset, đánh giá, bảo mật, benchmark) và tóm tắt lượt kiểm thử bảo mật gần nhất (FR-25).
+- Kiểm tra thật: backend 413 pass, 5 skipped (5 unit và 6 integration mới); downgrade/upgrade migration sạch; giao diện 85 pass; build ok. E2E Docker với model thật: benchmark top_k 1, 3, 5 trên dataset MẪU chạy tới Hoàn tất, CSV đúng, dashboard đếm đúng; 7 trang không tràn ngang trên điện thoại, không lỗi JS.
+- Lỗi tìm thấy nhờ E2E: menu 8 mục tràn 48px trên điện thoại ở mọi trang; sửa bằng cách cho menu xuống dòng thành một hàng riêng. Nhãn "Tên" quá mơ hồ, đổi thành "Tên benchmark".
+
 ### M7 | Kiểm thử bảo mật: test case, sandbox, runner, luật và judge, API, giao diện, gate M7 | 2026-11-06
 - Trạng thái: phần mã hoàn thành; **gate M7 đạt một phần**: hành vi của LLM trước injection và jailbreak chưa kiểm tra được vì chưa có LLM (cần người cấu hình).
 - Test case: 12 case YAML trong 5 nhóm (`security/test_cases/`), có kiểm tra schema, canary ngẫu nhiên mỗi lượt, mitigation cho từng case. Thiết kế và mô hình mối đe dọa: `docs/security_testing.md`.

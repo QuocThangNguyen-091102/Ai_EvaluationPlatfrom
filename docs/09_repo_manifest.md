@@ -33,6 +33,11 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 - `docs/security_testing.md`: phạm vi, mô hình mối đe dọa, định dạng test case, cách chấm, giới hạn.
 - Migration `0008_create_security_tables.py`; `retrieved_contexts.security_test_result_id`.
 
+### Thêm ở M8 (ngoài bản đề xuất)
+- `docs/benchmark_design.md`: thiết kế benchmark, chỉ số so sánh, cách đọc kết quả, giới hạn.
+- Migration `0009_create_benchmark_runs.py`; `evaluation_runs.benchmark_run_id`.
+- Chưa tạo: `backend/app/models/report.py`, `report_repository.py`, `report_service.py` (bảng lịch sử xuất báo cáo). Báo cáo CSV dựng lại từ DB mỗi lần tải; để sau MVP.
+
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 
 | File | Lý do |
@@ -218,7 +223,7 @@ Tất cả route: phụ thuộc vào service tương ứng và schema tương �
 | `backend/app/api/routes/datasets.py` | Dataset, version, test case, import | `dataset_service.py` | Created | M5 |
 | `backend/app/api/routes/evaluations.py` | Run, kết quả, báo cáo | `evaluation_service.py`, `report_service.py` | Implemented | M6 |
 | `backend/app/api/routes/security_tests.py` | Run bảo mật, kết quả, báo cáo | `security_service.py`, `report_service.py` | Implemented | M7 |
-| `backend/app/api/routes/benchmarks.py` | Benchmark, báo cáo | `benchmark_service.py`, `report_service.py` | Created | M8 |
+| `backend/app/api/routes/benchmarks.py` | Benchmark, báo cáo | `benchmark_service.py`, `report_service.py` | Implemented | M8 |
 | `backend/app/api/routes/__init__.py` | Đánh dấu package | | Created | M2 |
 
 ### 5.4 Backend: models, schemas, repositories, services
@@ -234,7 +239,7 @@ Mỗi hàng là một nhóm cùng tên miền. Với `models`: định nghĩa b�
 | Dataset | `dataset.py` | `dataset.py` | `dataset_repository.py` | `dataset_service.py` | Created | M5 |
 | Evaluation | `evaluation.py` (run, result, metric) | `evaluation.py` | `evaluation_repository.py` | `evaluation_service.py` (gọi `evaluation/runners/evaluation_runner.py`) | Implemented | M6 |
 | Security | `security_test.py` | `security_test.py` | `security_repository.py` | `security_service.py` (gọi `security/runners/security_runner.py`) | Implemented | M7 |
-| Benchmark | `benchmark.py` | `benchmark.py` | `benchmark_repository.py` | `benchmark_service.py` (gọi `evaluation/benchmarks/benchmark_runner.py`) | Created | M8 |
+| Benchmark | `benchmark.py` | `benchmark.py` | `benchmark_repository.py` | `benchmark_service.py` (gọi `evaluation/benchmarks/benchmark_runner.py`) | Implemented | M8 |
 | Báo cáo | `report.py` | (dùng schema của evaluation, security, benchmark) | `report_repository.py` [P] (ghi lịch sử xuất, M6) | `report_service.py` (gọi `evaluation/reports/report_builder.py`, `security/reports/security_report_builder.py`) | Created | M6 đến M8 |
 
 Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ đánh dấu package và để trống hoặc xuất đối tượng chính (Created, M2 trở đi).
@@ -279,7 +284,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `evaluation/evaluators/llm_judge.py` | Gọi LLM làm judge, ghi model và prompt của judge | `base_llm_client.py`, `judge_prompts.py`, `provider_retry.py` | Metric sinh, `security_result_evaluator.py` | Prompt judge | Phán định kèm lý do | Implemented | M6 |
 | `evaluation/evaluators/judge_prompts.py` | Prompt judge có version | Không | `llm_judge.py` | | Prompt | Implemented | M6 |
 | `evaluation/runners/evaluation_runner.py` | Chạy từng case qua pipeline, tính metric, bắt lỗi theo case | `rag_pipeline.py`, metrics | `evaluation_service.py`, `benchmark_runner.py` | Test cases, `RAGConfig` | Kết quả từng case, tổng hợp | Implemented | M6 |
-| `evaluation/benchmarks/benchmark_runner.py` | Chạy nhiều cấu hình qua runner, giữ điều kiện đồng nhất | `evaluation_runner.py` | `benchmark_service.py` | Dataset version, danh sách cấu hình | Các run con | Created | M8 |
+| `evaluation/benchmarks/benchmark_runner.py` | Chạy nhiều cấu hình qua runner, giữ điều kiện đồng nhất | `evaluation_runner.py` | `benchmark_service.py` | Dataset version, danh sách cấu hình | Các run con | Implemented | M8 |
 | `evaluation/reports/report_builder.py` | Dựng CSV cho evaluation và benchmark | Dữ liệu run | `report_service.py` | Dữ liệu run | File CSV | Implemented | M6, mở rộng M8 |
 
 ### 5.7 Security
@@ -318,7 +323,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/src/services/api/datasetApi.js` | Gọi `/datasets*`, `/dataset-versions*`, `/test-cases*` | `httpClient.js` | `DatasetsPage.jsx` | Created | M5 |
 | `frontend/src/services/api/evaluationApi.js` | Gọi `/evaluations*` | `httpClient.js` | `EvaluationsPage.jsx`, `DashboardPage.jsx` | Implemented | M6 |
 | `frontend/src/services/api/securityApi.js` | Gọi `/security/*` | `httpClient.js` | `SecurityPage.jsx` | Implemented | M7 |
-| `frontend/src/services/api/benchmarkApi.js` | Gọi `/benchmarks*` | `httpClient.js` | `BenchmarksPage.jsx` | Created | M8 |
+| `frontend/src/services/api/benchmarkApi.js` | Gọi `/benchmarks*` | `httpClient.js` | `BenchmarksPage.jsx` | Implemented | M8 |
 | `frontend/src/contexts/AuthContext.jsx` | Giữ trạng thái đăng nhập và token | `authApi.js` | `App.jsx`, `useAuth.js` | Tested | M3 |
 | `frontend/src/hooks/useAuth.js` | Truy cập `AuthContext` | `AuthContext.jsx` | Pages, layout | Tested | M3 |
 | `frontend/src/components/ProtectedRoute.jsx` | Chặn route khi chưa đăng nhập | `useAuth.js` | `App.jsx` | Tested | M3 |
@@ -329,7 +334,7 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/src/pages/DatasetsPage.jsx` | Dataset, version, test case | `datasetApi.js` | `App.jsx` | Created | M5 |
 | `frontend/src/pages/EvaluationsPage.jsx` | Run, kết quả, biểu đồ | `evaluationApi.js`, `datasetApi.js`, `modelConfigApi.js` | `App.jsx` | Implemented | M6 |
 | `frontend/src/pages/SecurityPage.jsx` | Run bảo mật, kết quả, evidence | `securityApi.js`, `modelConfigApi.js` | `App.jsx` | Implemented | M7 |
-| `frontend/src/pages/BenchmarksPage.jsx` | So sánh cấu hình, lịch sử | `benchmarkApi.js`, `modelConfigApi.js` | `App.jsx` | Created | M8 |
+| `frontend/src/pages/BenchmarksPage.jsx` | So sánh cấu hình, lịch sử | `benchmarkApi.js`, `modelConfigApi.js` | `App.jsx` | Implemented | M8 |
 | `frontend/src/pages/DashboardPage.jsx` | Tổng quan | Các `*Api.js` | `App.jsx` | Implemented | M6, hoàn thiện M8 |
 
 ## 6. Điều kiện kiểm chứng

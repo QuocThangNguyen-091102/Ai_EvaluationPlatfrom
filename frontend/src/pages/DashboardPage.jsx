@@ -3,12 +3,76 @@ import { Link } from "react-router-dom";
 
 import { describeError, formatDateTime } from "../formatting.js";
 import { CATEGORY_LABELS, METRIC_LABELS, METRIC_STATUS_LABELS, formatScore } from "../metricLabels.js";
+import { listBenchmarks } from "../services/api/benchmarkApi.js";
+import { listSessions } from "../services/api/chatApi.js";
+import { listDatasets } from "../services/api/datasetApi.js";
+import { listDocuments } from "../services/api/documentApi.js";
 import { listEvaluations } from "../services/api/evaluationApi.js";
+import { listSecurityRuns } from "../services/api/securityApi.js";
 
 const COLUMNS = ["behavior_correct", "recall_at_k", "mrr", "ndcg_at_k", "faithfulness", "answer_relevancy"];
 
-// So sánh các lượt đánh giá đã hoàn tất. Chỉ so được khi cùng phiên bản dataset, nên bảng nhóm theo dataset version.
+const OVERVIEW = [
+  { key: "documents", label: "Tài liệu", to: "/documents", load: () => listDocuments({ limit: 1 }) },
+  { key: "chats", label: "Phiên hỏi đáp", to: "/chat", load: () => listSessions({ limit: 1 }) },
+  { key: "datasets", label: "Dataset", to: "/datasets", load: () => listDatasets() },
+  { key: "evaluations", label: "Lượt đánh giá", to: "/evaluations", load: () => listEvaluations({ limit: 1 }) },
+  { key: "security", label: "Lượt kiểm thử bảo mật", to: "/security", load: () => listSecurityRuns() },
+  { key: "benchmarks", label: "Benchmark", to: "/benchmarks", load: () => listBenchmarks() },
+];
+
 export default function DashboardPage() {
+  return (
+    <section className="dashboard">
+      <h1>Dashboard</h1>
+      <OverviewStats />
+      <EvaluationComparison />
+    </section>
+  );
+}
+
+// Mỗi ô tải độc lập: một API lỗi chỉ làm ô đó hiện "?", không làm hỏng cả trang.
+function OverviewStats() {
+  const [counts, setCounts] = useState({});
+  const [latestSecurity, setLatestSecurity] = useState(null);
+
+  useEffect(() => {
+    for (const item of OVERVIEW) {
+      item
+        .load()
+        .then((result) => {
+          setCounts((current) => ({ ...current, [item.key]: result.total ?? result.items?.length ?? 0 }));
+          if (item.key === "security") setLatestSecurity(result.items?.find((run) => run.status === "completed") ?? null);
+        })
+        .catch(() => setCounts((current) => ({ ...current, [item.key]: "?" })));
+    }
+  }, []);
+
+  const fails = latestSecurity?.summary?.by_status?.fail ?? 0;
+  return (
+    <section aria-label="Tổng quan">
+      <ul className="overview-stats">
+        {OVERVIEW.map((item) => (
+          <li key={item.key}>
+            <Link to={item.to} className="overview-stat">
+              <span className="overview-stat__value">{counts[item.key] ?? "…"}</span>
+              <span className="overview-stat__label">{item.label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {latestSecurity && (
+        <p className={fails ? "alert alert--error" : "notice"}>
+          Kiểm thử bảo mật gần nhất ({formatDateTime(latestSecurity.created_at)}): {latestSecurity.summary?.by_status?.pass ?? 0} đạt, {fails} không
+          đạt, {latestSecurity.summary?.by_status?.skipped ?? 0} bỏ qua. <Link to="/security">Xem chi tiết</Link>
+        </p>
+      )}
+    </section>
+  );
+}
+
+// So sánh các lượt đánh giá đã hoàn tất. Chỉ so được khi cùng phiên bản dataset, nên bảng nhóm theo dataset version.
+function EvaluationComparison() {
   const [runs, setRuns] = useState(null);
   const [error, setError] = useState(null);
 
@@ -43,7 +107,7 @@ export default function DashboardPage() {
 
   return (
     <section className="dashboard">
-      <h1>Dashboard đánh giá</h1>
+      <h2>So sánh các lượt đánh giá</h2>
       <p className="hint">
         Mỗi bảng là một phiên bản dataset: chỉ so sánh các lượt trên cùng bộ câu hỏi. Chưa có baseline nên không tô màu đạt/không đạt; “—” là
         metric không áp dụng hoặc bị bỏ qua.

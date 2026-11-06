@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
+import BenchmarksPage from "./pages/BenchmarksPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import DatasetsPage from "./pages/DatasetsPage.jsx";
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="datasets" element={<DatasetsPage />} />
         <Route path="evaluations" element={<EvaluationsPage />} />
         <Route path="security" element={<SecurityPage />} />
+        <Route path="benchmarks" element={<BenchmarksPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -112,8 +112,18 @@ h2 {
 
 .app-header__nav {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
   flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  /* 8 mục menu không vừa một dòng trên điện thoại: menu chiếm trọn một hàng và xuống dòng. */
+  .app-header__nav {
+    flex-basis: 100%;
+    order: 3;
+  }
 }
 
 .app-header__nav a {
@@ -1174,4 +1184,39 @@ input[type="text"] {
   .stat-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+.overview-stats {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.overview-stat {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.overview-stat:hover {
+  border-color: var(--primary);
+}
+
+.overview-stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-stat__label {
+  font-size: 0.85rem;
+  color: var(--muted);
 }

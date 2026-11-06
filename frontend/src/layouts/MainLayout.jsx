@@ -16,6 +16,7 @@ export default function MainLayout() {
           <NavLink to="/datasets">Dataset</NavLink>
           <NavLink to="/evaluations">Đánh giá</NavLink>
           <NavLink to="/security">Bảo mật</NavLink>
+          <NavLink to="/benchmarks">Benchmark</NavLink>
           <NavLink to="/dashboard">Dashboard</NavLink>
         </nav>
         <div className="app-header__user">

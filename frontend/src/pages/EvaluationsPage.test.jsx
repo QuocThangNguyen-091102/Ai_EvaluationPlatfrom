@@ -12,6 +12,12 @@ vi.mock("../services/api/evaluationApi.js", () => ({
 }));
 vi.mock("../services/api/datasetApi.js", () => ({ listDatasets: vi.fn(), listVersions: vi.fn() }));
 vi.mock("../services/api/modelConfigApi.js", () => ({ listConfigurations: vi.fn(), getCapabilities: vi.fn() }));
+vi.mock("../services/api/documentApi.js", () => ({ listDocuments: vi.fn(() => Promise.resolve({ items: [], total: 3 })) }));
+vi.mock("../services/api/chatApi.js", () => ({ listSessions: vi.fn(() => Promise.resolve({ items: [], total: 0 })) }));
+vi.mock("../services/api/securityApi.js", () => ({
+  listSecurityRuns: vi.fn(() => Promise.resolve({ items: [], total: 0 })),
+}));
+vi.mock("../services/api/benchmarkApi.js", () => ({ listBenchmarks: vi.fn(() => Promise.resolve({ items: [], total: 0 })) }));
 
 import * as datasetApi from "../services/api/datasetApi.js";
 import * as api from "../services/api/evaluationApi.js";
@@ -147,6 +153,16 @@ describe("DashboardPage", () => {
     expect(api.listEvaluations).toHaveBeenCalledWith({ status: "completed", limit: 100 });
     expect(screen.getAllByText("0,750")).toHaveLength(2);
     expect(screen.getAllByText("Bịa (trả lời khi nên từ chối) (1)")).toHaveLength(2);
+  });
+
+  it("tổng quan đếm dữ liệu của từng khu vực", async () => {
+    api.listEvaluations.mockResolvedValue({ items: [], total: 0 });
+    datasetApi.listDatasets.mockResolvedValue({ items: [{ id: "d1" }], total: 1 });
+    renderPage(<DashboardPage />);
+
+    const documents = await screen.findByRole("link", { name: /Tài liệu/ });
+    await waitFor(() => expect(documents).toHaveTextContent("3"));
+    expect(screen.getByRole("link", { name: /Benchmark/ })).toHaveAttribute("href", "/benchmarks");
   });
 
   it("hướng dẫn tạo lượt khi chưa có dữ liệu", async () => {
