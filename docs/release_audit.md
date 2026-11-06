@@ -6,7 +6,7 @@ Mọi kết quả dưới đây là từ lệnh chạy thật trong ngày; khôn
 
 | Loại | Kết quả |
 |---|---|
-| Backend: unit và integration | 436 pass (`RUN_MODEL_TESTS=1`, gồm 5 test với model embedding thật). Cảnh báo httpx/httpx2 của Starlette TestClient: quyết định giữ httpx và lọc đúng cảnh báo đó trong `pytest.ini` (chỉ ảnh hưởng công cụ test) |
+| Backend: unit và integration | 443 pass (`RUN_MODEL_TESTS=1`, gồm 5 test với model embedding thật). Cảnh báo httpx/httpx2 của Starlette TestClient: quyết định giữ httpx và lọc đúng cảnh báo đó trong `pytest.ini` (chỉ ảnh hưởng công cụ test) |
 | Giao diện: vitest | 85 pass trong 11 file; `npm run build` thành công |
 | Migration | Mỗi migration mới (0007, 0008, 0009) đã downgrade rồi upgrade lại; `alembic check` không thấy khác biệt giữa model và DB |
 | E2E trình duyệt (Playwright, stack Docker, model thật) | Tài liệu → Hỏi đáp → Dataset → Đánh giá → Bảo mật → Benchmark → Dashboard đều chạy tới kết quả; CSV tải được; 7 trang không tràn ngang ở 390 px; không lỗi JavaScript |
@@ -39,18 +39,18 @@ Mọi kết quả dưới đây là từ lệnh chạy thật trong ngày; khôn
 |---|---|---|
 | M1, M2 | Đạt (user đã duyệt) | |
 | M3 Ingestion | Đạt | |
-| M4 RAG | Đạt một phần | Baseline thủ công; chạy với LLM thật |
-| M5 Dataset | Đạt một phần | Dataset thật do người viết và duyệt |
+| M4 RAG | Đạt một phần | Baseline thủ công (đã chạy thật với LLM cục bộ qwen2.5:3b) |
+| M5 Dataset | Đạt một phần | Corpus Hệ Mặt Trời và bản nháp 98 câu đã nạp; **chờ người duyệt** |
 | M6 Đánh giá | Đạt một phần | Baseline trên dataset thật; phân tích lỗi; đo đồng thuận judge và người |
-| M7 Bảo mật | Đạt một phần | 9 test cần LLM chưa chạy thật |
-| M8 Benchmark | Đạt một phần | So sánh `llm_model` và `prompt_version` cần LLM; mới so `top_k` |
+| M7 Bảo mật | Đạt | Đã chạy đủ 12 test với LLM thật; phát hiện lỗ hổng prompt injection trực tiếp (PI-01, PI-02), xem `docs/security_testing.md` mục 5.2 |
+| M8 Benchmark | Đạt | Đã so sánh `top_k` và `llm_model` (qwen2.5:3b, gemma3:4b) |
 | M9 | Phần mã và tài liệu đạt | Deploy thật (cần tài khoản) |
 
 ## 4b. Bổ sung sau khi user giao toàn quyền (2026-11-06)
 
 - Thêm Context Precision (tất định) và Context Recall (judge), xem `docs/metrics_notes.md` mục 5b. Bộ metric của Master Prompt giờ đã đủ.
 - Xóa 2 file rỗng còn sót từ khung ban đầu (`models/report.py`, `services/report_service.py`; bảng lịch sử báo cáo để sau MVP). `scripts/seed_demo.py` trước đây rỗng, giờ là script tạo dữ liệu demo qua API (đã chạy thật, chạy lại không tạo trùng).
-- Cài Ollama (LLM miễn phí chạy cục bộ) để chạy các phần cần LLM: **bị bộ kiểm duyệt an toàn chặn**, chờ user cho phép.
+- Ollama do user cài; mọi phần cần LLM đã chạy thật (xem `docs/progress_log.md`). Thêm prompt judge `judge-refusal-aware`, sửa luật canary bỏ sót.
 
 ## 5. Rủi ro còn lại
 

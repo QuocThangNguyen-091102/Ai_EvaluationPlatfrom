@@ -120,7 +120,7 @@ def test_llm_run_uses_judge_and_exports_csv(api_client, owner, llm_server):
 
     run = api_client.get(f"/api/v1/evaluations/{created['id']}", headers=owner).json()
     assert run["status"] == "completed"
-    assert run["judge_prompt_version"] == "judge-strict-json"
+    assert run["judge_prompt_version"] == "judge-refusal-aware"
     assert _metric(run["aggregate_metrics"], "faithfulness")["status"] == "computed"
 
     report = api_client.get(f"/api/v1/evaluations/{run['id']}/report?format=csv", headers=owner)
@@ -131,6 +131,27 @@ def test_llm_run_uses_judge_and_exports_csv(api_client, owner, llm_server):
     rows = list(csv.reader(io.StringIO(text)))
     header = next(row for row in rows if row and row[0] == "test_case_id")
     assert "faithfulness" in header and "recall_at_k" in header
+
+
+def test_judge_prompt_version_can_be_chosen_explicitly(api_client, owner, llm_server):
+    version = _version(api_client, owner, cases=(ANSWER_CASE,))
+    config = api_client.post(
+        "/api/v1/model-configurations", headers=owner, json={"name": "llm", "llm_provider": "test", "llm_model": "model-a"}
+    ).json()
+
+    created = api_client.post(
+        "/api/v1/evaluations",
+        headers=owner,
+        json={"dataset_version_id": version["id"], "model_configuration_id": config["id"], "judge_model": "j", "judge_prompt_version": "judge-strict-json"},
+    ).json()
+
+    run = api_client.get(f"/api/v1/evaluations/{created['id']}", headers=owner).json()
+    assert run["judge_prompt_version"] == "judge-strict-json"
+    assert run["environment"]["judge"]["prompt_version"] == "judge-strict-json"
+    bad = api_client.post(
+        "/api/v1/evaluations", headers=owner, json={"dataset_version_id": version["id"], "judge_model": "j", "judge_prompt_version": "judge-unknown"}
+    )
+    assert bad.status_code == 422
 
 
 def test_llm_run_without_judge_reports_judge_metrics_as_skipped(api_client, owner, llm_server):

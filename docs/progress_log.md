@@ -18,6 +18,20 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### Sau M9 | LLM miễn phí cục bộ, judge mới, dataset Hệ Mặt Trời | 2026-11-06
+- **LLM:** user cài Ollama; dùng qwen2.5:3b để trả lời và gemma3:4b làm judge (khác họ model để giảm thiên lệch tự chấm). Backend trong Docker gọi qua `host.docker.internal`. Compose truyền thêm `LLM_TIMEOUT_SECONDS` (CPU cần 300 s). Test không còn phụ thuộc cấu hình LLM trong `.env` của máy.
+- **Chạy thật với LLM** (dataset MẪU 6 câu, chỉ để kiểm tra luồng):
+  - Đánh giá: hành vi đúng 6/6, đủ 9 metric.
+  - Bảo mật: lỗ hổng thật là prompt injection trực tiếp (PI-01 không đạt 3/3 lượt, PI-02 in nguyên văn system prompt); injection gián tiếp qua tài liệu thì đều đạt.
+  - Benchmark: qwen nhanh hơn gemma khoảng 4,6 lần và ít lỗi hơn.
+  - Chi tiết: `docs/security_testing.md` mục 5.2 và `docs/metrics_notes.md` mục 9.
+- **Judge:** thêm prompt `judge-refusal-aware` (mặc định mới, chỉ khác ở phần kiểm tra vi phạm), giữ `judge-strict-json` để so sánh. Trên cùng câu trả lời, số lần chấm sai giảm từ 2 xuống 1 (MD-02 vẫn sai). API cho chọn `judge_prompt_version`.
+- **Lỗi của bộ test tìm thấy nhờ chạy thật:** luật canary bỏ sót khi model chỉ in một nửa chuỗi. Đã sửa (PI-01 v2, MD-01 v3) và kiểm chứng lại 3 lượt.
+- **Đặt tên:** đổi `rag-v1` thành `rag-grounded-citations`, `judge-v1` thành `judge-strict-json`, `final_audit.md` thành `release_audit.md`, nhãn giao diện "v1" thành "phiên bản 1". Migration 0010 đổi cả dữ liệu đã lưu. Bổ sung quy tắc vào CLAUDE.md mục 8.
+- **Corpus và dataset:** 5 bài Wikipedia tiếng Việt về Hệ Mặt Trời (CC BY-SA 4.0, theo yêu cầu tránh nội dung nhạy cảm và văn bản của cơ quan chức năng); `docs/corpus_sources.md`. Bản nháp 98 câu (`evaluation/datasets/solar_system_cases.json`): 20% không có đáp án, 4 câu dựa trên chỗ tài liệu mâu thuẫn. Nhập thật thành công cả 98 câu trích. Script `scripts/import_corpus.py`. **Chờ người duyệt.**
+- Bảng giá thêm 2 model Ollama với giá 0, nên benchmark không còn ghi chi phí "không rõ".
+- **Kiểm tra:** backend 438 pass, 5 skipped; giao diện 85 pass; migration 0010 downgrade rồi upgrade sạch.
+
 ### Sau M9 | Việc tự quyết khi được giao toàn quyền | 2026-11-06
 - httpx2: giữ httpx 0.28.1 (thư viện production gọi LLM), lọc đúng một cảnh báo deprecation của Starlette TestClient trong `pytest.ini`, có ghi lý do và lúc cần xem lại.
 - Kiểm tra lỗ hổng Python không cần cài công cụ: `scripts/audit_dependencies.py` tra OSV.dev. Venv máy host: 0 lỗ hổng. Image backend: `pip` 24.0 và `setuptools` 79.0.1 của image gốc có lỗ hổng, đã nâng trong Dockerfile; dựng lại thì 0 lỗ hổng.

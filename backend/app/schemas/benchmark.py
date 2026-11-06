@@ -13,6 +13,7 @@ class BenchmarkCreate(BaseModel):
     varied_variable: Literal["llm_model", "top_k", "prompt_version"]
     model_configuration_ids: list[uuid.UUID] = Field(min_length=2, max_length=6)
     judge_model: str | None = Field(default=None, min_length=1, max_length=100)
+    judge_prompt_version: Literal["judge-strict-json", "judge-refusal-aware"] | None = None
 
     @field_validator("model_configuration_ids")
     @classmethod

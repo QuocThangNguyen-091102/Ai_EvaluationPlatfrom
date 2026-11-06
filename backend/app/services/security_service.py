@@ -108,7 +108,7 @@ class SecurityService:
                 categories=categories,
                 total_cases=len(cases),
                 judge_model=payload.judge_model,
-                judge_prompt_version=DEFAULT_JUDGE_PROMPT_VERSION if payload.judge_model else None,
+                judge_prompt_version=(payload.judge_prompt_version or DEFAULT_JUDGE_PROMPT_VERSION) if payload.judge_model else None,
                 coverage_notes=coverage_notes(
                     cases, requested_categories=categories or None, llm_available=llm_available, judge_used=bool(payload.judge_model)
                 ),

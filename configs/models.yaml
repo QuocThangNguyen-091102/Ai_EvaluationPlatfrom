@@ -15,3 +15,16 @@ prices:
     output_per_million: 0
     currency: USD
     as_of: "2026-11-06"
+  # Ollama chạy trên máy của mình: không trả phí API (điện và khấu hao máy không tính).
+  - provider: ollama
+    model: qwen2.5:3b
+    input_per_million: 0
+    output_per_million: 0
+    currency: USD
+    as_of: "2026-11-06"
+  - provider: ollama
+    model: gemma3:4b
+    input_per_million: 0
+    output_per_million: 0
+    currency: USD
+    as_of: "2026-11-06"

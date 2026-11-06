@@ -76,3 +76,20 @@ Một câu chỉ có một nhãn, nên có thể che lỗi thứ hai (ví dụ v
 
 - Một câu lỗi (provider sập, timeout) được ghi `status=error` kèm thông điệp; lượt vẫn chạy tiếp và vẫn `completed`. Xem `failed_cases`.
 - Máy chủ khởi động lại khi lượt đang chạy: lượt bị đánh dấu `failed` (phục hồi lúc khởi động). Không tự chạy lại để tránh tốn chi phí LLM ngoài ý muốn.
+
+## 9. Quan sát khi chạy thật với LLM (2026-11-06, dataset MẪU 6 câu)
+
+Cấu hình: qwen2.5:3b trả lời, gemma3:4b chấm (Ollama cục bộ, CPU).
+
+**Hành vi đúng 6/6.** Hai câu tài liệu không có đáp án đều được từ chối đúng. Chế độ trích đoạn làm sai cả hai câu này (mục 4).
+
+**Judge bỏ sót một câu trả lời sai.** Với câu "Tóm tắt các quy định trong tài liệu", qwen viết *"không có quy định về phí và lệ phí"*. Câu này sai, vì tài liệu có quy định đó. Vậy mà faithfulness trung bình vẫn là 1,000. Đây là minh chứng cho mục 5: phải đọc câu trả lời, không chỉ nhìn điểm trung bình của judge.
+
+**Benchmark đổi model trả lời (không dùng judge, để tránh gemma tự chấm câu trả lời của chính nó):**
+
+| Model | Hành vi đúng | Độ trễ p50 |
+|---|---|---|
+| qwen2.5:3b | 6/6 | khoảng 2,3 s |
+| gemma3:4b | 5/6 | khoảng 10,8 s |
+
+Gemma trả lời một câu mà tài liệu không có đáp án. 6 câu là quá ít để kết luận model nào tốt hơn.

@@ -22,18 +22,18 @@
   - giao diện 85 pass;
   - E2E Playwright cho mọi trang trên stack Docker;
   - stack production đã chạy thử với `API_DOMAIN=localhost`.
-- Migration tới `0009`.
+- Migration tới `0010`.
 - Docker Desktop hay tự tắt; khi lệnh docker báo không kết nối được thì mở lại Docker Desktop.
 
 ### Việc đang chờ user (chỉ user làm được)
-1. **Dataset thật:**
-   - chọn corpus có quyền dùng (`docs/corpus_sources.md`);
-   - viết khoảng 100 câu có tham chiếu, gồm câu không có đáp án;
-   - duyệt trên trang Dataset.
-   - Sau đó chạy đánh giá baseline và điền `docs/error_analysis.md`, `docs/baseline_manual.md`.
-2. **LLM:** điền `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY` trong `.env`, rồi chạy lại đánh giá, bảo mật (9 test cần LLM) và benchmark theo `llm_model` hoặc `prompt_version`.
-3. **Deploy:** tạo remote GitHub, tài khoản Vercel, máy chủ miễn phí, tên miền; làm theo `docs/deployment_guide.md`.
-4. Cho phép cài **Ollama** (LLM miễn phí chạy cục bộ). Lệnh cài bị bộ kiểm duyệt an toàn chặn; có Ollama thì tự chạy được đánh giá có LLM, 9 test bảo mật còn lại và benchmark theo model.
+1. **Duyệt dataset Hệ Mặt Trời:**
+   - Đăng nhập tài khoản đã nạp sẵn (xem tin nhắn bàn giao), mở trang Dataset, chọn "Hệ Mặt Trời (nháp)".
+   - Đọc từng câu: câu hỏi rõ chưa, đáp án đúng với câu trích chưa, câu "không có đáp án" có thật là không có không. Sửa hoặc xóa câu sai, rồi bấm "Duyệt và đóng băng".
+   - Sau đó mình chạy baseline (qwen2.5:3b, judge gemma3:4b), điền `docs/error_analysis.md` và đo độ đồng thuận giữa judge và người.
+2. **Deploy:** tạo remote GitHub, chạy `vercel login`, tạo máy chủ miễn phí (Oracle Cloud cần thẻ để xác minh) và tên miền; làm theo `docs/deployment_guide.md`. Không deploy thì chạy cục bộ vẫn đủ.
+
+### Đã có sẵn trên máy (2026-11-06)
+- Ollama 0.40.15 với `qwen2.5:3b` (trả lời) và `gemma3:4b` (judge). `.env` đã trỏ `LLM_BASE_URL=http://host.docker.internal:11434/v1`. Mở Ollama trước khi `docker compose up`.
 
 ### Quy tắc làm việc đã thống nhất
 - Chỉ trả lời tiếng Việt (CLAUDE.md mục 1).

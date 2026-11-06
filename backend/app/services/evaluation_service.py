@@ -76,11 +76,11 @@ class EvaluationService:
                 status="pending",
                 total_cases=case_count,
                 judge_model=payload.judge_model,
-                judge_prompt_version=DEFAULT_JUDGE_PROMPT_VERSION if payload.judge_model else None,
+                judge_prompt_version=(payload.judge_prompt_version or DEFAULT_JUDGE_PROMPT_VERSION) if payload.judge_model else None,
                 environment=snapshot(
                     dataset_version={"id": str(version.id), "version_number": version.version_number, "cases": case_count},
                     model_configuration=_config_snapshot(config),
-                    judge={"model": payload.judge_model, "prompt_version": DEFAULT_JUDGE_PROMPT_VERSION if payload.judge_model else None},
+                    judge={"model": payload.judge_model, "prompt_version": (payload.judge_prompt_version or DEFAULT_JUDGE_PROMPT_VERSION) if payload.judge_model else None},
                     corpus_processing_configs=corpus,
                     warnings=warnings,
                 ),

@@ -73,7 +73,12 @@ class BenchmarkService:
         for config in configs:
             run = self._evaluations.create_run(
                 user,
-                EvaluationCreate(dataset_version_id=payload.dataset_version_id, model_configuration_id=config.id, judge_model=payload.judge_model),
+                EvaluationCreate(
+                    dataset_version_id=payload.dataset_version_id,
+                    model_configuration_id=config.id,
+                    judge_model=payload.judge_model,
+                    judge_prompt_version=payload.judge_prompt_version,
+                ),
                 benchmark_run_id=benchmark.id,
                 commit=False,
             )

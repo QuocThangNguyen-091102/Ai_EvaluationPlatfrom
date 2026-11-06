@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -11,6 +11,8 @@ class EvaluationCreate(BaseModel):
     model_configuration_id: uuid.UUID | None = None
     # Để trống thì không chấm các metric cần judge (ghi rõ là "bỏ qua", không điền số).
     judge_model: str | None = Field(default=None, min_length=1, max_length=100)
+    # Để trống: dùng prompt judge mặc định. Chọn bản khác khi cần so sánh hai cách chấm.
+    judge_prompt_version: Literal["judge-strict-json", "judge-refusal-aware"] | None = None
 
 
 class MetricResponse(BaseModel):

@@ -121,7 +121,7 @@ npm run build
 Nếu bạn đổi `POSTGRES_PASSWORD`, hãy đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
 
 Kết quả lần chạy cuối (2026-11-06):
-- backend 436 test pass (gồm 5 test với model thật);
+- backend 443 test pass (gồm 5 test với model thật);
 - giao diện 85 test pass;
 - E2E trên trình duyệt thật với stack Docker cho mọi trang chính, cả cỡ màn hình điện thoại.
 

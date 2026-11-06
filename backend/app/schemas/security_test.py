@@ -29,6 +29,7 @@ class SecurityRunCreate(BaseModel):
     # Để trống: chạy cả 5 nhóm.
     categories: list[SecurityCategory] | None = Field(default=None, min_length=1)
     judge_model: str | None = Field(default=None, min_length=1, max_length=100)
+    judge_prompt_version: Literal["judge-strict-json", "judge-refusal-aware"] | None = None
 
 
 class SecurityRunResponse(BaseModel):
