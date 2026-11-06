@@ -18,6 +18,12 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M4-T03 | Adapter LLM, prompt có phiên bản, ước tính chi phí, retry | 2026-11-06
+- Trạng thái: Hoàn thành (chưa gọi LLM thật vì chưa chọn provider; mọi test dùng HTTP giả).
+- File: `ai_engine/generation/base_llm_client.py` (interface, các loại lỗi), `openai_compatible_client.py` (đổi tên từ `openai_llm_client.py`: một adapter cho mọi API chuẩn OpenAI, gồm nhiều gói miễn phí và LLM chạy cục bộ), `prompt_templates.py` (phiên bản `rag-v1`), `cost_estimator.py`, `ai_engine/provider_retry.py`, `configs/models.yaml`; `requirements.txt` thêm `httpx`, `PyYAML`.
+- Quyết định: chỉ retry lỗi tạm thời (timeout, 429 theo `Retry-After`, 5xx), không retry sai key; thông điệp lỗi không chứa API key hay nội dung prompt; prompt yêu cầu trích nguồn `[n]`, câu từ chối cố định khi thiếu thông tin, và coi nội dung tài liệu là dữ liệu chứ không phải chỉ dẫn (phòng prompt injection, chưa đo hiệu quả); chi phí không biết thì trả None, không trả 0.
+- Kiểm tra thật: 28 test mới pass.
+
 ### M4-T01 | Bảng chat, ngữ cảnh truy xuất, cấu hình model | 2026-11-06
 - Trạng thái: Hoàn thành (làm trước M4-T02 và T04 vì độc lập; gate M3 chưa đóng, xem mục "ĐI TRƯỚC GATE" ở dưới).
 - File: `models/chat.py` (`ChatSession`, `ChatMessage`), `models/model_config.py`, `models/retrieved_context.py` (mới), migration `0003`, `tests/integration/test_chat_schema.py`.
