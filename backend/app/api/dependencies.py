@@ -4,19 +4,21 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError
 from ai_engine.pipeline.rag_pipeline import RagPipeline
-from app.core.providers import get_embedder, get_rag_pipeline
+from app.core.providers import get_embedder, get_rag_pipeline, llm_client_for_model
 from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_session, open_session
 from app.models.user import User
 from app.repositories.chat_repository import ChatRepository
 from app.repositories.dataset_repository import DatasetRepository
 from app.repositories.document_repository import DocumentRepository
+from app.repositories.evaluation_repository import EvaluationRepository
 from app.repositories.model_config_repository import ModelConfigRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from app.services.chat_service import ChatService
 from app.services.dataset_service import DatasetService
 from app.services.document_service import DocumentService
+from app.services.evaluation_service import EvaluationRunService, EvaluationService
 from app.services.ingestion_service import IngestionService
 from app.services.model_config_service import ModelConfigService
 
@@ -53,6 +55,18 @@ def get_chat_service(
 
 def get_dataset_service(session: Session = Depends(get_session)) -> DatasetService:
     return DatasetService(DatasetRepository(session))
+
+
+def get_evaluation_service(session: Session = Depends(get_session)) -> EvaluationService:
+    return EvaluationService(
+        EvaluationRepository(session),
+        DatasetRepository(session),
+        ModelConfigService(ModelConfigRepository(session), get_rag_defaults()),
+    )
+
+
+def get_evaluation_run_service() -> EvaluationRunService:
+    return EvaluationRunService(session_factory=open_session, pipeline_provider=get_pipeline, judge_client_for=llm_client_for_model)
 
 
 def get_current_user(

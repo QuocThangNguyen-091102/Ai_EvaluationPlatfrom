@@ -23,6 +23,8 @@ class RetrievedChunk:
     rank: int
     chunk_id: uuid.UUID
     document_id: uuid.UUID
+    # Hash nội dung của tài liệu: dùng để so với reference context của dataset (ổn định qua các lần reprocess).
+    document_content_hash: str
     filename: str
     page_number: int | None
     chunk_index: int
@@ -43,7 +45,7 @@ def retrieve(session: Session, query_vector: Sequence[float], scope: RetrievalSc
     where, params = build_scope_filter(scope)
     statement = text(
         f"""
-        SELECT c.id, c.document_id, d.filename, c.page_number, c.chunk_index, c.char_start, c.char_end, c.content,
+        SELECT c.id, c.document_id, d.content_hash, d.filename, c.page_number, c.chunk_index, c.char_start, c.char_end, c.content,
                1 - (c.embedding <=> CAST(:query_vector AS vector)) AS score
         FROM document_chunks AS c
         JOIN documents AS d ON d.id = c.document_id AND d.user_id = c.user_id
@@ -60,6 +62,7 @@ def retrieve(session: Session, query_vector: Sequence[float], scope: RetrievalSc
             rank=rank,
             chunk_id=row.id,
             document_id=row.document_id,
+            document_content_hash=row.content_hash,
             filename=row.filename,
             page_number=row.page_number,
             chunk_index=row.chunk_index,

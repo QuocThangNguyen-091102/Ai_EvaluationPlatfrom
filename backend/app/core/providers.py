@@ -39,6 +39,12 @@ def _client_for_model(model: str) -> LlmClient:
     )
 
 
+def llm_client_for_model(model: str) -> LlmClient:
+    if not settings.llm_base_url:
+        raise LlmNotConfiguredError("Máy chủ chưa cấu hình LLM")
+    return _client_for_model(model)
+
+
 def llm_client_for(config: RAGConfig) -> LlmClient:
     """Client cho model trong cấu hình. Cùng một provider (cùng base_url, key) có thể chạy nhiều model để benchmark."""
     if not settings.llm_base_url or config.llm_provider != settings.llm_provider_name:

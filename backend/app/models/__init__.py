@@ -3,6 +3,7 @@ from app.models.chat import ChatMessage, ChatSession
 from app.models.dataset import DatasetVersion, EvaluationDataset, EvaluationTestCase
 from app.models.document import Document
 from app.models.document_chunk import DocumentChunk
+from app.models.evaluation import EvaluationResult, EvaluationRun, MetricResult
 from app.models.model_config import ModelConfiguration
 from app.models.retrieved_context import RetrievedContext
 from app.models.user import User
@@ -14,7 +15,10 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "EvaluationDataset",
+    "EvaluationResult",
+    "EvaluationRun",
     "EvaluationTestCase",
+    "MetricResult",
     "ModelConfiguration",
     "RetrievedContext",
     "User",
