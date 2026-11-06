@@ -44,4 +44,6 @@ class ChatMessage(Base):
     # Chi phí ước tính (không phải hóa đơn thật); cách ước tính ghi trong báo cáo.
     estimated_cost: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
     error_message: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # clock_timestamp() (giờ lúc ghi từng dòng), không dùng now() (giờ bắt đầu transaction): câu hỏi và câu trả lời
+    # ghi trong cùng transaction phải có thứ tự thời gian rõ ràng.
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.clock_timestamp())

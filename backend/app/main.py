@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.dependencies import get_ingestion_service
-from app.api.routes import auth, documents, health
+from app.api.routes import auth, chat, documents, health, model_configs
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
@@ -33,3 +33,5 @@ register_exception_handlers(app)
 app.include_router(health.router)
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
+app.include_router(model_configs.router, prefix="/api/v1")
+app.include_router(chat.router, prefix="/api/v1")

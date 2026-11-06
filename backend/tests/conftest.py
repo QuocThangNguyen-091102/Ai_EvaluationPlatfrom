@@ -20,12 +20,14 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_ingestion_service
+from ai_engine.generation.cost_estimator import PriceTable
+from ai_engine.pipeline.rag_pipeline import RagPipeline
+from app.api.dependencies import get_ingestion_service, get_pipeline
 from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_engine, get_session
 from app.main import app
 from app.services.ingestion_service import IngestionService
-from tests.fakes import HashEmbedder
+from tests.fakes import HashEmbedder, ScriptedLlm
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,15 +53,30 @@ def ingestion_service(db_session, test_embedder) -> IngestionService:
 
 
 @pytest.fixture
-def api_client(db_session, ingestion_service) -> Iterator[TestClient]:
+def scripted_llm() -> ScriptedLlm:
+    return ScriptedLlm()
+
+
+@pytest.fixture
+def rag_pipeline(test_embedder, scripted_llm) -> RagPipeline:
+    """Pipeline thật (cùng code với sản phẩm) nhưng dùng embedder giả và LLM giả."""
+    return RagPipeline(embedder=test_embedder, llm_for=lambda config: scripted_llm, price_table=PriceTable([]))
+
+
+@pytest.fixture
+def api_client(db_session, ingestion_service, rag_pipeline) -> Iterator[TestClient]:
     """Client gọi API thật nhưng mọi truy cập DB đi qua db_session (rollback cuối test, không để lại dữ liệu)."""
-    app.dependency_overrides[get_session] = lambda: db_session
-    app.dependency_overrides[get_ingestion_service] = lambda: ingestion_service
+    overrides = {
+        get_session: lambda: db_session,
+        get_ingestion_service: lambda: ingestion_service,
+        get_pipeline: lambda: rag_pipeline,
+    }
+    app.dependency_overrides.update(overrides)
     try:
         yield TestClient(app, raise_server_exceptions=False)
     finally:
-        app.dependency_overrides.pop(get_session, None)
-        app.dependency_overrides.pop(get_ingestion_service, None)
+        for dependency in overrides:
+            app.dependency_overrides.pop(dependency, None)
 
 
 @pytest.fixture(scope="session")

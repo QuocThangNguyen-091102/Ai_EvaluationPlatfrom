@@ -3,15 +3,20 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AppError
-from app.core.providers import get_embedder
+from ai_engine.pipeline.rag_pipeline import RagPipeline
+from app.core.providers import get_embedder, get_rag_pipeline
 from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_session, open_session
 from app.models.user import User
+from app.repositories.chat_repository import ChatRepository
 from app.repositories.document_repository import DocumentRepository
+from app.repositories.model_config_repository import ModelConfigRepository
 from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
+from app.services.chat_service import ChatService
 from app.services.document_service import DocumentService
 from app.services.ingestion_service import IngestionService
+from app.services.model_config_service import ModelConfigService
 
 # auto_error=False để thiếu token vẫn đi qua bộ xử lý lỗi chuẩn của dự án (không dùng lỗi mặc định của FastAPI).
 _bearer_scheme = HTTPBearer(auto_error=False)
@@ -27,6 +32,21 @@ def get_document_service(session: Session = Depends(get_session)) -> DocumentSer
 
 def get_ingestion_service() -> IngestionService:
     return IngestionService(session_factory=open_session, embedder_provider=get_embedder, defaults=get_rag_defaults())
+
+
+def get_pipeline() -> RagPipeline:
+    return get_rag_pipeline()
+
+
+def get_model_config_service(session: Session = Depends(get_session)) -> ModelConfigService:
+    return ModelConfigService(ModelConfigRepository(session), get_rag_defaults())
+
+
+def get_chat_service(
+    session: Session = Depends(get_session),
+    pipeline: RagPipeline = Depends(get_pipeline),
+) -> ChatService:
+    return ChatService(ChatRepository(session), ModelConfigService(ModelConfigRepository(session), get_rag_defaults()), pipeline)
 
 
 def get_current_user(

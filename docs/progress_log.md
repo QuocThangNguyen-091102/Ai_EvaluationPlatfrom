@@ -18,6 +18,17 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M4-T04, M4-T05, M4-T06 | RAG pipeline, ghi nhật ký từng lượt hỏi, Chat API, API cấu hình model | 2026-11-06
+- Trạng thái: Hoàn thành.
+- File: `ai_engine/pipeline/rag_pipeline.py` (pipeline duy nhất), `rag_config.py`, `rag_result.py`, `context_builder.py`; `backend/app/services/chat_service.py`, `model_config_service.py`, `repositories/chat_repository.py`, `model_config_repository.py`, `schemas/chat.py`, `schemas/model_config.py`, `api/routes/chat.py`, `api/routes/model_configs.py`, `core/providers.py` (LLM theo từng model, pipeline dùng chung); migration `0004`; test `integration/test_rag_pipeline.py`, `test_chat_api.py`.
+- Pipeline: embed câu hỏi, truy xuất trong phạm vi quyền, dựng ngữ cảnh đánh số, sinh câu trả lời, đọc trích dẫn `[n]` (bỏ số ngoài phạm vi). Không có tài liệu thì từ chối mà không gọi LLM; LLM trả câu từ chối thì đánh dấu `insufficient_context`. **Chưa dùng ngưỡng điểm** vì chưa có baseline và điểm cosine bị nén (R21). Chạy được không cần FastAPI (test gọi trực tiếp).
+- **Chế độ không LLM (extractive)**: khi máy chủ chưa cấu hình `LLM_BASE_URL`, hệ thống trả các đoạn liên quan nhất kèm nguồn, ghi rõ trên câu trả lời. Nhờ vậy chạy được hoàn toàn miễn phí, không cần tài khoản; đánh giá chất lượng câu trả lời bằng LLM vẫn cần LLM thật.
+- Nhật ký mỗi lượt (M4-T05): câu hỏi, câu trả lời, cấu hình, latency, token, chi phí ước tính (model không có trong bảng giá thì để trống, không ghi 0), các chunk kèm điểm và bản chụp nội dung. Lỗi provider vẫn lưu vào lịch sử kèm lý do, trả 502 (hoặc 429 khi vượt hạn mức).
+- Cấu hình model: kiểm tra cấu hình có chạy được trên máy chủ không (provider, model embedding, prompt), mặc định lấy từ `rag_default.yaml`, tự tạo cấu hình mặc định theo LLM của máy chủ; endpoint thêm `/model-configurations/capabilities`.
+- Lỗi tìm thấy và đã sửa: thứ tự tin nhắn không chắc chắn vì `now()` của PostgreSQL trả giờ bắt đầu transaction; đổi sang `clock_timestamp()` (migration `0004`).
+- Kiểm tra thật: 286 test backend pass (47 test mới), gồm cô lập user ở session, cấu hình và nội dung câu trả lời.
+- Ghi chú chạy trên máy host: cần `PYTHONPATH=..` khi chạy trực tiếp từ thư mục `backend/` (pytest và Docker đã tự có).
+
 ### M4-T02 | Retriever có kiểm soát quyền | 2026-11-06
 - Trạng thái: Hoàn thành.
 - File: `ai_engine/retrieval/metadata_filters.py` (`RetrievalScope` bắt buộc có `user_id`, `build_scope_filter`), `ai_engine/retrieval/vector_retriever.py` (`retrieve`), `tests/integration/test_vector_retriever.py`.

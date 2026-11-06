@@ -17,11 +17,15 @@ def build_context_blocks(chunks: Sequence[RetrievedChunk]) -> list[ContextBlock]
     ]
 
 
-def extract_citations(answer: str, chunks: Sequence[RetrievedChunk]) -> list[Citation]:
+def cited_numbers(answer: str, source_count: int) -> list[int]:
     """Các số [n] hợp lệ trong câu trả lời, theo thứ tự xuất hiện lần đầu. Số ngoài phạm vi bị bỏ (LLM bịa nguồn)."""
     seen: list[int] = []
     for match in _CITATION.finditer(answer):
         number = int(match.group(1))
-        if 1 <= number <= len(chunks) and number not in seen:
+        if 1 <= number <= source_count and number not in seen:
             seen.append(number)
-    return [Citation(number=number, chunk=chunks[number - 1]) for number in seen]
+    return seen
+
+
+def extract_citations(answer: str, chunks: Sequence[RetrievedChunk]) -> list[Citation]:
+    return [Citation(number=number, chunk=chunks[number - 1]) for number in cited_numbers(answer, len(chunks))]
