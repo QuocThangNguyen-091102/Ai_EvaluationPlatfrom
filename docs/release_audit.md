@@ -10,6 +10,8 @@ Mọi kết quả dưới đây là từ lệnh chạy thật trong ngày; khôn
 | Giao diện: vitest | 85 pass trong 11 file; `npm run build` thành công |
 | Migration | Mỗi migration mới (0007, 0008, 0009) đã downgrade rồi upgrade lại; `alembic check` không thấy khác biệt giữa model và DB |
 | E2E trình duyệt (Playwright, stack Docker, model thật) | Tài liệu → Hỏi đáp → Dataset → Đánh giá → Bảo mật → Benchmark → Dashboard đều chạy tới kết quả; CSV tải được; 7 trang không tràn ngang ở 390 px; không lỗi JavaScript |
+| E2E trình duyệt có LLM thật (Ollama, 2026-11-06) | Hỏi đáp trả lời đúng có trích dẫn và từ chối đúng; đánh giá có judge hiện đủ metric (kể cả Context precision, Context recall); bảo mật chạy thật PI-01 với LLM; benchmark trên LLM có chi phí 0; dashboard đủ 6 khu vực; tài khoản duyệt có 5 bài Wikipedia và 98 câu nháp; 7 trang không tràn ngang ở 390 px; không lỗi JavaScript. Lần chạy đầu phát hiện container frontend còn bản build cũ (thiếu nhãn metric mới), đã dựng lại và kiểm tra lại đạt |
+| Cách ly test | Test integration chạy trên database riêng `ai_eval_test`; trước đây dùng chung với stack nên một lượt đánh giá đang chạy làm sai test khôi phục |
 | Stack production (`deploy/`, `API_DOMAIN=localhost`) | HTTPS, HTTP chuyển sang HTTPS, header bảo mật, CORS đúng origin, khóa đăng nhập sai (429), cổng DB và backend không mở ra mạng |
 
 ## 2. Bảo mật và bí mật
