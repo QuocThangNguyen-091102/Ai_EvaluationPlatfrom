@@ -12,6 +12,7 @@ export default function MainLayout() {
         <div className="app-header__brand">AI Evaluation Platform</div>
         <nav className="app-header__nav" aria-label="Điều hướng chính">
           <NavLink to="/documents">Tài liệu</NavLink>
+          <NavLink to="/chat">Hỏi đáp</NavLink>
         </nav>
         <div className="app-header__user">
           <span title={user?.email}>{user?.email}</span>

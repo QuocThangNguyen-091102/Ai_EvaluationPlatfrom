@@ -1,7 +1,7 @@
 import uuid
 
 import pytest
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import IntegrityError
 
 from app.models import (
@@ -162,12 +162,14 @@ def test_deleting_a_session_removes_messages_and_contexts(db_session):
 
 
 def test_deleting_a_user_removes_everything_under_them(db_session):
+    """Bản trước dùng RESTRICT và làm hỏng đúng trường hợp này: tin nhắn trỏ tới cấu hình của chính user."""
     user = _user(db_session)
     chat = _chat_session(db_session, user)
-    _message(db_session, chat)
-    _config(db_session, user)
+    config = _config(db_session, user)
+    _message(db_session, chat, config=config)
 
     db_session.execute(delete(User).where(User.id == user.id))
+    db_session.execute(text("SET CONSTRAINTS ALL IMMEDIATE"))  # như lúc commit: không được báo lỗi
 
     assert db_session.scalar(select(func.count()).select_from(ChatSession).where(ChatSession.user_id == user.id)) == 0
     assert db_session.scalar(select(func.count()).select_from(ModelConfiguration).where(ModelConfiguration.user_id == user.id)) == 0
@@ -178,8 +180,10 @@ def test_configuration_in_use_by_a_message_cannot_be_deleted(db_session):
     config = _config(db_session, user)
     _message(db_session, _chat_session(db_session, user), config=config)
 
+    db_session.execute(delete(ModelConfiguration).where(ModelConfiguration.id == config.id))
+    # Khóa ngoại hoãn kiểm tra tới lúc commit; ép kiểm tra ngay để thấy lỗi trong transaction của test.
     with pytest.raises(IntegrityError):
-        db_session.execute(delete(ModelConfiguration).where(ModelConfiguration.id == config.id))
+        db_session.execute(text("SET CONSTRAINTS ALL IMMEDIATE"))
 
 
 def test_unused_configuration_can_be_deleted(db_session):

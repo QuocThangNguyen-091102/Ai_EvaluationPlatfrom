@@ -266,7 +266,7 @@ erDiagram
 | Reprocess document | Trong một transaction: xóa chunk cũ, ghi chunk mới; `retrieved_contexts` cũ giữ bản chụp |
 | Xóa chat session | Cascade `chat_messages` và `retrieved_contexts` gắn message |
 | Xóa dataset hoặc version | RESTRICT nếu có run hoặc benchmark tham chiếu |
-| Xóa `model_configurations` | RESTRICT nếu có message, run tham chiếu |
+| Xóa `model_configurations` | Bị chặn nếu có message, run tham chiếu. **Khóa ngoại phải hoãn kiểm tra tới lúc commit** (`DEFERRABLE INITIALLY DEFERRED`), không dùng RESTRICT: RESTRICT và NO ACTION chặn nhầm việc xóa user (đã kiểm chứng, migration `0005`) |
 | Xóa evaluation run | Cascade `evaluation_results`, `metric_results` và `retrieved_contexts` gắn kết quả; benchmark run cha không bị xóa |
 | Xóa benchmark run | Không xóa các evaluation run con (chỉ gỡ liên kết, `benchmark_run_id` thành NULL) để không mất dữ liệu đo |
 | Xóa security run | Cascade `security_test_results`, `retrieved_contexts` gắn kết quả đó và `reports` của run |

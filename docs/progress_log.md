@@ -18,6 +18,22 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M4-T09 | GATE M4: RAG | 2026-11-06
+- Trạng thái: **Đạt một phần, có ngoại lệ ghi rõ.** User giao làm hết phần còn lại; mình đi tiếp và báo phần còn thiếu.
+- Đạt: chat chạy từ đầu đến cuối trên trình duyệt thật (upload PDF tiếng Việt, xử lý bằng model thật, hỏi, trả lời đúng "30 ngày" kèm nguồn và trang, lịch sử còn sau khi tải lại); test cô lập quyền xanh ở retriever, pipeline và API; mỗi lượt hỏi ghi chunk kèm điểm, cấu hình, latency, token, chi phí.
+- **Chưa đạt (cần người):** (1) baseline thủ công M4-T08 chưa có số liệu, chỉ có mẫu `docs/baseline_manual.md`; (2) chưa chạy với LLM thật vì máy chủ chưa cấu hình LLM (chế độ không LLM đã chạy thật).
+
+### M4-T08 | Baseline thủ công | 2026-11-06
+- Trạng thái: **Chờ người làm.** Đã tạo `docs/baseline_manual.md`: cách làm, bối cảnh lần chạy, bảng chấm, cách tính. Không điền số nào vì baseline phải là kết quả thật do người chấm.
+
+### M4-T07 | Giao diện Hỏi đáp | 2026-11-06
+- Trạng thái: Hoàn thành.
+- File: `frontend/src/pages/ChatPage.jsx`, `components/AnswerSources.jsx`, `services/api/chatApi.js`, `services/api/modelConfigApi.js`, `formatting.js` (độ trễ, chi phí "không rõ" khác 0), `styles.css`, `App.jsx`, `MainLayout.jsx`; test `ChatPage.test.jsx` (10 test).
+- Tính năng: danh sách cuộc hội thoại, hỏi tiếp trong cùng cuộc, chọn cấu hình, nhãn "Không dùng LLM", "LLM", "Không đủ thông tin", nguồn được trích dẫn, các đoạn đã tham khảo (mở rộng được), số đo của lượt hỏi, lỗi hiển thị ngay trong cuộc hội thoại, Enter để gửi.
+- Kiểm tra thật: 63 test giao diện pass; kịch bản trình duyệt thật trên stack Docker 8 kiểm tra pass; ảnh chụp đã xem.
+- Lỗi tìm thấy bằng trình duyệt thật và đã sửa: trên điện thoại trang bị tràn ngang vì các ô lưới không co nhỏ hơn tên hội thoại dài (2 lần sửa, lần đầu chưa đúng chỗ, đã dò bằng công cụ đo phần tử).
+- **Lỗi nghiêm trọng tìm thấy khi dọn dữ liệu thử và đã sửa:** không xóa được user đã từng chat vì khóa ngoại `RESTRICT` từ tin nhắn tới cấu hình chặn việc xóa dây chuyền. Thử `NO ACTION` cũng không được (giải thích ban đầu của mình sai: PostgreSQL kiểm tra ở cuối từng câu lệnh nội bộ của dây chuyền). Cách đúng: khóa ngoại hoãn kiểm tra tới lúc commit (migration `0005`). Test cũ không bắt được vì tin nhắn trong test không gắn cấu hình; đã sửa test để có trường hợp này. Đây cũng là kiểm chứng cho rủi ro mục 12 mà agent rà soát đã nêu ở M1-T11. **Quy tắc cho các bảng sau (M5 đến M8): khóa ngoại "chặn xóa" trỏ tới dữ liệu cũng bị xóa theo user phải là loại hoãn kiểm tra.**
+
 ### M4-T04, M4-T05, M4-T06 | RAG pipeline, ghi nhật ký từng lượt hỏi, Chat API, API cấu hình model | 2026-11-06
 - Trạng thái: Hoàn thành.
 - File: `ai_engine/pipeline/rag_pipeline.py` (pipeline duy nhất), `rag_config.py`, `rag_result.py`, `context_builder.py`; `backend/app/services/chat_service.py`, `model_config_service.py`, `repositories/chat_repository.py`, `model_config_repository.py`, `schemas/chat.py`, `schemas/model_config.py`, `api/routes/chat.py`, `api/routes/model_configs.py`, `core/providers.py` (LLM theo từng model, pipeline dùng chung); migration `0004`; test `integration/test_rag_pipeline.py`, `test_chat_api.py`.

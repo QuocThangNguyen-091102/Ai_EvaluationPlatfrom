@@ -33,9 +33,11 @@ class ChatMessage(Base):
     session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("chat_sessions.id", ondelete="CASCADE"))
     role: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(Text)
-    # Chỉ có ở message assistant. RESTRICT: không xóa được cấu hình đang có message tham chiếu.
+    # Chỉ có ở message assistant. Khóa ngoại kiểm tra HOÃN tới lúc commit (DEFERRABLE INITIALLY DEFERRED):
+    # vẫn chặn xóa riêng một cấu hình đang được dùng, nhưng không chặn xóa user (cascade xóa cả cấu hình lẫn tin nhắn
+    # qua nhiều câu lệnh nội bộ). RESTRICT và NO ACTION đều chặn nhầm trường hợp này (phát hiện khi dọn dữ liệu thử).
     model_configuration_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("model_configurations.id", ondelete="RESTRICT")
+        ForeignKey("model_configurations.id", deferrable=True, initially="DEFERRED")
     )
     insufficient_context: Mapped[bool] = mapped_column(server_default=text("false"))
     latency_ms: Mapped[int | None]

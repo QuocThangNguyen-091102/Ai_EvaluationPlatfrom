@@ -431,6 +431,197 @@ th {
   color: var(--muted);
 }
 
+/* ---------- Trang hỏi đáp ---------- */
+.notice {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: var(--info-bg);
+  color: var(--info);
+  font-size: 0.9rem;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.chat-sessions,
+.chat-main {
+  /* Ô lưới mặc định không co nhỏ hơn nội dung; tên hội thoại dài sẽ đẩy trang rộng hơn màn hình. */
+  min-width: 0;
+}
+
+.chat-sessions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.chat-sessions ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+.chat-sessions li {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.chat-sessions li.active {
+  background: var(--surface);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.chat-sessions__open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-sessions__delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chat-config {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+}
+
+.chat-messages {
+  display: grid;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.message {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+}
+
+.message--user {
+  background: var(--info-bg);
+  border-color: transparent;
+}
+
+.message__role {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+}
+
+.message__badges {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.message__content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.answer-meta {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.answer-citations ul,
+.answer-sources ol {
+  margin: 0.25rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.answer-sources summary {
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.answer-sources__head {
+  color: var(--muted);
+}
+
+.answer-sources blockquote {
+  margin: 0.25rem 0 0.6rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--border);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.answer-metrics {
+  color: var(--muted);
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  grid-template-columns: none;
+}
+
+.chat-input textarea {
+  flex: 1;
+  resize: vertical;
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .chat-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ---------- Chỉ báo máy chủ ---------- */
 .backend-status--ok::before,
 .backend-status--error::before {

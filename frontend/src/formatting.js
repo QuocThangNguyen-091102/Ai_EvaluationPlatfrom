@@ -20,6 +20,20 @@ export function formatContentType(contentType) {
   return TYPE_LABELS[contentType] ?? contentType;
 }
 
+export function formatLatency(milliseconds) {
+  if (milliseconds == null) return "độ trễ: không rõ";
+  if (milliseconds < 1000) return `${milliseconds} ms`;
+  return `${(milliseconds / 1000).toFixed(1).replace(".", ",")} s`;
+}
+
+// Chi phí null nghĩa là không biết giá (không phải miễn phí), nên hiển thị "không rõ" thay vì 0.
+export function formatCost(cost) {
+  if (cost == null) return "không rõ";
+  const value = Number(cost);
+  if (value === 0) return "0";
+  return `$${value.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
+}
+
 export const STATUS_LABELS = {
   uploaded: "Đã tải lên",
   processing: "Đang xử lý",
