@@ -2,7 +2,7 @@
 
 LLM judge tách đáp án tham chiếu (do người viết dataset) thành các khẳng định rồi phán định từng khẳng định có được các
 đoạn lấy về hỗ trợ không. Điểm = số khẳng định được hỗ trợ / tổng khẳng định. Dùng lại đúng prompt faithfulness
-(judge-v1), chỉ thay câu trả lời của hệ thống bằng đáp án tham chiếu.
+(judge-strict-json), chỉ thay câu trả lời của hệ thống bằng đáp án tham chiếu.
 
 Khác Recall@k (tất định, theo vị trí câu trích): Context Recall đo theo NỘI DUNG, nên vẫn ghi nhận khi thông tin
 nằm ở đoạn khác câu trích tham chiếu. Phụ thuộc judge (xem docs/metrics_notes.md); không có khẳng định nào thì None.

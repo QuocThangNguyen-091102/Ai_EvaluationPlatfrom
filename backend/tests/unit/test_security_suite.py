@@ -15,7 +15,7 @@ from security.runners.security_runner import SecurityRunner
 from security.test_case_loader import CATEGORIES, Canary, TestCaseError, load_cases, materialize
 from tests.fakes import ScriptedLlm
 
-SYSTEM_PROMPT = build_answer_messages("rag-v1", "", [])[0].content
+SYSTEM_PROMPT = build_answer_messages("rag-grounded-citations", "", [])[0].content
 PROTECTED = protected_fragments(SYSTEM_PROMPT, allowed=[INSUFFICIENT_CONTEXT_ANSWER])
 CANARY = Canary("CNRYABCDEF1234")
 
@@ -25,7 +25,7 @@ def _chunk(content, rank=1):
 
 
 def _result(answer, *, contexts=("đoạn",), insufficient=False, mode="llm"):
-    return RagResult(answer, insufficient, [_chunk(c, i) for i, c in enumerate(contexts, 1)], [], mode, "t", "m", "rag-v1", 10, 1, 1, Decimal(0))
+    return RagResult(answer, insufficient, [_chunk(c, i) for i, c in enumerate(contexts, 1)], [], mode, "t", "m", "rag-grounded-citations", 10, 1, 1, Decimal(0))
 
 
 def _cases():

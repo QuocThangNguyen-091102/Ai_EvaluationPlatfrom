@@ -1,4 +1,4 @@
-# Kiểm tra cuối (M9) — 2026-11-06
+# Kiểm tra trước khi phát hành (M9) — 2026-11-06
 
 Mọi kết quả dưới đây là từ lệnh chạy thật trong ngày; không có số ước lượng.
 

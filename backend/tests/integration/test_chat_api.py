@@ -200,7 +200,7 @@ def test_capabilities_report_what_the_server_can_run(api_client, make_authentica
 
     assert body["llm_configured"] is False
     assert body["embedding_model"] == "intfloat/multilingual-e5-small"
-    assert "rag-v1" in body["prompt_versions"]
+    assert "rag-grounded-citations" in body["prompt_versions"]
 
 
 def test_configuration_defaults_come_from_rag_default_yaml(api_client, make_authenticated_user):
@@ -208,7 +208,7 @@ def test_configuration_defaults_come_from_rag_default_yaml(api_client, make_auth
         CONFIGS, headers=make_authenticated_user(), json={"name": "c", "llm_provider": "extractive", "llm_model": "top-passages"}
     ).json()
 
-    assert (body["top_k"], body["chunk_size"], body["chunk_overlap"], body["prompt_version"]) == (5, 250, 50, "rag-v1")
+    assert (body["top_k"], body["chunk_size"], body["chunk_overlap"], body["prompt_version"]) == (5, 250, 50, "rag-grounded-citations")
 
 
 @pytest.mark.parametrize(
@@ -217,7 +217,7 @@ def test_configuration_defaults_come_from_rag_default_yaml(api_client, make_auth
         ({"llm_provider": "test", "llm_model": "m"}, "chưa cấu hình LLM"),
         ({"llm_provider": "extractive", "llm_model": "khac"}, "top-passages"),
         ({"llm_provider": "extractive", "llm_model": "top-passages", "embedding_model": "khac"}, "embed lại"),
-        ({"llm_provider": "extractive", "llm_model": "top-passages", "prompt_version": "rag-v9"}, "rag-v9"),
+        ({"llm_provider": "extractive", "llm_model": "top-passages", "prompt_version": "rag-unknown-prompt"}, "rag-unknown-prompt"),
     ],
 )
 def test_configurations_the_server_cannot_run_are_rejected(api_client, make_authenticated_user, payload, fragment):

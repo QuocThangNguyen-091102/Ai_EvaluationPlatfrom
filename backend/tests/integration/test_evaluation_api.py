@@ -120,7 +120,7 @@ def test_llm_run_uses_judge_and_exports_csv(api_client, owner, llm_server):
 
     run = api_client.get(f"/api/v1/evaluations/{created['id']}", headers=owner).json()
     assert run["status"] == "completed"
-    assert run["judge_prompt_version"] == "judge-v1"
+    assert run["judge_prompt_version"] == "judge-strict-json"
     assert _metric(run["aggregate_metrics"], "faithfulness")["status"] == "computed"
 
     report = api_client.get(f"/api/v1/evaluations/{run['id']}/report?format=csv", headers=owner)

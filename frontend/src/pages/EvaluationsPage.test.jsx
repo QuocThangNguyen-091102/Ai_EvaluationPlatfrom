@@ -28,7 +28,7 @@ import EvaluationsPage from "./EvaluationsPage.jsx";
 
 const ENVIRONMENT = {
   dataset_version: { id: "v1", version_number: 2, cases: 2 },
-  model_configuration: { llm_provider: "extractive", llm_model: "top-passages", top_k: 5, prompt_version: "rag-v1", chunk_size: 250, chunk_overlap: 50 },
+  model_configuration: { llm_provider: "extractive", llm_model: "top-passages", top_k: 5, prompt_version: "rag-grounded-citations", chunk_size: 250, chunk_overlap: 50 },
   warnings: [],
 };
 const RUN = {
@@ -98,8 +98,8 @@ describe("EvaluationsPage", () => {
     renderPage(<EvaluationsPage />);
 
     const select = await screen.findByLabelText("Phiên bản dataset (đã duyệt)");
-    await screen.findByRole("option", { name: /v2/ });
-    expect(screen.queryByRole("option", { name: /v1 / })).not.toBeInTheDocument();
+    await screen.findByRole("option", { name: /phiên bản 2/ });
+    expect(screen.queryByRole("option", { name: /phiên bản 1 / })).not.toBeInTheDocument();
     expect(screen.getByText(/chưa cấu hình LLM/)).toBeInTheDocument();
 
     await userEvent.selectOptions(select, "v1");

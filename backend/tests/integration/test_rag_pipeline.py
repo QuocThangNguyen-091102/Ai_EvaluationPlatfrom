@@ -17,9 +17,9 @@ pytestmark = pytest.mark.integration
 
 EMBEDDER = HashEmbedder()
 PRICES = PriceTable([ModelPrice("test", "scripted", Decimal("1"), Decimal("2"), "USD", "2026-11-06")])
-LLM_CONFIG = RAGConfig(top_k=3, temperature=0.0, prompt_version="rag-v1", llm_provider="test", llm_model="scripted")
+LLM_CONFIG = RAGConfig(top_k=3, temperature=0.0, prompt_version="rag-grounded-citations", llm_provider="test", llm_model="scripted")
 EXTRACTIVE_CONFIG = RAGConfig(
-    top_k=3, temperature=0.0, prompt_version="rag-v1", llm_provider=EXTRACTIVE_PROVIDER, llm_model=EXTRACTIVE_MODEL
+    top_k=3, temperature=0.0, prompt_version="rag-grounded-citations", llm_provider=EXTRACTIVE_PROVIDER, llm_model=EXTRACTIVE_MODEL
 )
 
 
@@ -144,14 +144,14 @@ def test_tokens_cost_and_latency_are_recorded(db_session):
     assert (result.prompt_tokens, result.completion_tokens) == (1000, 500)
     assert result.estimated_cost == Decimal("0.002000")  # 1000*1 + 500*2 trên 1 triệu
     assert result.latency_ms == 250
-    assert (result.llm_provider, result.llm_model, result.prompt_version) == ("test", "scripted", "rag-v1")
+    assert (result.llm_provider, result.llm_model, result.prompt_version) == ("test", "scripted", "rag-grounded-citations")
 
 
 def test_unknown_price_gives_unknown_cost(db_session):
     user = _user(db_session)
     _document(db_session, user, "Hồ sơ nộp trong 30 ngày.")
     pipeline, _ = _pipeline()
-    config = RAGConfig(top_k=3, temperature=0, prompt_version="rag-v1", llm_provider="test", llm_model="khong-co-gia")
+    config = RAGConfig(top_k=3, temperature=0, prompt_version="rag-grounded-citations", llm_provider="test", llm_model="khong-co-gia")
 
     assert pipeline.run(db_session, question="hồ sơ", user_id=user.id, config=config).estimated_cost is None
 
@@ -174,6 +174,6 @@ def test_empty_question_is_rejected(db_session):
 
 def test_config_validation():
     with pytest.raises(ValueError):
-        RAGConfig(top_k=0, temperature=0, prompt_version="rag-v1", llm_provider="x", llm_model="y")
+        RAGConfig(top_k=0, temperature=0, prompt_version="rag-grounded-citations", llm_provider="x", llm_model="y")
     with pytest.raises(ValueError):
-        RAGConfig(top_k=1, temperature=3, prompt_version="rag-v1", llm_provider="x", llm_model="y")
+        RAGConfig(top_k=1, temperature=3, prompt_version="rag-grounded-citations", llm_provider="x", llm_model="y")

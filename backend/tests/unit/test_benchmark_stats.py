@@ -4,7 +4,7 @@ import pytest
 
 from evaluation.benchmarks.benchmark_runner import ResultUsage, config_differences, percentile, usage_stats
 
-BASE = {"llm_provider": "p", "llm_model": "a", "top_k": 5, "prompt_version": "rag-v1", "temperature": 0.0, "embedding_model": "e", "chunk_size": 250, "chunk_overlap": 50}
+BASE = {"llm_provider": "p", "llm_model": "a", "top_k": 5, "prompt_version": "rag-grounded-citations", "temperature": 0.0, "embedding_model": "e", "chunk_size": 250, "chunk_overlap": 50}
 
 
 def test_percentile_uses_nearest_rank_so_value_is_a_real_observation():

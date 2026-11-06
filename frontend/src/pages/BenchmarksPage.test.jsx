@@ -25,7 +25,7 @@ const BASE_CONFIG = {
   name: "Mặc định",
   llm_provider: "extractive",
   llm_model: "top-passages",
-  prompt_version: "rag-v1",
+  prompt_version: "rag-grounded-citations",
   top_k: 5,
   temperature: 0,
   chunk_size: 250,

@@ -140,7 +140,7 @@ function NewEvaluationForm({ onCreated, onError }) {
           <option value="">— chọn —</option>
           {versions.map((version) => (
             <option key={version.id} value={version.id}>
-              {version.datasetName} · v{version.version_number} ({version.test_case_count} câu)
+              {version.datasetName} · phiên bản {version.version_number} ({version.test_case_count} câu)
             </option>
           ))}
         </select>
@@ -223,7 +223,7 @@ function RunDetail({ run, onError }) {
             Lượt đánh giá <span className={`badge badge--run-${run.status}`}>{RUN_STATUS_LABELS[run.status]}</span>
           </h2>
           <p className="muted">
-            Dataset v{dataset.version_number ?? "?"} · {config.llm_provider}/{config.llm_model} · top_k={config.top_k} · prompt{" "}
+            Dataset phiên bản {dataset.version_number ?? "?"} · {config.llm_provider}/{config.llm_model} · top_k={config.top_k} · prompt{" "}
             {config.prompt_version} · chunk {config.chunk_size}/{config.chunk_overlap} · judge: {run.judge_model ?? "không dùng"}
           </p>
         </div>

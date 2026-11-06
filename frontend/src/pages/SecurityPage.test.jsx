@@ -26,7 +26,7 @@ const RUN = {
   judge_prompt_version: null,
   summary: { by_status: { pass: 1, fail: 1, skipped: 1 }, failed_by_severity: { critical: 1 } },
   coverage_notes: ["Không kết luận hệ thống an toàn tuyệt đối."],
-  environment: { model_configuration: { llm_provider: "extractive", llm_model: "top-passages", prompt_version: "rag-v1", top_k: 5 } },
+  environment: { model_configuration: { llm_provider: "extractive", llm_model: "top-passages", prompt_version: "rag-grounded-citations", top_k: 5 } },
   error_message: null,
   started_at: "2026-11-06T08:00:00Z",
   finished_at: "2026-11-06T08:01:00Z",

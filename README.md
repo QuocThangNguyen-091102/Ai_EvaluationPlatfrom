@@ -2,7 +2,7 @@
 
 Nền tảng đánh giá RAG (Retrieval-Augmented Generation), kiểm soát chất lượng LLM và kiểm thử bảo mật AI. Gồm một ứng dụng RAG mẫu (hỏi đáp có trích dẫn trên tài liệu của người dùng) và một nền tảng đo chất lượng truy xuất, chất lượng câu trả lời, hành vi bảo mật, độ trễ và chi phí.
 
-Trạng thái: **đủ chức năng của MVP (M1 đến M9)**. Một số gate chỉ đạt một phần vì cần người làm: dataset thật, baseline, LLM (xem mục [Việc còn cần người](#việc-còn-cần-người)). Tiến độ chi tiết: [docs/progress_log.md](docs/progress_log.md). Kết quả kiểm tra cuối: [docs/final_audit.md](docs/final_audit.md).
+Trạng thái: **đủ chức năng của MVP (M1 đến M9)**. Một số gate chỉ đạt một phần vì cần người làm: dataset thật, baseline, LLM (xem mục [Việc còn cần người](#việc-còn-cần-người)). Tiến độ chi tiết: [docs/progress_log.md](docs/progress_log.md). Kết quả kiểm tra cuối: [docs/release_audit.md](docs/release_audit.md).
 
 ## Chức năng
 

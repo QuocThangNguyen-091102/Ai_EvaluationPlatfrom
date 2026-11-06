@@ -19,7 +19,7 @@ def _chunk(rank, start, end, doc="h1", content="nội dung"):
 
 def _result(answer="Trả lời [1]", *, contexts=None, insufficient=False, mode="llm"):
     contexts = [_chunk(1, 100, 150)] if contexts is None else contexts
-    return RagResult(answer, insufficient, contexts, [], mode, "test", "m", "rag-v1", 50, 10, 5, Decimal(0))
+    return RagResult(answer, insufficient, contexts, [], mode, "test", "m", "rag-grounded-citations", 50, 10, 5, Decimal(0))
 
 
 ANSWERABLE = CaseInput("c1", "Hạn nộp?", "answer", [Span("h1", 120, 130)])

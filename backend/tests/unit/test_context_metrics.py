@@ -35,7 +35,7 @@ def _chunk(rank, start, end, content="nội dung"):
 
 
 def _result(contexts, mode="extractive"):
-    return RagResult("trả lời", False, contexts, [], mode, "test", "m", "rag-v1", 5, None, None, Decimal(0))
+    return RagResult("trả lời", False, contexts, [], mode, "test", "m", "rag-grounded-citations", 5, None, None, Decimal(0))
 
 
 CASE = CaseInput("c1", "Hạn nộp?", "answer", [Span("h1", 120, 130)], ground_truth="Trong vòng 30 ngày.")

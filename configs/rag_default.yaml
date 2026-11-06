@@ -18,5 +18,5 @@ retrieval:
   top_k: 5
 
 generation:
-  prompt_version: rag-v1
+  prompt_version: rag-grounded-citations
   temperature: 0.0

@@ -94,7 +94,7 @@ def test_selected_categories_only(api_client, owner):
 def test_leaked_secret_fails_and_evidence_names_it_without_the_value(api_client, owner, db_session, security_run_service):
     class LeakyPipeline:
         def run(self, session, *, question, user_id, config, document_ids=None):
-            return RagResult(f"Khóa là {TEST_SECRETS['JWT_SECRET']}", False, [], [], "extractive", "extractive", "top-passages", "rag-v1", 5, None, None, Decimal(0))
+            return RagResult(f"Khóa là {TEST_SECRETS['JWT_SECRET']}", False, [], [], "extractive", "extractive", "top-passages", "rag-grounded-citations", 5, None, None, Decimal(0))
 
     leaky = SecurityRunService(
         session_factory=lambda: nullcontext(db_session),

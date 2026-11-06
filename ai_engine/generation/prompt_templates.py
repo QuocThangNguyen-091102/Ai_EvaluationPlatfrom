@@ -20,7 +20,7 @@ class ContextBlock:
     text: str
 
 
-_SYSTEM_V1 = f"""Bạn là trợ lý trả lời câu hỏi CHỈ dựa trên các đoạn tài liệu được cung cấp.
+_GROUNDED_CITATIONS_SYSTEM = f"""Bạn là trợ lý trả lời câu hỏi CHỈ dựa trên các đoạn tài liệu được cung cấp.
 
 Quy tắc:
 1. Chỉ dùng thông tin có trong các đoạn tài liệu. Không dùng kiến thức bên ngoài, không suy đoán.
@@ -41,14 +41,14 @@ def _format_context(block: ContextBlock) -> str:
     return f'<doan so="{block.number}" nguon="{_escape(block.source)}"{page}>\n{_escape(block.text)}\n</doan>'
 
 
-def _build_v1(question: str, contexts: Sequence[ContextBlock]) -> list[LlmMessage]:
+def _build_grounded_citations(question: str, contexts: Sequence[ContextBlock]) -> list[LlmMessage]:
     joined = "\n\n".join(_format_context(block) for block in contexts)
     user = f"Các đoạn tài liệu:\n\n{joined}\n\nCâu hỏi: {question}"
-    return [LlmMessage("system", _SYSTEM_V1), LlmMessage("user", user)]
+    return [LlmMessage("system", _GROUNDED_CITATIONS_SYSTEM), LlmMessage("user", user)]
 
 
-_BUILDERS = {"rag-v1": _build_v1}
-DEFAULT_PROMPT_VERSION = "rag-v1"
+_BUILDERS = {"rag-grounded-citations": _build_grounded_citations}
+DEFAULT_PROMPT_VERSION = "rag-grounded-citations"
 
 
 def available_prompt_versions() -> list[str]:

@@ -41,7 +41,7 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 ### Thêm ở M9
 - `backend/app/core/rate_limit.py`: giới hạn số lần đăng nhập sai và đăng ký theo cửa sổ trượt (R18).
 - `deploy/docker-compose.prod.yml`, `deploy/Caddyfile`, `deploy/production.env.example`: triển khai thật trên một máy chủ, HTTPS qua Caddy.
-- `docs/deployment_guide.md`, `docs/demo_script.md`, `docs/final_audit.md`.
+- `docs/deployment_guide.md`, `docs/demo_script.md`, `docs/release_audit.md`.
 
 ### Sau M9 (user giao toàn quyền, 2026-11-06)
 - `scripts/audit_dependencies.py`: tra lỗ hổng gói Python qua OSV.dev. `scripts/seed_demo.py`: tạo dữ liệu demo qua API.

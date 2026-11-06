@@ -45,7 +45,7 @@ describe("ChatPage", () => {
     vi.clearAllMocks();
     chatApi.listSessions.mockResolvedValue({ items: [], total: 0 });
     modelConfigApi.listConfigurations.mockResolvedValue({ items: [] });
-    modelConfigApi.getCapabilities.mockResolvedValue({ llm_configured: true, prompt_versions: ["rag-v1"] });
+    modelConfigApi.getCapabilities.mockResolvedValue({ llm_configured: true, prompt_versions: ["rag-grounded-citations"] });
   });
 
   it("gửi câu hỏi rồi hiện câu trả lời, nguồn trích dẫn và số đo", async () => {
@@ -73,7 +73,7 @@ describe("ChatPage", () => {
   });
 
   it("đánh dấu rõ câu trả lời không dùng LLM và câu không đủ thông tin", async () => {
-    modelConfigApi.getCapabilities.mockResolvedValue({ llm_configured: false, prompt_versions: ["rag-v1"] });
+    modelConfigApi.getCapabilities.mockResolvedValue({ llm_configured: false, prompt_versions: ["rag-grounded-citations"] });
     chatApi.askQuestion.mockResolvedValue(
       answer({ mode: "extractive", answer: "Hệ thống chưa cấu hình LLM...", metrics: { latency_ms: 80, prompt_tokens: null, completion_tokens: null, estimated_cost: "0" } }),
     );

@@ -11,7 +11,7 @@ const UNFINISHED = new Set(["pending", "running"]);
 const VARIABLES = {
   top_k: { label: "top_k (số đoạn lấy về)", placeholder: "ví dụ: 3, 5, 8" },
   llm_model: { label: "LLM model", placeholder: "tên các model, cách nhau bằng dấu phẩy" },
-  prompt_version: { label: "Prompt version", placeholder: "ví dụ: rag-v1" },
+  prompt_version: { label: "Prompt version", placeholder: "ví dụ: rag-grounded-citations" },
 };
 const COLUMNS = [
   "behavior_correct",
@@ -191,7 +191,7 @@ function NewBenchmarkForm({ onCreated, onError }) {
           <option value="">— chọn —</option>
           {versions.map((version) => (
             <option key={version.id} value={version.id}>
-              {version.datasetName} · v{version.version_number} ({version.test_case_count} câu)
+              {version.datasetName} · phiên bản {version.version_number} ({version.test_case_count} câu)
             </option>
           ))}
         </select>

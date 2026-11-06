@@ -115,7 +115,7 @@ function EvaluationComparison() {
       {[...groups.entries()].map(([versionId, groupRuns]) => (
         <section key={versionId} className="card">
           <h2>
-            Dataset v{groupRuns[0].environment?.dataset_version?.version_number ?? "?"} ·{" "}
+            Dataset phiên bản {groupRuns[0].environment?.dataset_version?.version_number ?? "?"} ·{" "}
             {groupRuns[0].environment?.dataset_version?.cases ?? groupRuns[0].total_cases} câu
           </h2>
           <div className="table-wrap">

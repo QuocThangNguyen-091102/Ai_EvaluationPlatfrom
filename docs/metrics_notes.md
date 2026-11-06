@@ -43,7 +43,7 @@ Chỉ tính khi: câu kỳ vọng trả lời, hệ thống không từ chối, 
 | Faithfulness | Judge tách câu trả lời thành các ý, đánh dấu ý nào được ngữ cảnh hỗ trợ. Điểm = số ý được hỗ trợ / số ý. Không có ý nào thì `failed` (không gán 1). |
 | Answer relevancy | Judge chấm 1–5 mức đúng trọng tâm; quy về (điểm − 1) / 4. |
 
-Judge trả JSON sai định dạng thì metric là `failed` kèm lý do, không đoán số. Prompt judge có phiên bản (`judge-v1`, lưu trong mỗi lượt).
+Judge trả JSON sai định dạng thì metric là `failed` kèm lý do, không đoán số. Prompt judge có phiên bản (`judge-strict-json`, lưu trong mỗi lượt).
 
 **Giới hạn và thiên lệch của LLM judge** (cần nhớ khi đọc số):
 - Judge là một LLM, có thể sai. Phải đọc mẫu câu trả lời, không chỉ nhìn trung bình.
@@ -56,7 +56,7 @@ Judge trả JSON sai định dạng thì metric là `failed` kèm lý do, không
 | Metric | Cách tính | Cần LLM |
 |---|---|---|
 | Context Precision | Average precision trên các hạng có đoạn đúng: Σ(precision@k × rel_k) / số đoạn đúng. Đoạn đúng xác định tất định như mục 2 | Không |
-| Context Recall | Judge tách **đáp án tham chiếu** thành các khẳng định và phán định từng khẳng định có được các đoạn lấy về hỗ trợ không; điểm = số được hỗ trợ / tổng. Dùng lại prompt faithfulness `judge-v1` | Có (judge), nhưng **không** cần câu trả lời của LLM nên chạy được cả ở chế độ trích đoạn |
+| Context Recall | Judge tách **đáp án tham chiếu** thành các khẳng định và phán định từng khẳng định có được các đoạn lấy về hỗ trợ không; điểm = số được hỗ trợ / tổng. Dùng lại prompt faithfulness `judge-strict-json` | Có (judge), nhưng **không** cần câu trả lời của LLM nên chạy được cả ở chế độ trích đoạn |
 
 Khác biệt với bản RAGAS gốc: Context Precision ở đây dùng nhãn đúng/sai tất định (theo câu trích tham chiếu) thay vì để LLM phán định từng đoạn, nên rẻ và lặp lại được nhưng phụ thuộc chất lượng câu trích. Context Precision chỉ đo **thứ tự**: lấy ít đoạn không bị phạt, thiếu tham chiếu cũng không bị phạt (xem Recall@k và Context Recall). Không lấy được đoạn nào thì Context Recall = 0 mà không cần gọi judge.
 

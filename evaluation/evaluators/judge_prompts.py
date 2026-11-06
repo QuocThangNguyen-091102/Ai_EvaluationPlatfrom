@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from ai_engine.generation.base_llm_client import LlmMessage
 
-DEFAULT_JUDGE_PROMPT_VERSION = "judge-v1"
+DEFAULT_JUDGE_PROMPT_VERSION = "judge-strict-json"
 
 _FAITHFULNESS_SYSTEM = """Bạn là người chấm điểm khách quan. Nhiệm vụ: kiểm tra câu trả lời có được NGỮ CẢNH hỗ trợ không.
 

@@ -78,6 +78,7 @@ Tuyệt đối tránh:
 - Tên mang tính giải thích quá trình (`fixed_`, `updated_`, `improved_`, `claude_`, `ai_generated_`).
 - Viết tắt khó hiểu hoặc tự chế.
 - Số thứ tự vô nghĩa (`file1`, `script2`).
+- Đánh số phiên bản trong tên: `v1`, `v2`, `v3`, `_final`, `-latest`, áp dụng cho file, hàm, biến, mã prompt và nhãn giao diện. Người đọc dễ nhận ra đây là dấu hiệu do AI làm. Khi cần phân biệt các phiên bản (ví dụ prompt), đặt tên theo ĐẶC ĐIỂM khác biệt: `rag-grounded-citations`, `judge-strict-json`, `judge-refusal-aware`. Số thứ tự chỉ được dùng trong cột dữ liệu dạng số (ví dụ `version_number`) và trên giao diện hiển thị "phiên bản 2", không hiển thị "v2".
 
 Trước khi tạo file mới, nếu tên chưa rõ ràng thì đề xuất 2-3 phương án tên và chọn cái tốt nhất, giải thích ngắn gọn lý do.
 

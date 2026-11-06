@@ -13,7 +13,7 @@
   - giới hạn đăng nhập và đăng ký;
   - bộ deploy production (Caddy HTTPS);
   - README, kịch bản demo, kiểm tra cuối.
-- Chi tiết từng phần, kết quả kiểm tra thật và lỗi tìm thấy: `docs/progress_log.md`. Tổng kết: `docs/final_audit.md`.
+- Chi tiết từng phần, kết quả kiểm tra thật và lỗi tìm thấy: `docs/progress_log.md`. Tổng kết: `docs/release_audit.md`.
 
 ### Trạng thái
 - Git: nhánh `main`, commit theo từng phần, **chưa có remote, chưa push**.

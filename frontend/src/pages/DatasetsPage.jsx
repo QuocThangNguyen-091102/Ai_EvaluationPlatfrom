@@ -205,7 +205,7 @@ export default function DatasetsPage() {
                 <select value={versionId ?? ""} onChange={(e) => setVersionId(e.target.value)}>
                   {versions.map((v) => (
                     <option key={v.id} value={v.id}>
-                      v{v.version_number} · {v.status === "reviewed" ? "đã duyệt" : "nháp"} · {v.test_case_count} câu
+                      Phiên bản {v.version_number} · {v.status === "reviewed" ? "đã duyệt" : "nháp"} · {v.test_case_count} câu
                     </option>
                   ))}
                 </select>
