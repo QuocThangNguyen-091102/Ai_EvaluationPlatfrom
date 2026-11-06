@@ -18,6 +18,10 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M5-T06, M5-T07 | Giao diện Dataset và gate M5 | 2026-11-06
+- M5-T06 hoàn thành: `pages/DatasetsPage.jsx`, `components/TestCaseForm.jsx`, `services/api/datasetApi.js`, CSS, menu "Dataset"; tạo dataset, chọn phiên bản, tạo phiên bản mới (sao chép), duyệt và đóng băng (có xác nhận), thêm, sửa, xóa câu hỏi với chọn tài liệu và dán câu trích, nhập CSV hoặc JSON (lỗi hiện theo dòng), lọc theo loại và độ khó. 72 test giao diện pass (9 test mới).
+- **Gate M5: chưa đạt, cần người.** Điều kiện là có ít nhất một phiên bản dataset thật do người viết và duyệt. Công cụ đã đủ; còn thiếu nội dung (M5-T03, M5-T04).
+
 ### M5-T01, M5-T02, M5-T05 | Bảng dataset, Dataset API, import, duyệt và đóng băng | 2026-11-06
 - Trạng thái: Hoàn thành.
 - File: `models/dataset.py`, migration `0006`, `evaluation/datasets/reference_locator.py`, `evaluation/datasets/dataset_loader.py`, `schemas/dataset.py`, `repositories/dataset_repository.py`, `services/dataset_service.py`, `api/routes/datasets.py`; Docker copy thêm `evaluation/`; test `unit/test_dataset_tools.py`, `integration/test_dataset_api.py`.

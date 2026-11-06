@@ -622,6 +622,127 @@ textarea {
   }
 }
 
+/* ---------- Trang dataset ---------- */
+.datasets-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.datasets-sidebar,
+.datasets-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.2rem;
+}
+
+.list-button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-button.active {
+  background: var(--surface);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.inline-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+input[type="text"] {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.test-case-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.references {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.reference-row {
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.cell-wrap {
+  min-width: 160px;
+  max-width: 320px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.import-errors {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+@media (max-width: 760px) {
+  .datasets-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reference-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ---------- Chỉ báo máy chủ ---------- */
 .backend-status--ok::before,
 .backend-status--error::before {

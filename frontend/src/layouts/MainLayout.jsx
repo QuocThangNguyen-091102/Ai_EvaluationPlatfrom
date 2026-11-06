@@ -13,6 +13,7 @@ export default function MainLayout() {
         <nav className="app-header__nav" aria-label="Điều hướng chính">
           <NavLink to="/documents">Tài liệu</NavLink>
           <NavLink to="/chat">Hỏi đáp</NavLink>
+          <NavLink to="/datasets">Dataset</NavLink>
         </nav>
         <div className="app-header__user">
           <span title={user?.email}>{user?.email}</span>

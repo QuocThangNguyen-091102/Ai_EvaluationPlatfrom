@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
+import DatasetsPage from "./pages/DatasetsPage.jsx";
 import DocumentsPage from "./pages/DocumentsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 
@@ -20,6 +21,7 @@ export default function App() {
         <Route index element={<Navigate to="/documents" replace />} />
         <Route path="documents" element={<DocumentsPage />} />
         <Route path="chat" element={<ChatPage />} />
+        <Route path="datasets" element={<DatasetsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
