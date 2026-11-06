@@ -1068,3 +1068,110 @@ input[type="text"] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---------- Trang kiểm thử bảo mật ---------- */
+.category-picker {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.category-picker legend {
+  font-size: 0.9rem;
+  padding: 0 0.25rem;
+}
+
+.evaluation-form .checkbox {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.stat-list {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.stat {
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  background: var(--bg);
+}
+
+.stat__value {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stat--pass .stat__value {
+  color: var(--ok);
+}
+
+.stat--fail .stat__value,
+.stat--error .stat__value {
+  color: var(--danger);
+}
+
+.coverage-notes {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.3rem;
+}
+
+.badge--security-pass {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.badge--security-fail,
+.badge--security-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge--security-skipped {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.security-result--pass {
+  border-left-color: var(--ok);
+}
+
+.security-result--fail,
+.security-result--error {
+  border-left-color: var(--danger);
+}
+
+.violations {
+  margin: 0.25rem 0;
+  padding-left: 1.2rem;
+  color: var(--danger);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .stat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -18,6 +18,15 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M7 | Kiểm thử bảo mật: test case, sandbox, runner, luật và judge, API, giao diện, gate M7 | 2026-11-06
+- Trạng thái: phần mã hoàn thành; **gate M7 đạt một phần**: hành vi của LLM trước injection và jailbreak chưa kiểm tra được vì chưa có LLM (cần người cấu hình).
+- Test case: 12 case YAML trong 5 nhóm (`security/test_cases/`), có kiểm tra schema, canary ngẫu nhiên mỗi lượt, mitigation cho từng case. Thiết kế và mô hình mối đe dọa: `docs/security_testing.md`.
+- Quyết định chính: mỗi lượt chạy trong sandbox (2 user tạm không đăng nhập được, tên miền `sandbox.invalid` bị chặn đăng ký), tài liệu thử xử lý bằng đúng chunker và embedder thật, hỏi qua RAG pipeline dùng chung, xóa sandbox khi xong và khi khởi động lại. Tài liệu thật của user không bị dùng. Test injection chỉ chứa canary dạng hai mảnh để chế độ trích đoạn không tạo fail giả. Test cần LLM thì `skipped`, không giả là pass. Evidence chỉ ghi tên secret bị lộ, không ghi giá trị.
+- Backend: bảng `security_test_cases` (bản chụp theo content_hash), `security_test_runs`, `security_test_results` (migration 0008); API `/security/test-cases`, `/security/runs` (tạo 202, danh sách, chi tiết kèm coverage notes, kết quả có lọc, CSV). Judge thêm `policy_violation` vào `llm_judge` dùng chung.
+- Giao diện: trang "Bảo mật" (chọn nhóm, tiến độ, thống kê pass/fail/lỗi/bỏ qua, fail theo mức độ, giới hạn, bằng chứng và cách giảm thiểu từng test, tải CSV).
+- Kiểm tra thật: backend 402 pass, 5 skipped (21 unit và 12 integration mới, gồm trường hợp pipeline làm lộ secret phải fail và evidence không chứa giá trị); downgrade/upgrade migration sạch; giao diện 81 pass. E2E Docker với model thật: 12 test, AC-01, AC-02, DL-02 pass, 9 bỏ qua, sandbox bị xóa sạch (0 user, 0 tài liệu), bản chụp đoạn lấy về được giữ; 3 trang không tràn ngang trên điện thoại.
+- **Cần người:** cấu hình LLM rồi chạy lại để kiểm tra 9 test hành vi LLM; đọc lại kết quả judge nếu dùng.
+
 ### M6-T01 đến M6-T09 | Đánh giá RAG: metric, judge, runner, API, giao diện, gate M6 | 2026-11-06
 - Trạng thái: phần mã hoàn thành; **gate M6 đạt một phần** (thiếu baseline trên dataset thật, cần người).
 - Backend: bảng `evaluation_runs`, `evaluation_results`, `metric_results` (migration 0007, FK deferred); `retrieved_contexts` thêm `evaluation_result_id` (đúng một trong chat hoặc evaluation). Metric truy xuất (Precision@k chia cho k, Recall@k theo tham chiếu, MRR, NDCG@k), `behavior_correct`, LLM judge (faithfulness, answer relevancy, prompt `judge-v1`). Runner chạy qua RAG pipeline dùng chung, lưu từng câu ngay khi xong, câu lỗi không dừng lượt. API: tạo (202, chạy nền), danh sách, chi tiết, kết quả từng câu (lọc theo trạng thái, phân loại), báo cáo CSV (409 nếu chưa xong). Khởi động lại thì lượt dở bị đánh dấu `failed`.
