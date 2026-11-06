@@ -14,7 +14,41 @@ except ValidationError:
     os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://test:test@127.0.0.1:5432/test")
     os.environ.setdefault("JWT_SECRET", "chi-dung-cho-test-khong-phai-secret-that-0123456789")
 
-import pytest
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
+
+from app.core.config import settings
+
+
+def _test_database_url(app_url: str) -> str:
+    """Test KHÔNG dùng chung database với stack đang chạy (dữ liệu thật, tác vụ nền đang chạy).
+
+    Ưu tiên TEST_DATABASE_URL; nếu không có thì dùng database `<tên>_test` trên cùng máy chủ PostgreSQL.
+    """
+    explicit = os.environ.get("TEST_DATABASE_URL")
+    if explicit:
+        return explicit
+    url = make_url(app_url)
+    name = url.database or "app"
+    return url.set(database=name if name.endswith("_test") else f"{name}_test").render_as_string(hide_password=False)
+
+
+settings.database_url = _test_database_url(settings.database_url)
+
+
+def _ensure_test_database() -> None:
+    url = make_url(settings.database_url)
+    admin = create_engine(url.set(database="postgres"), isolation_level="AUTOCOMMIT", connect_args={"connect_timeout": 10})
+    try:
+        with admin.connect() as connection:
+            exists = connection.execute(text("SELECT 1 FROM pg_database WHERE datname = :name"), {"name": url.database}).scalar()
+            if not exists:
+                connection.execute(text(f'CREATE DATABASE "{url.database}"'))
+    finally:
+        admin.dispose()
+
+
+import pytest  # noqa: E402
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
@@ -145,7 +179,8 @@ def api_client(db_session, ingestion_service, rag_pipeline, evaluation_run_servi
 
 @pytest.fixture(scope="session")
 def migrated_database() -> None:
-    """Đưa DB test lên migration mới nhất. Chỉ test integration dùng fixture này."""
+    """Tạo database test riêng nếu chưa có rồi đưa lên migration mới nhất. Chỉ test integration dùng fixture này."""
+    _ensure_test_database()
     config = Config(str(BACKEND_DIR / "alembic.ini"))
     config.set_main_option("script_location", str(BACKEND_DIR / "app" / "database" / "migrations"))
     command.upgrade(config, "head")

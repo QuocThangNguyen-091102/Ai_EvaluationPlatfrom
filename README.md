@@ -118,7 +118,7 @@ npm test
 npm run build
 ```
 
-Nếu bạn đổi `POSTGRES_PASSWORD`, hãy đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
+Nếu bạn đổi `POSTGRES_PASSWORD`, hãy đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được. Test integration tự dùng database riêng `<tên database>_test` (tự tạo ở lần chạy đầu, hoặc đặt `TEST_DATABASE_URL`), nên không đụng tới dữ liệu và tác vụ đang chạy của stack.
 
 Kết quả lần chạy cuối (2026-11-06):
 - backend 443 test pass (gồm 5 test với model thật);
