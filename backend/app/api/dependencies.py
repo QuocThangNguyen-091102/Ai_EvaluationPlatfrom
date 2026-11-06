@@ -10,6 +10,7 @@ from app.database.session import get_session, open_session
 from app.models.user import User
 from app.repositories.chat_repository import ChatRepository
 from app.repositories.dataset_repository import DatasetRepository
+from app.repositories.benchmark_repository import BenchmarkRepository
 from app.repositories.document_repository import DocumentRepository
 from app.repositories.evaluation_repository import EvaluationRepository
 from app.repositories.security_repository import SecurityRepository
@@ -18,6 +19,7 @@ from app.repositories.user_repository import UserRepository
 from app.services.auth_service import AuthService
 from app.services.chat_service import ChatService
 from app.services.dataset_service import DatasetService
+from app.services.benchmark_service import BenchmarkRunService, BenchmarkService
 from app.services.document_service import DocumentService
 from app.services.evaluation_service import EvaluationRunService, EvaluationService
 from app.services.security_service import SecurityRunService, SecurityService
@@ -79,6 +81,19 @@ def get_security_run_service() -> SecurityRunService:
     return SecurityRunService(
         session_factory=open_session, pipeline_provider=get_pipeline, embedder_provider=get_embedder, judge_client_for=llm_client_for_model
     )
+
+
+def get_benchmark_service(session: Session = Depends(get_session)) -> BenchmarkService:
+    configs = ModelConfigService(ModelConfigRepository(session), get_rag_defaults())
+    return BenchmarkService(
+        BenchmarkRepository(session), EvaluationService(EvaluationRepository(session), DatasetRepository(session), configs), configs
+    )
+
+
+def get_benchmark_run_service(
+    evaluation_runner: EvaluationRunService = Depends(get_evaluation_run_service),
+) -> BenchmarkRunService:
+    return BenchmarkRunService(session_factory=open_session, evaluation_runner=evaluation_runner)
 
 
 def get_current_user(

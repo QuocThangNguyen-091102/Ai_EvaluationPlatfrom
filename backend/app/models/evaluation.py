@@ -20,12 +20,17 @@ class EvaluationRun(Base):
         CheckConstraint("status IN ('pending', 'running', 'completed', 'failed')", name="ck_evaluation_runs_status"),
         Index("ix_evaluation_runs_user_id_created_at", "user_id", "created_at"),
         Index("ix_evaluation_runs_dataset_version_id", "dataset_version_id"),
+        Index("ix_evaluation_runs_benchmark_run_id", "benchmark_run_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=text("gen_random_uuid()"))
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     dataset_version_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("dataset_versions.id", **_DEFERRED))
     model_configuration_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("model_configurations.id", **_DEFERRED))
+    # Thuộc một benchmark (xóa benchmark thì xóa các lượt con); NULL là lượt đánh giá đơn lẻ.
+    benchmark_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("benchmark_runs.id", ondelete="CASCADE", name="fk_evaluation_runs_benchmark_run_id")
+    )
     status: Mapped[str] = mapped_column(String(20), server_default=text("'pending'"))
     total_cases: Mapped[int] = mapped_column(server_default=text("0"))
     completed_cases: Mapped[int] = mapped_column(server_default=text("0"))

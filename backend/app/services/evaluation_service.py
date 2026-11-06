@@ -46,12 +46,11 @@ class EvaluationService:
         self._datasets = datasets
         self._configs = configs
 
-    def create_run(self, user: User, payload: EvaluationCreate) -> EvaluationRun:
-        version = self._datasets.get_version(user.id, payload.dataset_version_id)
-        if version is None:
-            raise AppError(404, "not_found", "Không tìm thấy phiên bản dataset")
-        if version.status != "reviewed":
-            raise AppError(409, "conflict", "Chỉ đánh giá được phiên bản dataset đã duyệt (để kết quả tái lập được)")
+    def create_run(
+        self, user: User, payload: EvaluationCreate, *, benchmark_run_id: uuid.UUID | None = None, commit: bool = True
+    ) -> EvaluationRun:
+        """`commit=False`: chỉ flush, để benchmark tạo nhiều lượt con trong cùng một transaction."""
+        version = self.require_reviewed_version(user, payload.dataset_version_id)
         config = self._configs.resolve_for_use(user, payload.model_configuration_id)
         if payload.judge_model and not llm_configured():
             raise AppError(422, "validation_error", "Máy chủ chưa cấu hình LLM nên không có judge; để trống judge_model")
@@ -68,6 +67,7 @@ class EvaluationService:
         run = self._evaluations.add_run(
             EvaluationRun(
                 user_id=user.id,
+                benchmark_run_id=benchmark_run_id,
                 dataset_version_id=version.id,
                 model_configuration_id=config.id,
                 status="pending",
@@ -83,8 +83,17 @@ class EvaluationService:
                 ),
             )
         )
-        self._evaluations.commit()
+        if commit:
+            self._evaluations.commit()
         return run
+
+    def require_reviewed_version(self, user: User, version_id: uuid.UUID):
+        version = self._datasets.get_version(user.id, version_id)
+        if version is None:
+            raise AppError(404, "not_found", "Không tìm thấy phiên bản dataset")
+        if version.status != "reviewed":
+            raise AppError(409, "conflict", "Chỉ đánh giá được phiên bản dataset đã duyệt (để kết quả tái lập được)")
+        return version
 
     def list_runs(self, user: User, **filters):
         return self._evaluations.list_runs(user.id, **filters)

@@ -1,4 +1,5 @@
 # Import mọi model để Base.metadata biết đầy đủ các bảng (Alembic dựa vào đó).
+from app.models.benchmark import BenchmarkRun
 from app.models.chat import ChatMessage, ChatSession
 from app.models.dataset import DatasetVersion, EvaluationDataset, EvaluationTestCase
 from app.models.document import Document
@@ -10,6 +11,7 @@ from app.models.security_test import SecurityTestCase, SecurityTestResult, Secur
 from app.models.user import User
 
 __all__ = [
+    "BenchmarkRun",
     "ChatMessage",
     "ChatSession",
     "DatasetVersion",

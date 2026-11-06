@@ -22,11 +22,18 @@ from sqlalchemy.orm import Session
 
 from ai_engine.generation.cost_estimator import PriceTable
 from ai_engine.pipeline.rag_pipeline import RagPipeline
-from app.api.dependencies import get_evaluation_run_service, get_ingestion_service, get_pipeline, get_security_run_service
+from app.api.dependencies import (
+    get_benchmark_run_service,
+    get_evaluation_run_service,
+    get_ingestion_service,
+    get_pipeline,
+    get_security_run_service,
+)
 from app.core.rag_defaults import get_rag_defaults
 from app.database.session import get_engine, get_session
 from app.main import app
 from app.services.evaluation_service import EvaluationRunService
+from app.services.benchmark_service import BenchmarkRunService
 from app.services.ingestion_service import IngestionService
 from app.services.security_service import SecurityRunService
 from tests.fakes import HashEmbedder, ScriptedLlm
@@ -103,6 +110,9 @@ def api_client(db_session, ingestion_service, rag_pipeline, evaluation_run_servi
         get_pipeline: lambda: rag_pipeline,
         get_evaluation_run_service: lambda: evaluation_run_service,
         get_security_run_service: lambda: security_run_service,
+        get_benchmark_run_service: lambda: BenchmarkRunService(
+            session_factory=lambda: nullcontext(db_session), evaluation_runner=evaluation_run_service
+        ),
     }
     app.dependency_overrides.update(overrides)
     try:

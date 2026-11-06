@@ -3,8 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.dependencies import get_evaluation_run_service, get_ingestion_service, get_security_run_service
-from app.api.routes import auth, chat, datasets, documents, evaluations, health, model_configs, security_tests
+from app.api.dependencies import (
+    get_benchmark_run_service,
+    get_evaluation_run_service,
+    get_ingestion_service,
+    get_security_run_service,
+)
+from app.api.routes import auth, benchmarks, chat, datasets, documents, evaluations, health, model_configs, security_tests
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
@@ -18,6 +23,7 @@ async def lifespan(_: FastAPI):
     get_ingestion_service().recover_interrupted()
     get_evaluation_run_service().recover_interrupted()
     get_security_run_service().recover_interrupted()
+    get_benchmark_run_service(get_evaluation_run_service()).recover_interrupted()
     yield
 
 
@@ -40,3 +46,4 @@ app.include_router(chat.router, prefix="/api/v1")
 app.include_router(datasets.router, prefix="/api/v1")
 app.include_router(evaluations.router, prefix="/api/v1")
 app.include_router(security_tests.router, prefix="/api/v1")
+app.include_router(benchmarks.router, prefix="/api/v1")
