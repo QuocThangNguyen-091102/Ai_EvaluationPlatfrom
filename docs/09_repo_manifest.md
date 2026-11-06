@@ -38,6 +38,11 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 - Migration `0009_create_benchmark_runs.py`; `evaluation_runs.benchmark_run_id`.
 - Chưa tạo: `backend/app/models/report.py`, `report_repository.py`, `report_service.py` (bảng lịch sử xuất báo cáo). Báo cáo CSV dựng lại từ DB mỗi lần tải; để sau MVP.
 
+### Thêm ở M9
+- `backend/app/core/rate_limit.py`: giới hạn số lần đăng nhập sai và đăng ký theo cửa sổ trượt (R18).
+- `deploy/docker-compose.prod.yml`, `deploy/Caddyfile`, `deploy/production.env.example`: triển khai thật trên một máy chủ, HTTPS qua Caddy.
+- `docs/deployment_guide.md`, `docs/demo_script.md`, `docs/final_audit.md`.
+
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 
 | File | Lý do |

@@ -18,6 +18,15 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### M9 | Bảo vệ bản công khai, deploy, tài liệu, kiểm tra cuối | 2026-11-06
+- Trạng thái: phần mã và tài liệu hoàn thành; **deploy thật chờ user** (cần tài khoản).
+- R18: giới hạn đăng nhập sai theo IP + email (và theo IP), giới hạn đăng ký theo IP, trả 429 kèm Retry-After; đăng nhập đúng thì xóa bộ đếm của tài khoản. Thêm công tắc `REGISTRATION_ENABLED` và giới hạn `MAX_DOCUMENTS_PER_USER`.
+- Deploy: `deploy/docker-compose.prod.yml` (database và backend không mở cổng ra ngoài), Caddy (HTTPS tự động, HSTS, nosniff, chặn body lớn), uvicorn chỉ tin X-Forwarded-For từ `FORWARDED_ALLOW_IPS`. Đã chạy thật trên máy với `API_DOMAIN=localhost`: 10/10 kiểm tra đạt (HTTPS, chuyển hướng, header, CORS, khóa đăng nhập qua proxy, cổng đóng). Hướng dẫn: `docs/deployment_guide.md`.
+- Lỗi tìm thấy: compose dev không truyền biến `LLM_*` vào container backend, nên điền LLM trong `.env` cũng không có tác dụng khi chạy Docker. Đã sửa.
+- Tài liệu: README viết lại theo trạng thái thật; `docs/demo_script.md`; `docs/final_audit.md` (test, bí mật, kiến trúc một pipeline, quy tắc đặt tên, trạng thái gate).
+- Kiểm tra thật: backend 426 pass (gồm 5 test model thật, `RUN_MODEL_TESTS=1`); giao diện 85 pass; build ok; `npm audit` 0 lỗ hổng; quét lịch sử git không thấy secret thật.
+- **Cần người:** dataset thật và baseline; LLM; remote GitHub và tài khoản deploy; quyết định httpx2; có chạy `pip-audit` hay không.
+
 ### M8 | Benchmark, dashboard tổng quan, gate M8 | 2026-11-06
 - Trạng thái: hoàn thành; **gate M8 đạt một phần**: chỉ so sánh được `top_k` vì chưa có LLM (so `llm_model` hoặc `prompt_version` có nghĩa cần LLM).
 - Backend: bảng `benchmark_runs`, `evaluation_runs.benchmark_run_id` (migration 0009). Mỗi cấu hình là một lượt đánh giá bình thường, chạy tuần tự trong nền. Kiểm tra version đã duyệt và mọi cấu hình trước khi ghi (một transaction). Cấu hình phải khác nhau ở biến đã khai báo (nếu không: 422); khác thêm biến khác thì ghi cảnh báo. Thống kê: độ trễ trung bình, p50, p95 (nearest-rank), tổng token, chi phí; thiếu giá thì cờ `cost_incomplete`, không cộng như 0. API: tạo (202), danh sách, chi tiết, CSV. Thiết kế: `docs/benchmark_design.md`.

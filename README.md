@@ -2,29 +2,44 @@
 
 Nền tảng đánh giá RAG (Retrieval-Augmented Generation), kiểm soát chất lượng LLM và kiểm thử bảo mật AI. Gồm một ứng dụng RAG mẫu (hỏi đáp có trích dẫn trên tài liệu của người dùng) và một nền tảng đo chất lượng truy xuất, chất lượng câu trả lời, hành vi bảo mật, độ trễ và chi phí.
 
-Trạng thái: **đang ở Milestone 3 (Ingestion)**. Đã có đăng ký, đăng nhập, upload và quản lý tài liệu qua giao diện web. Chưa có hỏi đáp, đánh giá và kiểm thử bảo mật. Triển khai miễn phí lên internet: xem [docs/11_free_deployment.md](docs/11_free_deployment.md). Tiến độ chi tiết xem [docs/progress_log.md](docs/progress_log.md).
+Trạng thái: **đủ chức năng của MVP (M1 đến M9)**. Một số gate chỉ đạt một phần vì cần người làm: dataset thật, baseline, LLM (xem mục [Việc còn cần người](#việc-còn-cần-người)). Tiến độ chi tiết: [docs/progress_log.md](docs/progress_log.md). Kết quả kiểm tra cuối: [docs/final_audit.md](docs/final_audit.md).
 
-## Công nghệ
+## Chức năng
 
-Python, FastAPI, PostgreSQL + pgvector, React (Vite), Docker Compose, Git. Lý do chọn và các phương án thay thế: [docs/06_deployment_tech.md](docs/06_deployment_tech.md).
+| Trang | Làm được gì |
+|---|---|
+| Tài liệu | Upload PDF, DOCX, TXT (kéo thả); xử lý nền: parse, làm sạch, chia chunk, embed; xem trạng thái, xóa, xử lý lại với cấu hình chunk khác |
+| Hỏi đáp | Hỏi trên tài liệu của mình. Câu trả lời có trích dẫn nguồn và trang; hệ thống từ chối khi tài liệu không đủ thông tin; có lịch sử phiên, độ trễ, token, chi phí |
+| Dataset | Bộ câu hỏi đánh giá có phiên bản: câu trích tham chiếu được định vị chính xác trong tài liệu; nhập CSV hoặc JSON; duyệt và đóng băng |
+| Đánh giá | Chạy bộ câu hỏi qua RAG pipeline. Metric: Precision, Recall, MRR, NDCG, hành vi đúng, faithfulness và answer relevancy (LLM judge). Phân loại lỗi từng câu; báo cáo CSV |
+| Bảo mật | 12 test trong 5 nhóm: prompt injection, jailbreak, rò rỉ dữ liệu, kiểm soát truy cập, tài liệu độc. Chạy trong sandbox riêng; có bằng chứng, mức độ, cách giảm thiểu và giới hạn của lượt chạy |
+| Benchmark | So sánh nhiều cấu hình (đổi một biến: top_k, LLM model hoặc prompt) trên cùng dataset: chất lượng, độ trễ p50 và p95, token, chi phí |
+| Dashboard | Tổng quan 6 khu vực; so sánh các lượt đánh giá theo phiên bản dataset |
 
-## Cấu trúc thư mục
+**Không cần LLM để chạy.** Khi chưa cấu hình `LLM_BASE_URL`, hệ thống chạy **chế độ trích đoạn**: trả các đoạn liên quan nhất kèm nguồn. Embedding chạy cục bộ (`intfloat/multilingual-e5-small`), không cần API key. Khi có LLM tương thích OpenAI, chỉ cần điền 3 biến môi trường.
+
+## Kiến trúc
+
+Modular monolith: FastAPI + SQLAlchemy + PostgreSQL/pgvector, giao diện React (Vite).
+
+**Chỉ có một RAG pipeline** (`ai_engine/pipeline/rag_pipeline.py`), dùng chung cho Hỏi đáp, Đánh giá, Bảo mật và Benchmark. Nhờ vậy, điều được đo chính là điều người dùng nhận được. Truy xuất luôn lọc theo user ngay trong câu SQL.
 
 | Thư mục | Nội dung |
 |---------|----------|
-| `backend/` | FastAPI: API, service, repository, migration, test |
-| `ai_engine/` | Logic AI dùng chung: ingestion, chunking, embedding, retrieval, generation, RAG pipeline |
-| `evaluation/` | Dataset loader, metrics, evaluation runner, benchmark, báo cáo |
-| `security/` | Test case bảo mật, runner, evaluator, báo cáo |
+| `backend/` | FastAPI: API, service, repository, migration (Alembic), test |
+| `ai_engine/` | Ingestion, chunking, embedding, retrieval, generation, RAG pipeline |
+| `evaluation/` | Dataset, metric, LLM judge, runner đánh giá, benchmark, báo cáo |
+| `security/` | Test case YAML, runner, bộ chấm theo luật, báo cáo độ phủ |
 | `frontend/` | Giao diện React |
-| `configs/` | Cấu hình mặc định (model, RAG) |
-| `docs/` | Tài liệu thiết kế, nhật ký tiến độ |
+| `configs/` | Cấu hình RAG mặc định, bảng giá model |
+| `deploy/` | Compose cho môi trường thật (Caddy HTTPS) |
+| `docs/` | Thiết kế, ghi chú metric, kiểm thử bảo mật, benchmark, triển khai, nhật ký |
 
-Danh sách file và trách nhiệm từng file: [docs/09_repo_manifest.md](docs/09_repo_manifest.md).
+Chi tiết: [docs/04_architecture.md](docs/04_architecture.md), [docs/07_database.md](docs/07_database.md), [docs/08_api_contracts.md](docs/08_api_contracts.md), danh sách file [docs/09_repo_manifest.md](docs/09_repo_manifest.md).
 
-## Cài đặt và chạy
+## Cài đặt và chạy (máy cục bộ)
 
-Yêu cầu: Docker Desktop (có Docker Compose), Git. Muốn chạy test trên máy host thì cần thêm Python 3.11.
+Yêu cầu: Docker Desktop (có Docker Compose), Git. Muốn chạy test trên máy host thì cần thêm Python 3.11 và Node 20+.
 
 ```bash
 git clone <địa chỉ repo> ai-evaluation-platform
@@ -34,6 +49,7 @@ cd ai-evaluation-platform
 cp .env.example .env
 #    Sửa POSTGRES_PASSWORD, và phần mật khẩu trong DATABASE_URL cho khớp.
 #    Đổi JWT_SECRET thành một chuỗi ngẫu nhiên dài ít nhất 32 ký tự (xem hướng dẫn trong .env.example).
+#    LLM tùy chọn: điền LLM_BASE_URL, LLM_MODEL, LLM_API_KEY (để trống: chế độ trích đoạn).
 
 # 2. Dựng và chạy toàn bộ stack (db, backend, frontend)
 docker compose up --build
@@ -43,58 +59,74 @@ Khi các service đều ở trạng thái healthy (`docker compose ps`):
 
 | Thành phần | Địa chỉ |
 |------------|---------|
-| Frontend | http://localhost:5173 |
+| Giao diện | http://localhost:5173 |
 | Backend (tài liệu API tự sinh) | http://localhost:8000/docs |
-| Kiểm tra sức khỏe | http://localhost:8000/health (trả `{"status":"ok","database":"ok"}`) |
-| PostgreSQL (chỉ từ máy host) | 127.0.0.1:5432 |
+| Kiểm tra sức khỏe | http://localhost:8000/health |
 
-Migration chạy tự động khi backend khởi động (`alembic upgrade head`). Dữ liệu database nằm trong volume `pgdata` nên còn sau `docker compose down`. Muốn xóa cả dữ liệu: `docker compose down -v`.
+- Lần đầu xử lý tài liệu, backend tải model embedding (vài trăm MB) vào volume `models`.
+- Migration chạy tự động khi backend khởi động.
+- Dữ liệu nằm trong volume nên còn lại sau `docker compose down`; muốn xóa cả dữ liệu thì dùng `docker compose down -v`.
+- Nếu cổng bị chiếm, đổi `DB_HOST_PORT`, `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT` trong `.env`.
 
-Nếu cổng 5432, 8000 hoặc 5173 đã bị chiếm, đổi `DB_HOST_PORT`, `BACKEND_HOST_PORT`, `FRONTEND_HOST_PORT` trong `.env`.
+Kịch bản demo từng bước: [docs/demo_script.md](docs/demo_script.md).
 
-### Chạy test backend
+## Triển khai miễn phí lên internet
+
+Giao diện chạy trên Vercel; API, database và model chạy trên một máy chủ miễn phí sau Caddy (HTTPS). Hướng dẫn từng bước: [docs/deployment_guide.md](docs/deployment_guide.md). Lý do chọn kiến trúc này: [docs/11_free_deployment.md](docs/11_free_deployment.md).
+
+Các bảo vệ cho bản công khai:
+- giới hạn số lần đăng nhập sai và số lần đăng ký;
+- công tắc đóng đăng ký;
+- giới hạn số tài liệu và dung lượng mỗi file;
+- database không mở ra ngoài;
+- header bảo mật ở Caddy.
+
+## Chạy test
 
 ```bash
-docker compose up -d db                    # test integration cần database
+# Backend: cần database đang chạy
+docker compose up -d db
 cd backend
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements-dev.txt     # Windows; Linux/macOS: .venv/bin/python
-.venv/Scripts/python -m pytest             # toàn bộ
-.venv/Scripts/python -m pytest -m "not integration"            # chỉ unit, không cần database
-```
+.venv/Scripts/python -m pytest                                  # toàn bộ
+.venv/Scripts/python -m pytest -m "not integration"             # chỉ unit, không cần database
+RUN_MODEL_TESTS=1 .venv/Scripts/python -m pytest                # thêm test với model embedding thật (chậm)
 
-Lưu ý: nếu bạn đổi `POSTGRES_PASSWORD` thì đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
-
-Test với model embedding thật (chậm, lần đầu tải vài trăm MB): `RUN_MODEL_TESTS=1 .venv/Scripts/python -m pytest -k real`.
-
-### Chạy test giao diện
-
-```bash
+# Giao diện
 cd frontend
 npm install
-npm test          # unit và component test (vitest)
-npm run build     # kiểm tra build
+npm test
+npm run build
 ```
 
-## Quy ước làm việc
+Nếu bạn đổi `POSTGRES_PASSWORD`, hãy đặt `DATABASE_URL` trong `.env` cho khớp để test trên máy host kết nối được.
 
-**Commit.** Mỗi task một commit riêng. Thông điệp theo dạng `loại(phạm vi): mô tả ngắn (mã task)`, ví dụ `feat(ingestion): add TXT/PDF/DOCX parsers (M3-T04)`.
+Kết quả lần chạy cuối (2026-11-06):
+- backend 426 test pass (gồm 5 test với model thật);
+- giao diện 85 test pass;
+- E2E trên trình duyệt thật với stack Docker cho mọi trang chính, cả cỡ màn hình điện thoại.
 
-| Loại | Dùng khi |
-|------|----------|
-| `feat` | Thêm tính năng |
-| `fix` | Sửa lỗi |
-| `docs` | Chỉ sửa tài liệu |
-| `test` | Thêm hoặc sửa test |
-| `chore` | Hạ tầng, cấu hình, dọn dẹp |
-| `refactor` | Đổi cấu trúc, không đổi hành vi |
+## Việc còn cần người
 
-**Branch.** `main` luôn ở trạng thái chạy được. Một người làm nên commit trực tiếp lên `main` sau khi task đạt "Hoàn thành khi"; khi cần thử nghiệm rủi ro thì tạo branch `task/<mã-task>-<mô-tả-ngắn>`.
-
-**Bí mật.** API key và mật khẩu chỉ nằm trong file `.env` (đã bị `.gitignore` loại). Chỉ `.env.example` được commit, và chỉ chứa giá trị mẫu.
-
-**Đặt tên.** Theo mục 8 của [CLAUDE.md](CLAUDE.md).
+| Việc | Vì sao mình không tự làm |
+|---|---|
+| Viết và duyệt dataset thật (khoảng 100 câu, có câu không có đáp án) | Dataset dùng để đo phải do người viết và duyệt; số liệu từ dataset do AI soạn không có giá trị đo |
+| Chạy baseline, phân tích lỗi ([docs/error_analysis.md](docs/error_analysis.md)) | Cần dataset thật |
+| Cấu hình LLM rồi chạy lại đánh giá và 9 test bảo mật cần LLM | Cần tài khoản hoặc key của bạn |
+| Tạo remote GitHub, tài khoản Vercel và máy chủ, tên miền | Cần tài khoản của bạn |
 
 ## Giới hạn đã biết
 
-Dự án đang xây dựng theo từng milestone có kiểm tra; mọi con số về chất lượng hoặc hiệu năng chỉ được công bố sau khi có run thật.
+- **Một tiến trình backend.** Tác vụ nền chạy trong tiến trình web; khởi động lại thì tác vụ dở bị đánh dấu lỗi và phải chạy lại.
+- **Chế độ trích đoạn không biết từ chối.** Câu không có đáp án bị xếp loại "bịa"; cần LLM để đo hành vi từ chối.
+- **Metric phụ thuộc dataset.** LLM judge có thiên lệch ([docs/metrics_notes.md](docs/metrics_notes.md)); chưa có khoảng tin cậy.
+- **Kiểm thử bảo mật chỉ phủ 12 kịch bản**; không kết luận hệ thống an toàn tuyệt đối ([docs/security_testing.md](docs/security_testing.md)).
+- **Chưa có** khôi phục mật khẩu, xác minh email, xuất PDF.
+- Mọi số liệu chất lượng trong repo hiện chỉ từ dataset MẪU để kiểm tra luồng, **không phải kết quả đo thật**.
+
+## Quy ước làm việc
+
+- **Commit:** mỗi task một commit; `main` luôn chạy được.
+- **Bí mật:** chỉ nằm trong `.env` hoặc `deploy/production.env`; cả hai bị `.gitignore` loại.
+- **Đặt tên:** theo mục 8 của [CLAUDE.md](CLAUDE.md).

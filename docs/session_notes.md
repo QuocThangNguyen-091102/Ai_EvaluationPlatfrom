@@ -1,36 +1,48 @@
 # SESSION NOTES
 
-## Phiên 2026-11-05
+## Phiên 2026-11-06 (mới nhất)
 
 ### Đã làm
-- Hoàn thành Milestone 1 và 2 (đã được user duyệt).
-- Hoàn thành M3-T01 đến M3-T06, M3-T08 phần 1 (danh sách, chi tiết, xóa) và M3-T09 (giao diện đăng nhập và trang Tài liệu).
-- Có giao diện thật: đăng nhập, đăng ký, trang Tài liệu (upload kéo thả, danh sách, xóa), chế độ tối, thích ứng điện thoại; đã kiểm tra bằng trình duyệt tự động trên stack Docker.
-- Chốt kế hoạch deploy miễn phí (`docs/11_free_deployment.md`): giao diện lên Vercel, backend ở nơi chạy container đủ RAM.
-- Kết quả kiểm tra thật và lỗi tìm thấy của từng task: `docs/progress_log.md`.
+- User giao làm hết phần còn lại. Hoàn thành phần mã của M3 đến M9:
+  - ingestion và reprocess;
+  - RAG và Chat;
+  - Dataset;
+  - Đánh giá (metric, LLM judge, dashboard);
+  - Kiểm thử bảo mật (12 test, sandbox);
+  - Benchmark;
+  - giới hạn đăng nhập và đăng ký;
+  - bộ deploy production (Caddy HTTPS);
+  - README, kịch bản demo, kiểm tra cuối.
+- Chi tiết từng phần, kết quả kiểm tra thật và lỗi tìm thấy: `docs/progress_log.md`. Tổng kết: `docs/final_audit.md`.
 
 ### Trạng thái
-- Git: nhánh `main`, commit theo từng task, **chưa có remote, chưa push**.
-- Test: backend 172 pass và 5 test model thật (chạy bằng `RUN_MODEL_TESTS=1`, đã pass); giao diện 52 pass.
-- Docker Desktop hay tự tắt; mở lại khi lệnh docker báo không kết nối được. Stack chạy bằng `docker compose up --build`.
-- Backend image 2,2 GB, model cần khoảng 0,93 GB RAM (đã đo).
-- Chưa làm: ingestion hoàn chỉnh (nối parse, chunk, embed, lưu vector), reprocess, RAG và Chat, Dataset, Evaluation, Security, Benchmark và các trang giao diện tương ứng.
+- Git: nhánh `main`, commit theo từng phần, **chưa có remote, chưa push**.
+- Test:
+  - backend 426 pass (gồm 5 test với model thật);
+  - giao diện 85 pass;
+  - E2E Playwright cho mọi trang trên stack Docker;
+  - stack production đã chạy thử với `API_DOMAIN=localhost`.
+- Migration tới `0009`.
+- Docker Desktop hay tự tắt; khi lệnh docker báo không kết nối được thì mở lại Docker Desktop.
 
-### Việc đang chờ user
-1. **M3-T07 (Ingestion service) là task khó [C]: cần đổi sang Opus 5.5** (`/model opus`) rồi bảo mình làm tiếp.
-2. Tạo remote GitHub nếu muốn push (cần cho việc deploy).
-3. Về lâu dài: tạo tài khoản các dịch vụ miễn phí khi tới M9-T04 (chỉ bạn làm được); quyết định có đăng ký thẻ để xác minh tài khoản không.
-4. Cảnh báo `httpx`/`httpx2` của pytest: bỏ qua hay xử lý.
-5. LLM provider: quyết định ở M4.
+### Việc đang chờ user (chỉ user làm được)
+1. **Dataset thật:**
+   - chọn corpus có quyền dùng (`docs/corpus_sources.md`);
+   - viết khoảng 100 câu có tham chiếu, gồm câu không có đáp án;
+   - duyệt trên trang Dataset.
+   - Sau đó chạy đánh giá baseline và điền `docs/error_analysis.md`, `docs/baseline_manual.md`.
+2. **LLM:** điền `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY` trong `.env`, rồi chạy lại đánh giá, bảo mật (9 test cần LLM) và benchmark theo `llm_model` hoặc `prompt_version`.
+3. **Deploy:** tạo remote GitHub, tài khoản Vercel, máy chủ miễn phí, tên miền; làm theo `docs/deployment_guide.md`.
+4. Cảnh báo `httpx`/`httpx2` của pytest: bỏ qua hay xử lý (lần trước cài `httpx2` bị chặn vì chưa xác minh gói).
+5. Có cho chạy `pip-audit` (kiểm tra lỗ hổng thư viện Python) không.
 
 ### Quy tắc làm việc đã thống nhất
-- Chỉ trả lời tiếng Việt (CLAUDE.md mục 1). Mỗi milestone xong thì dừng chờ duyệt.
-- Tác vụ cơ bản dùng Sonnet 5.5. Khi gặp task code khó cần Opus 5.5 (ví dụ M3-T07, M4-T02, M4-T04) thì dừng và báo user để tự đổi model.
-
-### Việc tiếp theo
-- M3-T07 (cần Opus), sau đó phần reprocess của M3-T08, rồi gate M3.
+- Chỉ trả lời tiếng Việt (CLAUDE.md mục 1).
+- Tác vụ cơ bản dùng Sonnet 5.5; task code khó cần Opus 5.5 thì báo user đổi model.
 
 ### Lưu ý
-- Master Prompt gốc và danh sách task (`Kiến trúc.txt`, 77 task) do user dán, không lưu trong workspace. Tóm tắt nằm trong bộ nhớ dự án và `CLAUDE.md`.
-- Mở Claude Code ở thư mục `ai-evaluation-platform` để `CLAUDE.md` được nạp tự động.
-- Docker Desktop đã tự tắt hai lần trong phiên; khi lệnh docker báo không kết nối được daemon thì mở lại Docker Desktop.
+- Master Prompt gốc và danh sách task (77 task) do user dán, không lưu trong workspace. Tóm tắt nằm trong bộ nhớ dự án và `CLAUDE.md`.
+- Số liệu chất lượng hiện có đều từ dataset MẪU do AI soạn (`evaluation/datasets/sample_cases_vi_two_pages.json`), chỉ để kiểm tra luồng.
+
+## Phiên 2026-11-05
+- Hoàn thành M1, M2 (user duyệt), phần đầu M3 và giao diện Tài liệu; chốt kế hoạch deploy miễn phí (`docs/11_free_deployment.md`).
