@@ -7,6 +7,7 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2B%20pgvector-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 Dự án gồm hai phần dùng chung một lõi:
 
@@ -344,5 +345,5 @@ Nhật ký chi tiết từng task: [docs/progress_log.md](docs/progress_log.md).
 
 ## Giấy phép và nguồn dữ liệu
 
-- Mã nguồn: **chưa chọn giấy phép**. Cần thêm file `LICENSE` trước khi công khai repo.
-- Corpus Hệ Mặt Trời: 5 bài Wikipedia tiếng Việt theo giấy phép **CC BY-SA 4.0**. Nguồn và ghi công: [docs/corpus_sources.md](docs/corpus_sources.md).
+- Mã nguồn: giấy phép **MIT**, xem [LICENSE](LICENSE).
+- Corpus Hệ Mặt Trời (không thuộc phạm vi giấy phép MIT): 5 bài Wikipedia tiếng Việt theo giấy phép **CC BY-SA 4.0**. Nguồn và ghi công: [docs/corpus_sources.md](docs/corpus_sources.md).

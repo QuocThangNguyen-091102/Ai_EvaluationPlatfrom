@@ -49,6 +49,7 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 
 ### Chuẩn bị push lên GitHub (2026-11-07)
 - `.githooks/pre-commit`: chặn commit làm lộ secret. Bật bằng `git config core.hooksPath .githooks`.
+- `LICENSE`: giấy phép MIT cho mã nguồn (user chọn). Corpus Wikipedia vẫn theo CC BY-SA 4.0.
 
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 

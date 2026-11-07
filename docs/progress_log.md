@@ -33,7 +33,8 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
   - Hook: 6 tình huống trong repo tạm. Chặn đúng file `.env`, key OpenAI, secret thật lấy từ `.env`, file `.sql` có dấu cách trong tên; cho qua file thường và chuỗi có `secret-scan: allow`.
   - `git check-ignore`: các file cần chặn đều bị loại, các file `*.example` vẫn được track.
   - Unit test backend: 237 pass, 5 skipped. Test integration chưa chạy vì Docker Desktop đang tắt.
-- Việc tiếp theo: user chọn email tác giả, license, tạo remote.
+- Quyết định của user: giữ email gmail làm tác giả commit; chọn giấy phép MIT (`LICENSE`).
+- Việc tiếp theo: user tạo repo trống trên GitHub, rồi thêm remote và push.
 
 ### DOCS | Viết lại README | 2026-11-07
 - Trạng thái: Hoàn thành, chờ user duyệt.
