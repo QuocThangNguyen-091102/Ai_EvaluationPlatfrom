@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 import pytest
+from pydantic import ValidationError
 
-from app.core.config import settings
+from app.core.config import Settings, settings
 from app.core.security import (
     InvalidTokenError,
     create_access_token,
@@ -12,6 +13,18 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+
+
+@pytest.mark.parametrize("secret", ["change-me-to-a-long-random-string", "CHANGE-ME-padding-padding-padding-123"])
+def test_settings_reject_placeholder_jwt_secret(secret):
+    with pytest.raises(ValidationError, match="chuỗi mẫu"):
+        Settings(database_url="postgresql+psycopg://u:p@localhost/db", jwt_secret=secret)
+
+
+def test_settings_accept_random_jwt_secret():
+    loaded = Settings(database_url="postgresql+psycopg://u:p@localhost/db", jwt_secret="x" * 16 + "f3Kq9-Zr81mPw0aLt")
+
+    assert loaded.jwt_secret.startswith("x")
 
 
 def test_password_is_hashed_not_stored_as_plain_text():

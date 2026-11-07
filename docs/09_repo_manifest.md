@@ -47,6 +47,9 @@ Trạng thái: bản nháp chờ duyệt. Đã điều chỉnh bản đề xuấ
 - `scripts/audit_dependencies.py`: tra lỗ hổng gói Python qua OSV.dev. `scripts/seed_demo.py`: tạo dữ liệu demo qua API.
 - Context Precision, Context Recall đã làm. Đã xóa `backend/app/models/report.py`, `backend/app/services/report_service.py` (file rỗng; tính năng lịch sử báo cáo để sau MVP).
 
+### Chuẩn bị push lên GitHub (2026-11-07)
+- `.githooks/pre-commit`: chặn commit làm lộ secret. Bật bằng `git config core.hooksPath .githooks`.
+
 ### Sẽ thêm khi tới milestone (Planned, chưa tạo)
 
 | File | Lý do |
@@ -161,7 +164,8 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `README.md` | Hướng dẫn cài, chạy, test, kiến trúc, giới hạn | Mọi phần | Người đọc repo | | | Implemented | M2, hoàn thiện M9 |
 | `docker-compose.yml` | Định nghĩa service db, backend, frontend, volume, healthcheck | `backend/Dockerfile`, `frontend/Dockerfile`, `.env` | Dev, demo | `.env` | Stack chạy được | Implemented | M2 |
 | `.env.example` | Mẫu biến môi trường, không chứa secret | Không | Dev | | | Implemented | M2 |
-| `.gitignore` | Loại `.env`, cache, file upload khỏi Git | Không | Git | | | Implemented | M2 |
+| `.gitignore` | Loại `.env`, `*.env` (trừ `*.example`), khóa, bản sao lưu database, cache, file upload khỏi Git | Không | Git | | | Implemented | M2, bổ sung 2026-11-07 |
+| `.githooks/pre-commit` | Chặn commit có file secret, chuỗi giống API key, hoặc giá trị thật lấy từ `.env` | `git`, `sh` | Git (khi đã bật `core.hooksPath`) | Thay đổi đang staged | Cho phép hoặc dừng commit | Tested | 2026-11-07 |
 | `configs/models.yaml` | Model được hỗ trợ, bảng giá kèm thời điểm lấy | Không | `cost_estimator.py`, `model_config_service.py` | | Danh sách model, giá | Tested | M3 |
 | `configs/rag_default.yaml` | Giá trị RAG mặc định (chunk size, overlap, Top-K, temperature, prompt version) | Không | `core/config.py`, `model_config_service.py` | | Cấu hình mặc định | Tested | M3 |
 | `scripts/seed_demo.py` | Tạo dữ liệu demo cho kịch bản trình bày | Backend, tài liệu mẫu | Dev | | Dữ liệu mẫu trong DB | Implemented | M9 |
@@ -184,7 +188,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/requirements.txt` | Danh sách dependency Python | Không | Dockerfile, dev | | | Implemented | M2 |
 | `backend/alembic.ini` | Cấu hình Alembic | `database/migrations/` | Alembic | | | Implemented | M2 |
 | `backend/app/main.py` | Khởi tạo FastAPI, đăng ký router, middleware lỗi và CORS | `api/routes/*`, `core/*` | uvicorn | | App FastAPI | Implemented | M2 |
-| `backend/app/core/config.py` | Đọc cấu hình từ biến môi trường | `configs/*.yaml` | Mọi module backend | Biến môi trường | Đối tượng settings | Implemented | M2 |
+| `backend/app/core/config.py` | Đọc cấu hình từ biến môi trường; từ chối `JWT_SECRET` là chuỗi mẫu | `configs/*.yaml` | Mọi module backend | Biến môi trường | Đối tượng settings | Tested | M2, bổ sung 2026-11-07 |
 | `backend/app/core/security.py` | Hash mật khẩu, tạo và kiểm tra JWT | `config.py` | `auth_service.py`, `api/dependencies.py` | Mật khẩu, token | Hash, token, claims | Tested | M3 |
 | `backend/app/core/logging.py` | Cấu hình log, không ghi dữ liệu nhạy cảm | `config.py` | `main.py` | | Logger | Implemented | M2 |
 | `backend/app/core/exceptions.py` | Lỗi nghiệp vụ và bộ chuyển thành JSON lỗi thống nhất | Không | Service, `main.py` | | Phản hồi lỗi chuẩn | Tested | M2 |
@@ -197,7 +201,7 @@ Phân biệt các lớp: **Router** nhận request và validate; **Schema** là 
 | `backend/tests/integration/test_health_database.py` | Test `/health` với PostgreSQL thật | DB đang chạy | pytest | | | Tested | M2 |
 | `backend/app/database/migrations/versions/0002_create_users_documents_chunks.py` | Tạo bảng `users`, `documents`, `document_chunks` (vector 384 chiều, khóa ngoại kép, chỉ mục) | `models/*`, `pgvector` | Alembic | | Schema DB | Tested | M3 |
 | `backend/tests/integration/test_ingestion_schema.py` | Kiểm tra bảng, số chiều vector, ràng buộc, cascade, truy vấn khoảng cách | DB đang chạy | pytest | | | Tested | M3 |
-| `backend/tests/unit/test_security.py`, `test_auth_schemas.py` | Unit test băm mật khẩu, JWT (hết hạn, sai khóa, alg none, thiếu claim), schema đăng ký | `core/security.py`, `schemas/auth.py` | pytest | | | Tested | M3 |
+| `backend/tests/unit/test_security.py`, `test_auth_schemas.py` | Unit test băm mật khẩu, JWT (hết hạn, sai khóa, alg none, thiếu claim), từ chối `JWT_SECRET` mẫu, schema đăng ký | `core/security.py`, `schemas/auth.py` | pytest | | | Tested | M3 |
 | `backend/tests/integration/test_auth_api.py` | Test API đăng ký, đăng nhập, `/auth/me` với PostgreSQL thật (rollback cuối mỗi test) | DB đang chạy | pytest | | | Tested | M3 |
 | `backend/app/core/file_validation.py` | Nhận diện PDF, DOCX, TXT (UTF-8) bằng nội dung, làm sạch tên hiển thị | Không | `services/document_service.py` | Tên file, nội dung | Loại file hợp lệ hoặc lỗi | Tested | M3 |
 | `backend/tests/unit/test_file_validation.py` | Unit test nhận diện loại file và làm sạch tên | `core/file_validation.py` | pytest | | | Tested | M3 |

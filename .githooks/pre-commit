@@ -1,0 +1,68 @@
+#!/bin/sh
+# Chặn commit có khả năng làm lộ secret. Bật một lần cho mỗi bản clone:
+#     git config core.hooksPath .githooks
+#
+# Ba lớp kiểm tra trên các file đang được staged:
+#   1. Tên file: .env, *.env, khóa, chứng chỉ, bản sao lưu database.
+#   2. Dòng thêm mới khớp dạng key phổ biến (OpenAI, Anthropic, AWS, GitHub, Hugging Face, Slack, Google, private key).
+#   3. Dòng thêm mới chứa đúng giá trị secret đang dùng trong .env của máy này (bắt được cả secret tự đặt,
+#      không theo dạng nào). Giá trị không bao giờ được in ra.
+#
+# Dòng chứa chuỗi giả có chủ đích (ví dụ trong test) thì thêm chú thích `secret-scan: allow` trên cùng dòng.
+
+blocked=0
+
+report() {
+    printf '  [chặn] %s\n' "$1" >&2
+    blocked=1
+}
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+
+# 1. Tên file
+while IFS= read -r path; do
+    [ -n "$path" ] || continue
+    name=$(basename "$path")
+    case "$name" in
+        *.env.example | .env.example) ;;
+        .env | .env.* | *.env) report "$path: file biến môi trường, chỉ commit bản *.example" ;;
+        *.pem | *.key | *.p12 | *.pfx | id_rsa* | id_ed25519*) report "$path: khóa hoặc chứng chỉ" ;;
+        *.sql | *.sql.gz | *.dump) report "$path: có thể là bản sao lưu database" ;;
+    esac
+done <<EOF
+$staged_files
+EOF
+
+# Chỉ xét dòng thêm mới, bỏ dòng có đánh dấu cho phép.
+added_lines=$(git diff --cached -U0 --diff-filter=ACMR | grep '^+' | grep -v '^+++' | grep -v 'secret-scan: allow')
+
+# 2. Dạng key phổ biến
+key_patterns='sk-ant-[A-Za-z0-9_-]{20,}|sk-(proj-)?[A-Za-z0-9]{32,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|hf_[A-Za-z0-9]{30,}|xox[abprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+if printf '%s\n' "$added_lines" | grep -Eq "$key_patterns"; then
+    report "nội dung thêm mới có chuỗi giống API key hoặc private key"
+    printf '%s\n' "$added_lines" | grep -En "$key_patterns" | cut -c1-60 | sed 's/^/          /' >&2
+fi
+
+# 3. Giá trị thật trong .env của máy này
+repo_root=$(git rev-parse --show-toplevel)
+for env_file in "$repo_root/.env" "$repo_root/deploy/production.env"; do
+    [ -f "$env_file" ] || continue
+    for variable in POSTGRES_PASSWORD JWT_SECRET LLM_API_KEY; do
+        value=$(grep -E "^$variable=" "$env_file" | head -n 1 | cut -d= -f2- | tr -d '\r"' | sed "s/'//g")
+        [ ${#value} -ge 8 ] || continue
+        case "$value" in *change-me*) continue ;; esac
+        if printf '%s\n' "$added_lines" | grep -Fq -- "$value"; then
+            report "nội dung thêm mới chứa giá trị thật của $variable (lấy từ $(basename "$env_file"))"
+        fi
+    done
+done
+
+if [ "$blocked" -ne 0 ]; then
+    cat >&2 <<'EOF'
+
+Commit bị dừng để tránh lộ secret. Bỏ file khỏi stage (git restore --staged <file>) hoặc xóa giá trị khỏi nội dung.
+Nếu đó là chuỗi giả có chủ đích, thêm chú thích `secret-scan: allow` trên cùng dòng.
+EOF
+    exit 1
+fi
+exit 0

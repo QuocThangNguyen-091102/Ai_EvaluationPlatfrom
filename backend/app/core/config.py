@@ -5,8 +5,12 @@ Mọi tham số của backend đi qua đối tượng `settings` ở đây; khô
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Chuỗi giữ chỗ trong các file mẫu (.env.example). Chúng công khai trên git, nên ai cũng ký được token nếu
+# hệ thống chạy với chúng. Backend từ chối khởi động thay vì chạy với một secret ai cũng biết.
+PLACEHOLDER_SECRET_MARKERS = ("change-me", "changeme", "your-secret", "replace-me")
 
 
 class Settings(BaseSettings):
@@ -51,6 +55,17 @@ class Settings(BaseSettings):
 
     # Danh sách origin của frontend được phép gọi API, ngăn cách bằng dấu phẩy.
     cors_allowed_origins: str = "http://localhost:5173"
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def reject_placeholder_secret(cls, value: str) -> str:
+        lowered = value.lower()
+        if any(marker in lowered for marker in PLACEHOLDER_SECRET_MARKERS):
+            raise ValueError(
+                "JWT_SECRET vẫn là chuỗi mẫu công khai. Tạo chuỗi mới bằng: "
+                'python -c "import secrets; print(secrets.token_urlsafe(48))"'
+            )
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:

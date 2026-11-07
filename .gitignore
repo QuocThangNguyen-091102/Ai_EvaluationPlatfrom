@@ -1,7 +1,22 @@
-# Secrets và cấu hình cục bộ (chỉ .env.example được commit)
+# Secrets và cấu hình cục bộ. Chỉ các file mẫu *.env.example được commit.
 .env
 .env.*
+*.env
+!*.env.example
 !.env.example
+
+# Khóa và chứng chỉ
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Bản sao lưu database: chứa toàn bộ dữ liệu người dùng, kể cả password hash
+*.sql
+*.sql.gz
+*.dump
 
 # Python
 __pycache__/

@@ -83,7 +83,7 @@ Lưu ý:
 |---|---|
 | Xem log | `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/production.env logs -f backend` |
 | Cập nhật code | `git pull` rồi chạy lại `up -d --build` (migration tự chạy khi backend khởi động) |
-| Sao lưu database | `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/production.env exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup-$(date +%F).sql` |
+| Sao lưu database | `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/production.env exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > ~/backup-$(date +%F).sql`. File sao lưu chứa toàn bộ dữ liệu người dùng nên được lưu **ngoài** thư mục repo; `.gitignore` cũng loại `*.sql` để phòng hờ |
 | Dừng | `... down` (giữ dữ liệu). **Không** thêm `-v` nếu không muốn mất database, file upload và model |
 
 ## Giới hạn đã biết
