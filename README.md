@@ -158,7 +158,7 @@ Cấu hình RAG mặc định ([`configs/rag_default.yaml`](configs/rag_default.
 **Yêu cầu:** Docker Desktop (có Docker Compose) và Git. Muốn chạy test trên máy host thì cần thêm Python 3.11 và Node 20+.
 
 ```bash
-git clone <địa chỉ repo> ai-evaluation-platform
+git clone https://github.com/QuocThangNguyen-091102/Ai_EvaluationPlatfrom.git ai-evaluation-platform
 cd ai-evaluation-platform
 
 # 1. Tạo file cấu hình

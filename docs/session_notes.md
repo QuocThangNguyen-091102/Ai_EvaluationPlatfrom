@@ -1,6 +1,30 @@
 # SESSION NOTES
 
-## Phiên 2026-11-06 (mới nhất)
+## Phiên 2026-11-07 (mới nhất)
+
+### Đã làm
+- Viết lại README cho người lần đầu đọc repo; sửa phần lỗi thời về LLM và kết quả bảo mật.
+- Rà soát trước khi push và sửa:
+  - `.gitignore` chưa loại `deploy/production.env` và bản sao lưu `*.sql`;
+  - `JWT_SECRET` local vẫn là chuỗi mẫu (đã thay), backend giờ từ chối chuỗi mẫu;
+  - thêm `.githooks/pre-commit` dò secret, đã bật `core.hooksPath`.
+- Thêm `LICENSE` MIT (user chọn). User chọn giữ email gmail làm tác giả commit.
+- **Đã push lên GitHub:** https://github.com/QuocThangNguyen-091102/Ai_EvaluationPlatfrom (public, nhánh `main`). Đã đối chiếu: commit trên máy và trên remote khớp nhau.
+
+### Trạng thái
+- Unit test backend 237 pass, 5 skipped; giao diện 85 pass. Test integration chưa chạy lại trong phiên này (Docker Desktop tắt).
+- Lần tới chạy Docker, dùng `docker compose up -d --force-recreate backend` để backend nhận `JWT_SECRET` mới (phải đăng nhập lại).
+
+### Quy trình từ nay
+- Mỗi tính năng làm trên một nhánh riêng, push nhánh lên GitHub, tạo Pull Request vào `main`.
+- Clone sang máy khác: chạy `git config core.hooksPath .githooks`.
+
+### Việc đang chờ user
+- Bật Secret scanning và Push protection trên GitHub (Settings → Code security).
+- Tên repo đang có lỗi chính tả (`Platfrom`). Nếu đổi tên thì sửa URL trong README và chạy `git remote set-url origin <url mới>`.
+- Duyệt dataset Hệ Mặt Trời; deploy (xem phiên 2026-11-06).
+
+## Phiên 2026-11-06
 
 ### Đã làm
 - User giao làm hết phần còn lại. Hoàn thành phần mã của M3 đến M9:
