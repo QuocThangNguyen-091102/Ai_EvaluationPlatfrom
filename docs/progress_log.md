@@ -18,6 +18,30 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### SECURITY | Chuẩn bị push lên GitHub | 2026-11-07
+- Trạng thái: Hoàn thành phần làm được trên máy; remote, email tác giả và license chờ user quyết định.
+- Đã làm gì:
+  - Rà soát trước khi push: không file secret nào bị track; quét lịch sử 48 commit không thấy key hay mật khẩu thật; repo 414 KB.
+  - Tìm ra và sửa 2 lỗ hổng trong `.gitignore`:
+    - `deploy/production.env` không bị loại, dù tài liệu ghi là có;
+    - file sao lưu `backup-*.sql` (do hướng dẫn deploy ghi ngay vào thư mục repo) cũng không bị loại.
+    - Bổ sung thêm: `*.env` (trừ `*.example`), khóa, chứng chỉ.
+  - `JWT_SECRET` trong `.env` máy dev vẫn là chuỗi mẫu công khai: đã thay bằng chuỗi ngẫu nhiên. Backend giờ từ chối khởi động với chuỗi mẫu.
+  - Thêm `.githooks/pre-commit` dò secret và bật `core.hooksPath`. Hướng dẫn deploy đổi nơi lưu file sao lưu ra ngoài repo.
+- File tạo/sửa: `.gitignore`, `.githooks/pre-commit` (mới), `backend/app/core/config.py`, `backend/tests/unit/test_security.py`, `README.md`, `docs/deployment_guide.md`, `docs/09_repo_manifest.md`, `.env` (local, không track).
+- Đã kiểm tra thế nào:
+  - Hook: 6 tình huống trong repo tạm. Chặn đúng file `.env`, key OpenAI, secret thật lấy từ `.env`, file `.sql` có dấu cách trong tên; cho qua file thường và chuỗi có `secret-scan: allow`.
+  - `git check-ignore`: các file cần chặn đều bị loại, các file `*.example` vẫn được track.
+  - Unit test backend: 237 pass, 5 skipped. Test integration chưa chạy vì Docker Desktop đang tắt.
+- Việc tiếp theo: user chọn email tác giả, license, tạo remote.
+
+### DOCS | Viết lại README | 2026-11-07
+- Trạng thái: Hoàn thành, chờ user duyệt.
+- Đã làm gì: cấu trúc lại README theo chuẩn dự án chuyên nghiệp: mục lục, vì sao có dự án, điểm nổi bật, kết quả thực nghiệm, sơ đồ kiến trúc Mermaid, tech stack, bảng biến môi trường, trạng thái theo milestone, mục lục tài liệu, giấy phép. Sửa phần lỗi thời: "Việc còn cần người" vẫn ghi cần cấu hình LLM, trong khi LLM đã chạy thật và đã có kết quả 12 test bảo mật.
+- File tạo/sửa: `README.md` (ghi đè), `docs/progress_log.md`.
+- Đã kiểm tra thế nào: mọi số liệu lấy từ `docs/release_audit.md`, `docs/security_testing.md` mục 5.2 và mục mới nhất của progress log; 37/37 link nội bộ trỏ tới file có thật.
+- Việc tiếp theo: user chọn giấy phép (repo chưa có `LICENSE`); có thể thêm ảnh chụp giao diện.
+
 ### Sau M9 | LLM miễn phí cục bộ, judge mới, dataset Hệ Mặt Trời | 2026-11-06
 - **LLM:** user cài Ollama; dùng qwen2.5:3b để trả lời và gemma3:4b làm judge (khác họ model để giảm thiên lệch tự chấm). Backend trong Docker gọi qua `host.docker.internal`. Compose truyền thêm `LLM_TIMEOUT_SECONDS` (CPU cần 300 s). Test không còn phụ thuộc cấu hình LLM trong `.env` của máy.
 - **Chạy thật với LLM** (dataset MẪU 6 câu, chỉ để kiểm tra luồng):
