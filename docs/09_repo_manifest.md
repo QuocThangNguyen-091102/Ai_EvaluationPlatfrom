@@ -326,7 +326,8 @@ Các `__init__.py` trong `models`, `schemas`, `repositories`, `services` chỉ �
 | `frontend/src/services/api/httpClient.js` | Gọi API, gắn token, chuẩn hóa lỗi | `VITE_API_BASE_URL` | Mọi `*Api.js` | Tested | M2 |
 | `frontend/.dockerignore` | Loại `node_modules`, `dist` khỏi build context | Không | Docker build | Implemented | M2 |
 | `frontend/src/services/api/healthApi.js` | Gọi `GET /health` | `httpClient.js` | `App.jsx` | Implemented | M2 |
-| `frontend/src/formatting.js` | Định dạng dung lượng, ngày giờ, loại file, nhãn trạng thái và thông điệp lỗi bằng tiếng Việt | Không | Pages | Giá trị thô | Chuỗi hiển thị | Tested | M3 |
+| `frontend/src/formatting.js` | Định dạng dung lượng, ngày giờ, giờ, thời lượng, loại file, nhãn trạng thái và thông điệp lỗi bằng tiếng Việt | Không | Pages, `RunProgress` | Giá trị thô | Chuỗi hiển thị | Tested | M3, bổ sung UI 2026-11-08 |
+| `frontend/src/components/RunProgress.jsx`, `RunProgress.css` | Tiến độ lượt chạy nền: chờ (thanh không xác định), đang chạy (thanh có %), hoàn tất hoặc lỗi; nhật ký theo mốc thời gian thật. Port từ Lucian UX/UI Prompt #083 (MIT) | `formatting.js`, `metricLabels.js` | Trang Đánh giá, Bảo mật, Benchmark | status, số mục xong và tổng, các mốc thời gian | Thẻ tiến độ | Tested | UI 2026-11-08 |
 | `frontend/src/components/BackendStatus.jsx` | Chỉ báo máy chủ và database có phản hồi không (chân trang) | `healthApi.js` | `MainLayout.jsx` | | | Implemented | M3 |
 | `frontend/src/styles.css` | Giao diện toàn bộ: bố cục, bảng, nút, thẻ; thích ứng màn hình nhỏ; chế độ tối | Không | `main.jsx` | | | Implemented | M3 |
 | `frontend/src/test/setup.js` và các file `*.test.js(x)` | Thiết lập và test giao diện (52 test: client API, đăng nhập, bảo vệ trang, trang tài liệu, định dạng) | vitest, Testing Library | `npm test` | | | Tested | M3 |

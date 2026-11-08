@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import RunProgress from "../components/RunProgress.jsx";
 import { describeError, formatCost, formatDateTime, formatLatency } from "../formatting.js";
 import { METRIC_LABELS, METRIC_STATUS_LABELS, RUN_STATUS_LABELS, formatScore } from "../metricLabels.js";
 import { createBenchmark, downloadBenchmarkReport, listBenchmarks } from "../services/api/benchmarkApi.js";
@@ -269,14 +270,16 @@ function BenchmarkDetail({ benchmark, onError }) {
           Tải báo cáo CSV
         </button>
       </header>
-      {UNFINISHED.has(benchmark.status) && (
-        <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={benchmark.variants.length} aria-valuenow={done}>
-          <span className="progress__fill" style={{ width: `${(done / benchmark.variants.length) * 100}%` }} />
-          <span className="progress__label">
-            {done}/{benchmark.variants.length} cấu hình
-          </span>
-        </div>
-      )}
+      <RunProgress
+        key={benchmark.id}
+        status={benchmark.status}
+        completed={done}
+        total={benchmark.variants.length}
+        unit="cấu hình"
+        createdAt={benchmark.created_at}
+        startedAt={benchmark.started_at}
+        finishedAt={benchmark.finished_at}
+      />
       {benchmark.error_message && <p className="alert alert--error">{benchmark.error_message}</p>}
       {benchmark.notes.map((note) => (
         <p key={note} className="notice">

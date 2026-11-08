@@ -18,6 +18,21 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### UI | Khung chung: tiến độ lượt chạy (mẫu Lucian #083) | 2026-11-08
+- Trạng thái: Hoàn thành trên nhánh `feature/ui-shell`, chờ user duyệt rồi mới merge.
+- Đã làm gì:
+  - Port mẫu #083 thành `RunProgress`, thay thanh `.progress` cũ ở 3 trang Đánh giá, Bảo mật, Benchmark.
+  - Giữ nguyên hình dạng và chuyển động của mẫu (thời lượng, đường cong, độ trễ); ánh xạ token `--ux-*` sang biến màu của dự án.
+  - Thay dữ liệu giả của mẫu bằng mốc thật từ API (`created_at`, `started_at`, `finished_at`, số mục xong).
+  - Bỏ nút "Redeploy" và logic chạy demo của mẫu. Thêm trạng thái lỗi (mẫu không có).
+- File tạo/sửa: `components/RunProgress.jsx`, `RunProgress.css`, `RunProgress.test.jsx` (mới); `formatting.js`, 3 trang, `styles.css` (xóa `.progress` cũ).
+- Đã kiểm tra thế nào:
+  - Vitest 91 pass (85 cũ + 6 mới); `npm run build` thành công.
+  - Ảnh chụp bằng Chromium qua trang xem thử tạm (đã xóa) ở 4 chế độ: sáng, tối, 390 px, giảm chuyển động. Không tràn ngang; không lỗi JavaScript, chỉ có một lỗi 404 khi tải tài nguyên của chính trang tạm.
+  - Đo vị trí hai đoạn chạy theo thời gian: animation thanh "đang chờ" hoạt động.
+- Chưa kiểm tra: chạy với dữ liệu thật trên stack Docker (Docker Desktop đang tắt); bàn phím (component không có phần tử tương tác).
+- Việc tiếp theo: user duyệt; gửi prompt mẫu 040 (thanh điều hướng), 070 (toast), 079 (skeleton).
+
 ### SECURITY | Chuẩn bị push lên GitHub | 2026-11-07
 - Trạng thái: Hoàn thành phần làm được trên máy; remote, email tác giả và license chờ user quyết định.
 - Đã làm gì:

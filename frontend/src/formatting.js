@@ -10,6 +10,21 @@ export function formatDateTime(isoString) {
   return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(isoString));
 }
 
+export function formatClock(isoString) {
+  return new Intl.DateTimeFormat("vi-VN", { timeStyle: "medium" }).format(new Date(isoString));
+}
+
+// Thời lượng giữa hai mốc ISO, ví dụ "38 giây", "2 phút 5 giây", "1 giờ 3 phút".
+export function formatDuration(startIso, endIso) {
+  const totalSeconds = Math.max(0, Math.round((new Date(endIso) - new Date(startIso)) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours} giờ ${minutes} phút`;
+  if (minutes > 0) return seconds > 0 ? `${minutes} phút ${seconds} giây` : `${minutes} phút`;
+  return `${seconds} giây`;
+}
+
 const TYPE_LABELS = {
   "application/pdf": "PDF",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",

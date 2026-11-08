@@ -864,32 +864,6 @@ input[type="text"] {
   font-size: 1rem;
 }
 
-.progress {
-  position: relative;
-  height: 1.6rem;
-  border-radius: 8px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.progress__fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--primary);
-  transition: width 0.3s;
-}
-
-.progress__label {
-  position: relative;
-  display: block;
-  text-align: center;
-  font-size: 0.85rem;
-  line-height: 1.6rem;
-  font-weight: 600;
-  mix-blend-mode: difference;
-  color: #fff;
-}
-
 .metric-bars {
   margin: 0;
   display: grid;

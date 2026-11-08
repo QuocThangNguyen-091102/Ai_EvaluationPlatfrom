@@ -1,0 +1,297 @@
+/* Lucian UX/UI Prompt #083 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#083 */
+
+/* Token của mẫu ánh xạ sang biến màu của dự án (styles.css), nên tự theo sáng/tối như phần còn lại. */
+.run-progress {
+  --ux-surface: var(--surface);
+  --ux-surface-2: var(--bg);
+  --ux-surface-3: var(--border);
+  --ux-page: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--muted);
+  --ux-ink-3: var(--muted);
+  --ux-line: var(--border);
+  --ux-accent: var(--primary);
+  --ux-mint: var(--ok);
+  --ux-warn: var(--warn);
+  --ux-danger: var(--danger);
+  --ux-shadow-strong: rgba(40, 30, 80, 0.3);
+  --ux-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 18px;
+  border-radius: 28px;
+  background: var(--ux-surface);
+  box-shadow: 0 0 0 1px var(--ux-line), 0 30px 60px -36px var(--ux-shadow-strong);
+  overflow: hidden;
+  color: var(--ux-ink);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+}
+
+@media (prefers-color-scheme: dark) {
+  .run-progress {
+    --ux-shadow-strong: rgba(0, 0, 0, 0.72);
+  }
+}
+
+.run-progress__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.run-progress__icon {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--ux-ink);
+}
+
+.run-progress__icon::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 11px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 14px solid var(--ux-page);
+}
+
+.run-progress__title {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.run-progress__subtitle {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ux-ink-3);
+}
+
+.run-progress__pill {
+  margin-left: auto;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--c);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: background-color 0.4s, color 0.4s;
+}
+
+.run-progress__pill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: run-progress-blink 1.2s ease-in-out infinite;
+}
+
+.run-progress--done .run-progress__pill::before,
+.run-progress--failed .run-progress__pill::before {
+  animation: none;
+}
+
+@keyframes run-progress-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.run-progress__track {
+  position: relative;
+  height: 6px;
+  margin: 18px 0 6px;
+  border-radius: 3px;
+  background: var(--ux-surface-3);
+  overflow: hidden;
+}
+
+.run-progress__segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: var(--ux-accent);
+  transition: opacity 0.4s;
+}
+
+.run-progress__segment--a {
+  animation: run-progress-a 1.6s cubic-bezier(0.65, 0.05, 0.35, 1) infinite;
+}
+
+.run-progress__segment--b {
+  animation: run-progress-b 1.6s cubic-bezier(0.25, 0.6, 0.4, 1) 0.55s infinite;
+}
+
+@keyframes run-progress-a {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+  60%,
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+
+@keyframes run-progress-b {
+  0% {
+    left: -200%;
+    right: 100%;
+  }
+  60%,
+  100% {
+    left: 107%;
+    right: -8%;
+  }
+}
+
+.run-progress__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--ux-accent);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p, 0));
+  opacity: 0;
+  transition: transform 0.5s var(--ux-ease), opacity 0.3s, background-color 0.4s;
+}
+
+.run-progress--determinate .run-progress__segment {
+  opacity: 0;
+}
+
+.run-progress--determinate .run-progress__fill {
+  opacity: 1;
+}
+
+.run-progress--done .run-progress__fill {
+  background: var(--ux-mint);
+}
+
+.run-progress--failed .run-progress__fill {
+  background: var(--ux-danger);
+}
+
+.run-progress__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ux-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.run-progress__log {
+  margin: 12px 0 0;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--ux-surface-2);
+  list-style: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.run-progress__log li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ux-ink-2);
+  animation: run-progress-in 0.4s var(--ux-ease);
+}
+
+@keyframes run-progress-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.run-progress__log time {
+  color: var(--ux-ink-3);
+  font: 600 11.5px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.run-progress__mark {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.run-progress__mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--ux-accent);
+  border-right-color: transparent;
+  animation: run-progress-spin 0.7s linear infinite;
+}
+
+.run-progress__log li.is-ok,
+.run-progress__log li.is-error {
+  color: var(--ux-ink-3);
+}
+
+.run-progress__log li.is-ok .run-progress__mark::before,
+.run-progress__log li.is-error .run-progress__mark::before {
+  border: 0;
+  animation: none;
+  background: var(--ux-mint);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3 7.4l2.6 2.6L11 4.6' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3 7.4l2.6 2.6L11 4.6' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat;
+}
+
+/* Trạng thái lỗi không có trong mẫu: dùng cùng kỹ thuật mask, đổi dấu tích thành dấu X màu --ux-danger. */
+.run-progress__log li.is-error {
+  color: var(--ux-danger);
+}
+
+.run-progress__log li.is-error .run-progress__mark::before {
+  background: var(--ux-danger);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 4l6 6M10 4l-6 6' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M4 4l6 6M10 4l-6 6' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+@keyframes run-progress-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run-progress,
+  .run-progress *,
+  .run-progress *::before,
+  .run-progress *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

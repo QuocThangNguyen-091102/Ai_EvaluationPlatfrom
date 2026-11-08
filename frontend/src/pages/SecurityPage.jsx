@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import RunProgress from "../components/RunProgress.jsx";
 import { describeError, formatDateTime, formatLatency } from "../formatting.js";
 import { RUN_STATUS_LABELS } from "../metricLabels.js";
 import { getCapabilities, listConfigurations } from "../services/api/modelConfigApi.js";
@@ -235,14 +236,16 @@ function SecurityRunDetail({ run, onError }) {
         </button>
       </header>
 
-      {UNFINISHED.has(run.status) && (
-        <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={run.total_cases} aria-valuenow={run.completed_cases}>
-          <span className="progress__fill" style={{ width: `${run.total_cases ? (run.completed_cases / run.total_cases) * 100 : 0}%` }} />
-          <span className="progress__label">
-            {run.completed_cases}/{run.total_cases} test
-          </span>
-        </div>
-      )}
+      <RunProgress
+        key={run.id}
+        status={run.status}
+        completed={run.completed_cases}
+        total={run.total_cases}
+        unit="test"
+        createdAt={run.created_at}
+        startedAt={run.started_at}
+        finishedAt={run.finished_at}
+      />
       {run.error_message && <p className="alert alert--error">{run.error_message}</p>}
 
       <div className="run-summary">

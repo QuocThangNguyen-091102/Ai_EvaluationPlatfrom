@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import MetricBars from "../components/MetricBars.jsx";
+import RunProgress from "../components/RunProgress.jsx";
 import { describeError, formatCost, formatDateTime, formatLatency } from "../formatting.js";
 import {
   CATEGORY_LABELS,
@@ -232,14 +233,17 @@ function RunDetail({ run, onError }) {
         </button>
       </header>
 
-      {UNFINISHED.has(run.status) && (
-        <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={run.total_cases} aria-valuenow={progress}>
-          <span className="progress__fill" style={{ width: `${run.total_cases ? (progress / run.total_cases) * 100 : 0}%` }} />
-          <span className="progress__label">
-            {progress}/{run.total_cases} câu
-          </span>
-        </div>
-      )}
+      <RunProgress
+        key={run.id}
+        status={run.status}
+        completed={progress}
+        total={run.total_cases}
+        unit="câu"
+        failed={run.failed_cases}
+        createdAt={run.created_at}
+        startedAt={run.started_at}
+        finishedAt={run.finished_at}
+      />
       {run.error_message && <p className="alert alert--error">{run.error_message}</p>}
       {warnings.map((warning) => (
         <p key={warning} className="notice">
