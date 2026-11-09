@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
+import BenchmarkScatter from "../components/BenchmarkScatter.jsx";
 import RunProgress from "../components/RunProgress.jsx";
+import { useRunNotifications } from "../hooks/useRunNotifications.js";
 import { describeError, formatCost, formatDateTime, formatLatency } from "../formatting.js";
 import { METRIC_LABELS, METRIC_STATUS_LABELS, RUN_STATUS_LABELS, formatScore } from "../metricLabels.js";
 import { createBenchmark, downloadBenchmarkReport, listBenchmarks } from "../services/api/benchmarkApi.js";
@@ -9,6 +11,14 @@ import { createConfiguration, getCapabilities, listConfigurations } from "../ser
 
 const POLL_MS = 2000;
 const UNFINISHED = new Set(["pending", "running"]);
+
+const isUnfinished = (status) => UNFINISHED.has(status);
+
+function describeFinishedBenchmark(benchmark) {
+  if (benchmark.status === "completed") return { tone: "success", title: "Benchmark hoàn tất", detail: benchmark.name };
+  return { tone: "error", title: "Benchmark bị lỗi", detail: benchmark.error_message ?? benchmark.name };
+}
+
 const VARIABLES = {
   top_k: { label: "top_k (số đoạn lấy về)", placeholder: "ví dụ: 3, 5, 8" },
   llm_model: { label: "LLM model", placeholder: "tên các model, cách nhau bằng dấu phẩy" },
@@ -42,6 +52,8 @@ export default function BenchmarksPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useRunNotifications(benchmarks, { isUnfinished, describe: describeFinishedBenchmark });
 
   const hasUnfinished = benchmarks.some((b) => UNFINISHED.has(b.status));
   useEffect(() => {
@@ -331,6 +343,11 @@ function BenchmarkDetail({ benchmark, onError }) {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="card">
+        <h3>Chất lượng theo độ trễ</h3>
+        <BenchmarkScatter benchmark={benchmark} metrics={COLUMNS} />
       </section>
 
       <section className="card">

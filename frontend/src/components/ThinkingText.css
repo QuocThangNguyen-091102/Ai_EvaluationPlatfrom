@@ -1,0 +1,38 @@
+/* Lucian UX/UI Prompt #263 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#263 */
+
+.thinking-text {
+  align-self: flex-start;
+  max-width: 88%;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+  line-height: 1.5;
+}
+
+.thinking-text__sheen {
+  background: linear-gradient(90deg, var(--muted) 0 40%, var(--text) 50%, var(--muted) 60% 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: thinking-text-sheen 1.5s linear infinite;
+  font-weight: 800;
+}
+
+@keyframes thinking-text-sheen {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-text__sheen {
+    animation: none;
+    color: var(--muted);
+  }
+}

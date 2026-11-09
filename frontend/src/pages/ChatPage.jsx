@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import AnswerSources from "../components/AnswerSources.jsx";
+import CitedAnswer from "../components/CitedAnswer.jsx";
+import CopyButton from "../components/CopyButton.jsx";
+import ThinkingText from "../components/ThinkingText.jsx";
 import { describeError } from "../formatting.js";
 import { askQuestion, deleteSession, getSessionMessages, listSessions } from "../services/api/chatApi.js";
 import { getCapabilities, listConfigurations } from "../services/api/modelConfigApi.js";
@@ -177,7 +180,10 @@ export default function ChatPage() {
           )}
           {messages.map((message) => (
             <article key={message.id} className={`message message--${message.role}`}>
-              <div className="message__role">{message.role === "user" ? "Bạn" : "Hệ thống"}</div>
+              <div className="message__head">
+                <div className="message__role">{message.role === "user" ? "Bạn" : "Hệ thống"}</div>
+                {message.role === "assistant" && !message.error && <CopyButton text={message.content} label="Copy câu trả lời" />}
+              </div>
               {message.error ? (
                 <p className="alert alert--error" role="alert">
                   {message.error}
@@ -191,15 +197,24 @@ export default function ChatPage() {
                       {message.insufficient && <span className="badge badge--processing">Không đủ thông tin</span>}
                     </div>
                   )}
-                  <div className="message__content">{message.content}</div>
+                  {message.role === "assistant" && message.sources?.length > 0 ? (
+                    <CitedAnswer text={message.content} sources={message.sources} citations={message.citations} />
+                  ) : (
+                    <div className="message__content">{message.content}</div>
+                  )}
                   {message.role === "assistant" && (
-                    <AnswerSources citations={message.citations} sources={message.sources} metrics={message.metrics} />
+                    <AnswerSources
+                      citations={message.citations}
+                      sources={message.sources}
+                      metrics={message.metrics}
+                      showCitations={!(message.sources?.length > 0)}
+                    />
                   )}
                 </>
               )}
             </article>
           ))}
-          {sending && <p className="page-message">Đang tìm trong tài liệu và soạn câu trả lời...</p>}
+          {sending && <ThinkingText>Đang tìm trong tài liệu và soạn câu trả lời…</ThinkingText>}
           <div ref={endRef} />
         </div>
 

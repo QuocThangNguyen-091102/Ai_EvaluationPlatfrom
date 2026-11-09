@@ -1,0 +1,285 @@
+/* Lucian UX/UI Prompt #273 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#273 */
+
+/* Mẫu đặt panel trong một thẻ 340px; ở đây panel bám mép phải màn hình vì danh sách kết quả dài hơn một khung nhìn. */
+.detail-rows {
+  --ux-surface-2: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--text);
+  --ux-ink-3: var(--muted);
+  --ux-accent: var(--primary);
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  /* Cột co theo khung, để câu hỏi dài bị cắt bằng "…" thay vì đẩy cả danh sách rộng ra trên điện thoại. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 13px;
+  background: none;
+  color: var(--ux-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.detail-row:hover {
+  background: var(--ux-surface-2);
+}
+
+.detail-row.is-on {
+  background: color-mix(in srgb, var(--ux-accent) 10%, transparent);
+  box-shadow: inset 3px 0 0 var(--ux-accent);
+}
+
+.detail-row:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: -2px;
+}
+
+.detail-row__mark {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-row__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.detail-row__text b {
+  display: block;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-row__text small {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ux-ink-3);
+}
+
+.detail-row__tag {
+  flex: none;
+  max-width: 40%;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ux-surface-2);
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ux-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-panel__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(10, 10, 20, 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.detail-panel__overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.detail-panel {
+  --ux-surface: var(--surface);
+  --ux-surface-2: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--text);
+  --ux-ink-3: var(--muted);
+  --ux-line: var(--border);
+  --ux-accent: var(--primary);
+
+  position: fixed;
+  z-index: 61;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: min(560px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  background: var(--ux-surface);
+  color: var(--ux-ink);
+  box-shadow: 0 0 0 1px var(--ux-line), -16px 0 40px -18px rgba(0, 0, 0, 0.35);
+  transform: translateX(calc(100% + 16px));
+  visibility: hidden;
+  transition: transform 0.45s cubic-bezier(0.3, 1.1, 0.4, 1), visibility 0s 0.45s;
+  overflow: hidden;
+}
+
+.detail-panel.is-open {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.45s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+.detail-panel:focus {
+  outline: none;
+}
+
+.detail-panel__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 12px 6px;
+}
+
+.detail-panel__toolbar button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.detail-panel__toolbar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.detail-panel__toolbar button:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 2px;
+}
+
+.detail-panel__toolbar svg {
+  width: 12px;
+  height: 12px;
+}
+
+.detail-panel__position {
+  margin-right: auto;
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ux-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-panel__body {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.detail-panel__page {
+  padding: 6px 18px 18px;
+}
+
+/* Trang mới trượt vào theo hướng di chuyển (lên hoặc xuống), như mẫu. */
+.detail-panel__page[data-direction="1"] {
+  animation: detail-panel-in-down 0.4s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+.detail-panel__page[data-direction="-1"] {
+  animation: detail-panel-in-up 0.4s cubic-bezier(0.3, 1.1, 0.4, 1);
+}
+
+@keyframes detail-panel-in-down {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+@keyframes detail-panel-in-up {
+  from {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+.detail-panel__page h4 {
+  margin: 16px 0 6px;
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--ux-ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.detail-panel__title {
+  margin: 10px 0 0;
+  font-size: 17px;
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.detail-panel__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.detail-panel__facts div {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--ux-surface-2);
+}
+
+.detail-panel__facts small {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ux-ink-3);
+}
+
+.detail-panel__facts b {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-row,
+  .detail-panel,
+  .detail-panel.is-open,
+  .detail-panel__overlay {
+    transition: none;
+  }
+
+  .detail-panel__page {
+    animation: none !important;
+  }
+}

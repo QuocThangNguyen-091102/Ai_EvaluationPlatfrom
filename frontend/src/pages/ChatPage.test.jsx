@@ -54,9 +54,11 @@ describe("ChatPage", () => {
 
     await ask("Hạn nộp hồ sơ?");
 
-    expect(await screen.findByText("Phải nộp trong 30 ngày [1].")).toBeInTheDocument();
+    expect(await screen.findByText(/Phải nộp trong 30 ngày/)).toBeInTheDocument();
     expect(chatApi.askQuestion).toHaveBeenCalledWith({ question: "Hạn nộp hồ sơ?", sessionId: null, modelConfigurationId: undefined });
-    expect(screen.getByText(/\[1\] quy-dinh\.pdf, trang 3/, { selector: "li" })).toBeInTheDocument();
+    // Số [1] trong câu trả lời thành nút dẫn tới nguồn; thẻ nguồn được trích dẫn hiện tên file.
+    expect(screen.getByRole("button", { name: "Nguồn 1: quy-dinh.pdf, trang 3" })).toBeInTheDocument();
+    expect(screen.getByText("quy-dinh.pdf", { selector: ".cited-answer__card b" })).toBeInTheDocument();
     expect(screen.getByText(/1,3 s · 120 \+ 30 token · chi phí ước tính: không rõ/)).toBeInTheDocument();
     expect(screen.getByText("LLM")).toBeInTheDocument();
   });
@@ -66,7 +68,7 @@ describe("ChatPage", () => {
     render(<ChatPage />);
 
     await ask("Câu một");
-    await screen.findByText("Phải nộp trong 30 ngày [1].");
+    await screen.findByText(/Phải nộp trong 30 ngày/);
     await ask("Câu hai");
 
     await waitFor(() => expect(chatApi.askQuestion).toHaveBeenLastCalledWith({ question: "Câu hai", sessionId: "s1", modelConfigurationId: undefined }));
@@ -129,7 +131,8 @@ describe("ChatPage", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: "Hồ sơ nộp khi nào?" }));
 
-    expect(await screen.findByText("Trong 30 ngày [1].")).toBeInTheDocument();
+    expect(await screen.findByText(/Trong 30 ngày/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nguồn 1: quy-dinh.pdf, trang 3" })).toBeInTheDocument();
     expect(chatApi.getSessionMessages).toHaveBeenCalledWith("s9");
     expect(screen.getByText("Các đoạn đã tham khảo (1)")).toBeInTheDocument();
   });

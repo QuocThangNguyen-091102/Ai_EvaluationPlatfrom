@@ -18,6 +18,39 @@ Mã task theo danh sách task: `M<milestone>-T<số>` (ví dụ M1-T01).
 
 ---
 
+### UI | Áp dụng các mẫu Lucian UX/UI Prompt cho mọi trang | 2026-11-08
+- Trạng thái: Hoàn thành trên nhánh `feature/ui-shell`, **chưa commit** (user tự commit và push).
+- Nguồn: prompt tiếng Anh của từng mẫu tải từ repo `Seokwoooo/lucian-uxui-prompt` (MIT), đọc code trước khi port; mỗi file mới giữ dòng ghi công.
+- Đã áp dụng:
+  - Khung chung: #040 (thanh điều hướng bên trái), #070 (toast xếp chồng), #079 (skeleton), #083 (tiến độ, làm trước đó).
+  - Hỏi đáp: #224 (câu trả lời lần về nguồn), #263 (dòng đang suy nghĩ), #008 (nút copy).
+  - Đánh giá: #273 (dòng gọn + panel chi tiết).
+  - Bảo mật: #396 (che câu trả lời của test không đạt).
+  - Benchmark: #155 (chất lượng theo độ trễ).
+  - Đăng nhập: #062, #036. Tài liệu: #269. Dashboard: #098.
+- Đã điều chỉnh so với mẫu (lý do: không bịa dữ liệu, không đặt ngưỡng tùy ý):
+  - #224 không tô cụm từ trong đoạn trích, vì hệ thống chỉ biết đoạn, không biết cụm.
+  - #155 dùng trục độ trễ thay chi phí (model cục bộ có chi phí 0) và bỏ ngưỡng lọc "≤ 55¢".
+  - #269 bỏ nút Hoàn tác, vì xóa ở backend là vĩnh viễn.
+  - #062 bỏ "còn N lần thử", vì API không trả số này.
+  - #098 bỏ đường xu hướng, vì không có số liệu theo thời gian.
+- Không áp dụng, kèm lý do:
+  - Mẫu cần dữ liệu hệ thống không có: #238 (uptime 30 ngày), #284 (bước con của ingestion), #075 và #032 (phần trăm upload), #156 (phân bố trên trang kết quả bị phân trang), #299 (hạn mức không có trong API), #092 (cần API đếm theo bộ lọc).
+  - Trùng chức năng sẵn có hoặc không khớp ý nghĩa: #097, #288, #184 (bảng bật/tắt quyền), #359 (chỉ nối được 2 cấu hình), #175, #166, #176, #042, #281, #178, #180, #293, #233, #088, #046.
+  - Không phù hợp về bảo mật: #072, vì cho tắt cảnh báo phát hiện bảo mật.
+- Lỗi tìm và sửa trong lúc làm:
+  - Panel chi tiết tự đóng khi danh sách tải lại trong lúc chạy; đã sửa bằng cách lưu id thay vì vị trí.
+  - Dòng kết quả tràn ngang 27 px trên điện thoại vì cột grid `auto`.
+  - Dấu ". " sau [n] bị gạch chân như đầu ý sau.
+  - `METRIC_LABELS` là object, không phải chuỗi.
+  - Server Vite xem thử còn chạy sau khi dừng tác vụ.
+- Đã kiểm tra thế nào:
+  - Vitest 111 pass (18 file). Test cũ của Hỏi đáp và Tài liệu đã cập nhật theo hành vi mới (nút nguồn, hộp gõ tên thay `window.confirm`).
+  - `npm run build` thành công.
+  - Ảnh chụp bằng Chromium qua trang xem thử tạm (đã xóa): sáng, tối, 390 px (không tràn ngang), các tương tác trỏ nguồn, panel, hộp xóa. Không có lỗi JavaScript.
+- Chưa kiểm tra: chạy với dữ liệu thật trên stack Docker (Docker Desktop tắt); trình đọc màn hình thật.
+- Giới hạn: toast chỉ báo khi đang mở trang có polling; sang trang khác thì trang đó ngừng polling nên không báo.
+
 ### UI | Khung chung: tiến độ lượt chạy (mẫu Lucian #083) | 2026-11-08
 - Trạng thái: Hoàn thành trên nhánh `feature/ui-shell`, chờ user duyệt rồi mới merge.
 - Đã làm gì:

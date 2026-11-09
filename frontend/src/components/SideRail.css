@@ -1,0 +1,300 @@
+/* Lucian UX/UI Prompt #040 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#040 */
+
+.side-rail {
+  --ux-ink: var(--text);
+  --ux-page: var(--bg);
+  --ux-accent: var(--primary);
+  --ux-grad: linear-gradient(120deg, #7b61ff, #3d8bff 55%, #1fb89a);
+  --ux-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ux-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --rw: 76px;
+
+  position: sticky;
+  top: 12px;
+  flex: none;
+  align-self: flex-start;
+  width: var(--rw);
+  height: calc(100vh - 24px);
+  margin: 12px 0 12px 12px;
+  z-index: 20;
+  transition: width 0.6s var(--ux-spring);
+}
+
+@media (prefers-color-scheme: dark) {
+  .side-rail {
+    --ux-grad: linear-gradient(120deg, #b7a4ff, #7db4ff 55%, #a5f2d3);
+  }
+}
+
+.side-rail--wide {
+  --rw: 200px;
+}
+
+.side-rail__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 12px 10px;
+  border-radius: 24px;
+  background: var(--ux-ink);
+  color: var(--ux-page);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+.side-rail__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  margin-bottom: 14px;
+}
+
+.side-rail__logo {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  margin-left: 10px;
+  border-radius: 12px;
+  background: var(--ux-grad);
+}
+
+.side-rail__name {
+  font-size: 15.5px;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.side-rail--wide .side-rail__name {
+  opacity: 1;
+  transition: opacity 0.3s 0.15s;
+}
+
+.side-rail__toggle {
+  position: absolute;
+  right: -1px;
+  top: 16px;
+  width: 30px;
+  height: 36px;
+  border: 0;
+  padding: 0;
+  border-radius: 10px 0 0 10px;
+  background: color-mix(in srgb, var(--ux-page) 14%, transparent);
+  color: inherit;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.side-rail__panel:hover .side-rail__toggle,
+.side-rail__toggle:focus-visible,
+.side-rail--wide .side-rail__toggle {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .side-rail__toggle {
+    opacity: 1;
+  }
+}
+
+.side-rail__toggle:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: -2px;
+}
+
+.side-rail__toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.5s var(--ux-spring);
+}
+
+.side-rail--wide .side-rail__toggle svg {
+  transform: rotate(180deg);
+}
+
+.side-rail__nav {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.side-rail__highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 48px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--ux-page) 15%, transparent);
+  transform: translateY(var(--y, 0));
+  transition: transform 0.5s var(--ux-spring), opacity 0.2s;
+  pointer-events: none;
+}
+
+.side-rail__highlight::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--ux-grad);
+}
+
+.side-rail__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 48px;
+  padding: 0 0 0 16px;
+  border: 0;
+  border-radius: 15px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.62;
+  transition: opacity 0.25s;
+}
+
+.side-rail__item:hover,
+.side-rail__item[aria-current="page"] {
+  opacity: 1;
+}
+
+.side-rail__item:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: -2px;
+}
+
+.side-rail__item svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.side-rail__item span {
+  font-size: 14.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.2s, transform 0.35s var(--ux-ease);
+}
+
+.side-rail--wide .side-rail__item span {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s var(--ux-ease), transform 0.5s var(--ux-spring);
+  transition-delay: calc(0.12s + var(--i) * 35ms);
+}
+
+/* Khối tài khoản ở cuối thanh. Mẫu đặt khối này absolute; ở đây nằm cuối cột flex để không đè lên menu khi màn hình thấp. */
+.side-rail__me {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  margin-top: 8px;
+  padding: 0 0 0 10px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ux-page) 8%, transparent);
+}
+
+.side-rail__avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, #ffd3a8, #ff7a93 60%, #8b6cff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.side-rail__email {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.side-rail__email small {
+  display: block;
+  font-size: 11.5px;
+  opacity: 0.6;
+}
+
+.side-rail--wide .side-rail__email {
+  opacity: 1;
+  transition-delay: 0.25s;
+}
+
+/* Điện thoại: thanh luôn chiếm 76px; khi mở rộng thì panel phủ lên nội dung thay vì đẩy nội dung còn quá hẹp. */
+@media (max-width: 760px) {
+  .side-rail,
+  .side-rail--wide {
+    width: 76px;
+    margin: 8px 0 8px 8px;
+    top: 8px;
+    height: calc(100vh - 16px);
+  }
+
+  .side-rail__panel {
+    width: var(--rw);
+    transition: width 0.6s var(--ux-spring), box-shadow 0.3s;
+  }
+
+  .side-rail--wide .side-rail__panel {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-rail,
+  .side-rail *,
+  .side-rail *::before,
+  .side-rail *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+  }
+}

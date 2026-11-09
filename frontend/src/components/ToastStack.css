@@ -1,0 +1,194 @@
+/* Lucian UX/UI Prompt #070 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#070 */
+
+.toast-stack {
+  --ux-surface: var(--surface);
+  --ux-surface-2: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-3: var(--muted);
+  --ux-line: var(--border);
+  --ux-accent: var(--primary);
+  --ux-mint: var(--ok);
+  --ux-danger: var(--danger);
+  --ux-shadow-strong: rgba(40, 30, 80, 0.3);
+  --ux-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  /* Vùng cố định góc dưới phải; bản thân vùng không chặn chuột để không che nội dung trang phía sau. */
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 350px;
+  max-width: calc(100vw - 32px);
+  z-index: 100;
+  pointer-events: none;
+  color: var(--ux-ink);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast-stack {
+    --ux-shadow-strong: rgba(0, 0, 0, 0.72);
+  }
+}
+
+.toast-stack__zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.toast-stack__zone--open {
+  pointer-events: auto;
+}
+
+.toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px 12px 12px 14px;
+  border-radius: 20px;
+  background: var(--ux-surface);
+  box-shadow: 0 0 0 1px var(--ux-line), 0 16px 30px -18px var(--ux-shadow-strong);
+  transform-origin: 50% 100%;
+  transform: translate(var(--dx, 0px), var(--y, 0px)) scale(var(--s, 1));
+  opacity: var(--o, 1);
+  transition: transform 0.5s var(--ux-spring), opacity 0.35s;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto;
+}
+
+.toast--drag {
+  transition: none;
+}
+
+.toast--enter {
+  transform: translateY(90px) scale(0.9);
+  opacity: 0;
+}
+
+.toast--leave {
+  transform: translate(var(--dx, 0px), var(--y, 0px)) scale(var(--s, 1));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toast--leave.toast--side {
+  transform: translate(calc(var(--dir, 1) * 420px), var(--y, 0px)) rotate(calc(var(--dir, 1) * 8deg));
+}
+
+.toast > * {
+  transition: opacity 0.25s;
+}
+
+.toast--back > * {
+  opacity: 0;
+}
+
+.toast__icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  color: var(--c);
+}
+
+.toast__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.toast__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast__text b {
+  display: block;
+  font-size: 14px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.toast__text small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ux-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toast__close {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: none;
+  color: var(--ux-ink-3);
+  cursor: pointer;
+}
+
+.toast__close:hover {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink);
+}
+
+.toast__close svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.toast__close:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 1px;
+}
+
+.toast__timer {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0.5;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--left, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-stack,
+  .toast-stack *,
+  .toast-stack *::before,
+  .toast-stack *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

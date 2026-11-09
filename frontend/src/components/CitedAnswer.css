@@ -1,0 +1,217 @@
+/* Lucian UX/UI Prompt #224 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#224 */
+
+/* Mẫu được thiết kế cho thẻ 340px với chữ 9–12px; ở đây phóng theo cỡ chữ của khung chat, giữ nguyên hình dạng và chuyển động. */
+.cited-answer {
+  --ux-surface: var(--surface);
+  --ux-surface-2: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--text);
+  --ux-ink-3: var(--muted);
+  --ux-line: var(--border);
+  --ux-accent: var(--primary);
+  --ux-shadow-strong: rgba(40, 30, 80, 0.3);
+  --preview-width: 300px;
+
+  position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cited-answer {
+    --ux-shadow-strong: rgba(0, 0, 0, 0.72);
+  }
+}
+
+.cited-answer__text {
+  margin: 0;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  color: var(--ux-ink-2);
+}
+
+.cited-answer__text > span {
+  transition: color 0.2s, background-size 0.3s;
+  background: linear-gradient(transparent 88%, color-mix(in srgb, var(--ux-accent) 70%, transparent) 88%) no-repeat 0 0 / 0 100%;
+}
+
+.cited-answer__text > span.is-hl {
+  color: var(--ux-ink);
+  background-size: 100% 100%;
+}
+
+.cited-answer__cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  margin: 0 1px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ux-surface-2);
+  box-shadow: inset 0 0 0 1px var(--ux-line);
+  color: var(--ux-ink-3);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  vertical-align: 2px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cited-answer__cite.is-on {
+  background: var(--ux-accent);
+  color: var(--primary-text);
+  box-shadow: none;
+}
+
+.cited-answer__cite:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 1px;
+}
+
+.cited-answer__preview {
+  position: absolute;
+  z-index: 3;
+  width: var(--preview-width);
+  max-width: calc(100% - 8px);
+  padding: 12px 13px;
+  border-radius: 13px;
+  background: var(--ux-surface);
+  box-shadow: 0 0 0 1px var(--ux-line), 0 18px 34px -12px var(--ux-shadow-strong);
+  transform: translate(-50%, calc(-100% - 6px)) scale(0.94);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.22s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.cited-answer__preview.is-on {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.cited-answer__preview.is-below {
+  transform: translate(-50%, 28px) scale(0.94);
+  transform-origin: 50% 0;
+}
+
+.cited-answer__preview.is-below.is-on {
+  transform: translate(-50%, 28px);
+}
+
+.cited-answer__preview header,
+.cited-answer__card header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--ux-ink-3);
+}
+
+.cited-answer__preview header i,
+.cited-answer__card header i {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.cited-answer__preview b {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 850;
+  color: var(--ux-ink);
+}
+
+.cited-answer__preview p {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ux-ink-2);
+}
+
+.cited-answer__sources {
+  margin-top: 12px;
+}
+
+.cited-answer__sources > small {
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--ux-ink-3);
+}
+
+.cited-answer__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cited-answer__card {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--ux-surface-2);
+  box-shadow: inset 0 0 0 1px var(--ux-line);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), box-shadow 0.2s, background 0.2s;
+}
+
+.cited-answer__card.is-on {
+  transform: translateY(-4px);
+  background: var(--ux-surface);
+  box-shadow: 0 0 0 1.5px var(--ux-accent), 0 10px 20px -12px var(--ux-shadow-strong);
+}
+
+.cited-answer__card header em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cited-answer__card b {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 800;
+  color: var(--ux-ink);
+  overflow-wrap: anywhere;
+}
+
+.cited-answer__card small {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ux-ink-3);
+}
+
+.cited-answer__card:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cited-answer__text > span,
+  .cited-answer__preview,
+  .cited-answer__card {
+    transition: none;
+  }
+}

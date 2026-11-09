@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import RollingNumber from "../components/RollingNumber.jsx";
+import Skeleton from "../components/Skeleton.jsx";
+
 import { describeError, formatDateTime } from "../formatting.js";
 import { CATEGORY_LABELS, METRIC_LABELS, METRIC_STATUS_LABELS, formatScore } from "../metricLabels.js";
 import { listBenchmarks } from "../services/api/benchmarkApi.js";
@@ -55,7 +58,9 @@ function OverviewStats() {
         {OVERVIEW.map((item) => (
           <li key={item.key}>
             <Link to={item.to} className="overview-stat">
-              <span className="overview-stat__value">{counts[item.key] ?? "…"}</span>
+              <span className="overview-stat__value">
+                <RollingNumber value={counts[item.key] ?? "…"} />
+              </span>
               <span className="overview-stat__label">{item.label}</span>
             </Link>
           </li>
@@ -89,7 +94,7 @@ function EvaluationComparison() {
       </div>
     );
   }
-  if (runs === null) return <p className="page-message">Đang tải…</p>;
+  if (runs === null) return <Skeleton rows={4} label="Đang tải các lượt đánh giá" />;
   if (runs.length === 0) {
     return (
       <p className="empty-state">
@@ -106,7 +111,7 @@ function EvaluationComparison() {
   }
 
   return (
-    <section className="dashboard">
+    <section className="dashboard skeleton-reveal">
       <h2>So sánh các lượt đánh giá</h2>
       <p className="hint">
         Mỗi bảng là một phiên bản dataset: chỉ so sánh các lượt trên cùng bộ câu hỏi. Chưa có baseline nên không tô màu đạt/không đạt; “—” là

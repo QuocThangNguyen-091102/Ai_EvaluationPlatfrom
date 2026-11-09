@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import DetailPanel from "../components/DetailPanel.jsx";
 import MetricBars from "../components/MetricBars.jsx";
 import RunProgress from "../components/RunProgress.jsx";
+import { useRunNotifications } from "../hooks/useRunNotifications.js";
 import { describeError, formatCost, formatDateTime, formatLatency } from "../formatting.js";
 import {
   CATEGORY_LABELS,
@@ -16,6 +18,14 @@ import { getCapabilities, listConfigurations } from "../services/api/modelConfig
 
 const POLL_MS = 2000;
 const UNFINISHED = new Set(["pending", "running"]);
+
+const isUnfinished = (status) => UNFINISHED.has(status);
+
+function describeFinishedRun(run) {
+  const done = run.completed_cases + run.failed_cases;
+  if (run.status === "completed") return { tone: "success", title: "Lượt đánh giá hoàn tất", detail: `${done}/${run.total_cases} câu` };
+  return { tone: "error", title: "Lượt đánh giá bị lỗi", detail: run.error_message ?? `Dừng ở ${done}/${run.total_cases} câu` };
+}
 
 export default function EvaluationsPage() {
   const [runs, setRuns] = useState([]);
@@ -33,6 +43,8 @@ export default function EvaluationsPage() {
   useEffect(() => {
     loadRuns();
   }, [loadRuns]);
+
+  useRunNotifications(runs, { isUnfinished, describe: describeFinishedRun });
 
   // Còn lượt đang chạy thì cập nhật định kỳ để thấy tiến độ.
   const hasUnfinished = runs.some((run) => UNFINISHED.has(run.status));
@@ -304,68 +316,134 @@ function RunDetail({ run, onError }) {
           </label>
         </div>
       </div>
-      <ol className="result-list">
-        {results.items.map((result) => (
-          <ResultItem key={result.id} result={result} />
-        ))}
-      </ol>
+      <ResultRows results={results.items} />
     </article>
   );
 }
 
-function ResultItem({ result }) {
+const CATEGORY_COLORS = {
+  ok: "var(--ok)",
+  hallucination: "var(--danger)",
+  error: "var(--danger)",
+  false_refusal: "var(--warn)",
+  retrieval_miss: "var(--warn)",
+  unsupported_claims: "var(--warn)",
+};
+
+function describeExpectation(result) {
+  return result.expected_behavior === "answer" ? "trả lời" : "từ chối (không đủ thông tin)";
+}
+
+// Danh sách câu hỏi dạng dòng gọn; bấm một dòng mở panel chi tiết bên phải (J/K chuyển câu, Esc đóng).
+function ResultRows({ results }) {
+  // Lưu id thay vì vị trí: danh sách được tải lại khi lượt đang chạy hoặc khi đổi bộ lọc. Câu còn trong danh sách
+  // thì panel giữ nguyên; câu không còn (bị lọc ra) thì panel tự đóng.
+  const [open, setOpen] = useState({ id: null, direction: 0 });
+  const rowRefs = useRef(new Map());
+
+  const openIndex = open.id === null ? -1 : results.findIndex((result) => result.id === open.id);
+  const move = useCallback((index, direction) => setOpen({ id: results[index].id, direction }), [results]);
+  const close = useCallback(() => {
+    rowRefs.current.get(open.id)?.focus({ preventScroll: true });
+    setOpen({ id: null, direction: 0 });
+  }, [open.id]);
+
+  const current = openIndex >= 0 ? results[openIndex] : null;
+
   return (
-    <li className={`result-item result-item--${result.category}`}>
-      <div className="result-item__head">
-        <strong className="prose-wrap">{result.question}</strong>
-        <span className="badge">{CATEGORY_LABELS[result.category] ?? result.category}</span>
-      </div>
-      <p className="muted">
-        Kỳ vọng: {result.expected_behavior === "answer" ? "trả lời" : "từ chối (không đủ thông tin)"} · {formatLatency(result.latency_ms)} · chi
-        phí {formatCost(result.estimated_cost)}
-      </p>
-      {result.error_message && <p className="cell-error">{result.error_message}</p>}
-      <details>
-        <summary>Chi tiết: câu trả lời, metric, đoạn lấy về</summary>
-        <div className="result-item__body">
-          <h4>Câu trả lời của hệ thống</h4>
-          <p className="prose-wrap">{result.answer ?? "—"}</p>
-          {result.ground_truth_answer && (
-            <>
-              <h4>Đáp án tham chiếu</h4>
-              <p className="prose-wrap">{result.ground_truth_answer}</p>
-            </>
-          )}
-          <h4>Metric</h4>
-          <ul className="metric-inline">
-            {result.metrics.map((metric) => (
-              <li key={`${metric.metric_name}-${metric.k ?? ""}`}>
-                {metricName(metric)}:{" "}
-                {metric.status === "computed" ? formatScore(metric.value) : METRIC_STATUS_LABELS[metric.status] ?? metric.status}
-                {metric.details?.reason && <span className="muted"> ({metric.details.reason})</span>}
-              </li>
-            ))}
-          </ul>
-          <h4>Đoạn lấy về</h4>
-          {result.contexts.length === 0 ? (
-            <p className="muted">Không có.</p>
-          ) : (
-            <ol className="context-list">
-              {result.contexts.map((context) => (
-                <li key={context.rank}>
-                  <span className="muted">
-                    #{context.rank} · {context.filename}
-                    {context.page_number ? ` · trang ${context.page_number}` : ""} · điểm {context.score}
-                    {context.relevant === true && " · đúng"}
-                    {context.relevant === false && " · không khớp tham chiếu"}
-                  </span>
-                  <blockquote className="prose-wrap">{context.snippet}</blockquote>
-                </li>
-              ))}
-            </ol>
-          )}
+    <>
+      <ol className="detail-rows">
+        {results.map((result, index) => (
+          <li key={result.id}>
+            <button
+              ref={(element) => (element ? rowRefs.current.set(result.id, element) : rowRefs.current.delete(result.id))}
+              type="button"
+              className={`detail-row${open.id === result.id ? " is-on" : ""}`}
+              aria-label={`Câu ${index + 1}: ${result.question}`}
+              aria-describedby={`result-meta-${result.id}`}
+              aria-current={open.id === result.id ? "true" : undefined}
+              onClick={() => move(index, 0)}
+            >
+              <span className="detail-row__mark" style={{ background: CATEGORY_COLORS[result.category] ?? "var(--muted)" }} aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="detail-row__text">
+                <b>{result.question}</b>
+                <small id={`result-meta-${result.id}`}>
+                  {CATEGORY_LABELS[result.category] ?? result.category} · kỳ vọng {describeExpectation(result)} · {formatLatency(result.latency_ms)}
+                </small>
+              </span>
+              <em className="detail-row__tag" aria-hidden="true">
+                {CATEGORY_LABELS[result.category] ?? result.category}
+              </em>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <DetailPanel index={current ? openIndex : null} count={results.length} direction={open.direction} label="Chi tiết câu hỏi" itemLabel="Câu" onMove={move} onClose={close}>
+        {current && <ResultDetail result={current} />}
+      </DetailPanel>
+    </>
+  );
+}
+
+function ResultDetail({ result }) {
+  return (
+    <>
+      <span className="badge">{CATEGORY_LABELS[result.category] ?? result.category}</span>
+      <h3 className="detail-panel__title prose-wrap">{result.question}</h3>
+      <div className="detail-panel__facts">
+        <div>
+          <small>Kỳ vọng</small>
+          <b>{describeExpectation(result)}</b>
         </div>
-      </details>
-    </li>
+        <div>
+          <small>Độ trễ</small>
+          <b>{formatLatency(result.latency_ms)}</b>
+        </div>
+        <div>
+          <small>Chi phí</small>
+          <b>{formatCost(result.estimated_cost)}</b>
+        </div>
+      </div>
+      {result.error_message && <p className="cell-error">{result.error_message}</p>}
+
+      <h4>Câu trả lời của hệ thống</h4>
+      <p className="prose-wrap">{result.answer ?? "—"}</p>
+      {result.ground_truth_answer && (
+        <>
+          <h4>Đáp án tham chiếu</h4>
+          <p className="prose-wrap">{result.ground_truth_answer}</p>
+        </>
+      )}
+      <h4>Metric</h4>
+      <ul className="metric-inline">
+        {result.metrics.map((metric) => (
+          <li key={`${metric.metric_name}-${metric.k ?? ""}`}>
+            {metricName(metric)}:{" "}
+            {metric.status === "computed" ? formatScore(metric.value) : METRIC_STATUS_LABELS[metric.status] ?? metric.status}
+            {metric.details?.reason && <span className="muted"> ({metric.details.reason})</span>}
+          </li>
+        ))}
+      </ul>
+      <h4>Đoạn lấy về</h4>
+      {result.contexts.length === 0 ? (
+        <p className="muted">Không có.</p>
+      ) : (
+        <ol className="context-list">
+          {result.contexts.map((context) => (
+            <li key={context.rank}>
+              <span className="muted">
+                #{context.rank} · {context.filename}
+                {context.page_number ? ` · trang ${context.page_number}` : ""} · điểm {context.score}
+                {context.relevant === true && " · đúng"}
+                {context.relevant === false && " · không khớp tham chiếu"}
+              </span>
+              <blockquote className="prose-wrap">{context.snippet}</blockquote>
+            </li>
+          ))}
+        </ol>
+      )}
+    </>
   );
 }

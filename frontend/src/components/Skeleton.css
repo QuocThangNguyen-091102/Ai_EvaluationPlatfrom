@@ -1,0 +1,90 @@
+/* Lucian UX/UI Prompt #079 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#079 */
+
+.skeleton {
+  --ux-surface-2: var(--bg);
+  --ux-surface-3: var(--border);
+  --ux-ink: var(--text);
+  --ux-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  display: grid;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.skeleton__row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+/* Mọi khối dùng chung một dải sáng rộng 700px, đặt theo cùng gốc tọa độ, nên vệt sáng quét qua cả khung trong một nhịp (như mẫu). */
+.skeleton__block {
+  display: block;
+  border-radius: 7px;
+  animation: skeleton-shine 1.6s linear infinite;
+  background:
+    linear-gradient(100deg, transparent 28%, color-mix(in srgb, var(--ux-surface-3), var(--ux-ink) 7%) 45%, transparent 62%) var(--sx, 0px) 0 / 700px 100% no-repeat,
+    var(--ux-surface-2);
+}
+
+.skeleton__block--icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  --sx: 0px;
+}
+
+.skeleton__lines {
+  display: grid;
+  gap: 8px;
+  --sx: -54px;
+}
+
+.skeleton__lines .skeleton__block {
+  height: 12px;
+}
+
+.skeleton__lines .skeleton__block:first-child {
+  height: 13px;
+}
+
+@keyframes skeleton-shine {
+  from {
+    background-position: calc(var(--sx, 0px) - 700px) 0, 0 0;
+  }
+  to {
+    background-position: calc(var(--sx, 0px) + 700px) 0, 0 0;
+  }
+}
+
+/* Nội dung thật hiện dần từ trên xuống khi tải xong (nhịp và đường cong của mẫu). */
+.skeleton-reveal > * {
+  animation: skeleton-reveal 0.6s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
+.skeleton-reveal > :nth-child(2) { animation-delay: 0.06s; }
+.skeleton-reveal > :nth-child(3) { animation-delay: 0.12s; }
+.skeleton-reveal > :nth-child(4) { animation-delay: 0.18s; }
+.skeleton-reveal > :nth-child(5) { animation-delay: 0.24s; }
+.skeleton-reveal > :nth-child(6) { animation-delay: 0.3s; }
+.skeleton-reveal > :nth-child(n + 7) { animation-delay: 0.36s; }
+
+@keyframes skeleton-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__block,
+  .skeleton-reveal > * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+  }
+}

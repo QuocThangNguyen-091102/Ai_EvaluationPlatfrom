@@ -7,6 +7,9 @@ import {
   formatDateTime,
   formatFileSize,
 } from "../formatting.js";
+import ConfirmDeleteDialog from "../components/ConfirmDeleteDialog.jsx";
+import Skeleton from "../components/Skeleton.jsx";
+import { useRunNotifications } from "../hooks/useRunNotifications.js";
 import { deleteDocument, listDocuments, reprocessDocument, uploadDocument } from "../services/api/documentApi.js";
 
 const PAGE_SIZE = 10;
@@ -15,6 +18,14 @@ const POLL_INTERVAL_MS = 3000;
 // Dừng tự làm mới sau chừng này lần để không gọi API mãi khi tài liệu không đổi trạng thái; người dùng vẫn có nút Làm mới.
 const MAX_POLLS = 20;
 const IN_PROGRESS = new Set(["uploaded", "processing"]);
+
+const isProcessing = (status) => IN_PROGRESS.has(status);
+
+function describeProcessedDocument(document) {
+  if (document.status === "ready") return { tone: "success", title: "Đã xử lý xong tài liệu", detail: document.filename };
+  if (document.status === "failed") return { tone: "error", title: "Xử lý tài liệu bị lỗi", detail: document.filename };
+  return null;
+}
 
 function hasAcceptedExtension(name) {
   return ACCEPTED_EXTENSIONS.some((extension) => name.toLowerCase().endsWith(extension));
@@ -30,6 +41,7 @@ export default function DocumentsPage() {
   const [dragging, setDragging] = useState(false);
   const [pollCount, setPollCount] = useState(0);
   const fileInput = useRef(null);
+  const [pendingDelete, setPendingDelete] = useState(null); // { document, trigger } khi hộp xác nhận đang mở
 
   const load = useCallback(async () => {
     try {
@@ -50,6 +62,8 @@ export default function DocumentsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useRunNotifications(loading ? null : page.items, { isUnfinished: isProcessing, describe: describeProcessedDocument });
 
   const anyInProgress = page.items.some((item) => IN_PROGRESS.has(item.status));
   useEffect(() => {
@@ -86,12 +100,19 @@ export default function DocumentsPage() {
     if (fileInput.current) fileInput.current.value = "";
   }
 
-  async function handleDelete(document) {
-    if (!window.confirm(`Xóa tài liệu "${document.filename}"? Thao tác này không hoàn tác được.`)) return;
+  function closeDeleteDialog() {
+    pendingDelete?.trigger?.focus();
+    setPendingDelete(null);
+  }
+
+  async function confirmDelete() {
+    const { document } = pendingDelete;
     try {
       await deleteDocument(document.id);
+      setPendingDelete(null);
       await load();
     } catch (error) {
+      setPendingDelete(null);
       setLoadError(describeError(error));
     }
   }
@@ -168,7 +189,7 @@ export default function DocumentsPage() {
       </div>
 
       {loading ? (
-        <p className="page-message">Đang tải danh sách...</p>
+        <Skeleton rows={4} label="Đang tải danh sách tài liệu" />
       ) : page.items.length === 0 ? (
         <p className="empty-state">Chưa có tài liệu nào. Hãy tải lên tài liệu đầu tiên của bạn.</p>
       ) : (
@@ -187,7 +208,7 @@ export default function DocumentsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="skeleton-reveal">
               {page.items.map((document) => (
                 <tr key={document.id}>
                   <td className="cell-name" title={document.filename}>
@@ -209,7 +230,7 @@ export default function DocumentsPage() {
                         Xử lý lại
                       </button>
                     )}
-                    <button type="button" className="button button--danger" onClick={() => handleDelete(document)}>
+                    <button type="button" className="button button--danger" onClick={(event) => setPendingDelete({ document, trigger: event.currentTarget })}>
                       Xóa
                     </button>
                   </td>
@@ -237,6 +258,15 @@ export default function DocumentsPage() {
             Sau
           </button>
         </nav>
+      )}
+      {pendingDelete && (
+        <ConfirmDeleteDialog
+          name={pendingDelete.document.filename}
+          title="Xóa tài liệu này?"
+          description="Tài liệu, các đoạn đã chia và vector sẽ bị xóa vĩnh viễn, không hoàn tác được."
+          onCancel={closeDeleteDialog}
+          onConfirm={confirmDelete}
+        />
       )}
     </section>
   );

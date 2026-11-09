@@ -120,6 +120,23 @@ describe("EvaluationsPage", () => {
     expect(screen.getByRole("button", { name: /Bịa/ })).toBeInTheDocument();
   });
 
+  it("bấm một câu mở panel chi tiết; Esc đóng và trả focus về dòng đó", async () => {
+    renderPage(<EvaluationsPage />);
+    await userEvent.click(await screen.findByRole("button", { name: /top-passages/ }));
+
+    const row = await screen.findByRole("button", { name: "Câu 1: Hạn nộp hồ sơ?" });
+    await userEvent.click(row);
+
+    const panel = screen.getByRole("dialog", { name: "Chi tiết câu hỏi" });
+    expect(panel).toHaveTextContent("Câu trả lời của hệ thống");
+    expect(panel).toHaveTextContent("Đoạn lấy về");
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog", { name: "Chi tiết câu hỏi" })).not.toBeInTheDocument();
+    expect(row).toHaveFocus();
+  });
+
   it("lọc kết quả theo phân loại lỗi", async () => {
     renderPage(<EvaluationsPage />);
     await userEvent.click(await screen.findByRole("button", { name: /top-passages/ }));

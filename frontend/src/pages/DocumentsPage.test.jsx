@@ -132,35 +132,43 @@ describe("DocumentsPage", () => {
     expect(documentApi.uploadDocument).toHaveBeenCalledTimes(2);
   });
 
-  it("xóa tài liệu sau khi người dùng xác nhận", async () => {
+  it("xóa tài liệu sau khi gõ đúng tên để xác nhận", async () => {
     documentApi.listDocuments.mockResolvedValue(listOf([makeDocument()]));
     documentApi.deleteDocument.mockResolvedValue(null);
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<DocumentsPage />);
 
     await userEvent.click(await screen.findByRole("button", { name: "Xóa" }));
+    const dialog = screen.getByRole("alertdialog", { name: /Xóa tài liệu này/ });
+    const go = screen.getByRole("button", { name: "Xóa vĩnh viễn" });
+    expect(dialog).toHaveTextContent("bao-cao.pdf");
+    expect(go).toBeDisabled();
+
+    await userEvent.type(screen.getByLabelText('Gõ tên "bao-cao.pdf" để xác nhận'), "bao-cao.pdf");
+    await userEvent.click(go);
 
     await waitFor(() => expect(documentApi.deleteDocument).toHaveBeenCalledWith("doc-1"));
-    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining("bao-cao.pdf"));
   });
 
-  it("không xóa khi người dùng hủy xác nhận", async () => {
+  it("không xóa khi gõ sai tên hoặc bấm Hủy", async () => {
     documentApi.listDocuments.mockResolvedValue(listOf([makeDocument()]));
-    vi.spyOn(window, "confirm").mockReturnValue(false);
     render(<DocumentsPage />);
 
     await userEvent.click(await screen.findByRole("button", { name: "Xóa" }));
+    await userEvent.type(screen.getByLabelText('Gõ tên "bao-cao.pdf" để xác nhận'), "bao-cao.pd");
+    expect(screen.getByRole("button", { name: "Xóa vĩnh viễn" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Hủy" }));
 
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     expect(documentApi.deleteDocument).not.toHaveBeenCalled();
   });
 
   it("hiện lỗi khi xóa thất bại", async () => {
     documentApi.listDocuments.mockResolvedValue(listOf([makeDocument()]));
     documentApi.deleteDocument.mockRejectedValue(new ApiError("Không tìm thấy tài liệu", { status: 404 }));
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<DocumentsPage />);
 
     await userEvent.click(await screen.findByRole("button", { name: "Xóa" }));
+    await userEvent.type(screen.getByLabelText('Gõ tên "bao-cao.pdf" để xác nhận'), "bao-cao.pdf{Enter}");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Không tìm thấy tài liệu");
   });

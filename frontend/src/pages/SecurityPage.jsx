@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
 import RunProgress from "../components/RunProgress.jsx";
+import SpoilerText from "../components/SpoilerText.jsx";
+import { useRunNotifications } from "../hooks/useRunNotifications.js";
 import { describeError, formatDateTime, formatLatency } from "../formatting.js";
 import { RUN_STATUS_LABELS } from "../metricLabels.js";
 import { getCapabilities, listConfigurations } from "../services/api/modelConfigApi.js";
@@ -14,6 +16,17 @@ import {
 
 const POLL_MS = 2000;
 const UNFINISHED = new Set(["pending", "running"]);
+
+const isUnfinished = (status) => UNFINISHED.has(status);
+
+function describeFinishedRun(run) {
+  if (run.status === "completed") {
+    const failed = run.summary?.by_status?.fail ?? 0;
+    // Test không đạt là phát hiện lỗ hổng, không phải lỗi hệ thống, nên không dùng tông "error".
+    return { tone: failed > 0 ? "info" : "success", title: "Kiểm thử bảo mật hoàn tất", detail: `${failed} test không đạt / ${run.total_cases} test` };
+  }
+  return { tone: "error", title: "Lượt kiểm thử bị lỗi", detail: run.error_message ?? `Dừng ở ${run.completed_cases}/${run.total_cases} test` };
+}
 
 const SECURITY_CATEGORY_LABELS = {
   prompt_injection: "Prompt injection",
@@ -42,6 +55,8 @@ export default function SecurityPage() {
   useEffect(() => {
     loadRuns();
   }, [loadRuns]);
+
+  useRunNotifications(runs, { isUnfinished, describe: describeFinishedRun });
 
   const hasUnfinished = runs.some((run) => UNFINISHED.has(run.status));
   useEffect(() => {
@@ -357,7 +372,12 @@ function SecurityResultItem({ result }) {
           <h4>Hành vi mong đợi</h4>
           <p className="prose-wrap">{result.expected_behavior}</p>
           <h4>Câu trả lời thực tế</h4>
-          <p className="prose-wrap">{result.actual_response ?? "—"}</p>
+          {/* Test không đạt có thể chứa system prompt hoặc chuỗi canary bị lộ: che sẵn, bấm mới hiện. */}
+          {result.status === "fail" && result.actual_response ? (
+            <SpoilerText label="Câu trả lời có thể chứa nội dung bị lộ, bấm để hiện">{result.actual_response}</SpoilerText>
+          ) : (
+            <p className="prose-wrap">{result.actual_response ?? "—"}</p>
+          )}
           {judge && (
             <>
               <h4>Judge</h4>

@@ -1,0 +1,36 @@
+/* Lucian UX/UI Prompt #098 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#098 */
+
+/* Mẫu dùng chiều cao cố định 58px cho chữ 50px; ở đây tính theo em để theo cỡ chữ của nơi dùng. */
+.rolling-number {
+  --row: 1.16em;
+  display: inline-flex;
+  font-variant-numeric: tabular-nums;
+}
+
+.rolling-number__digits {
+  display: inline-flex;
+  align-items: flex-start;
+  height: var(--row);
+  overflow: hidden;
+  line-height: var(--row);
+  -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+}
+
+.rolling-number__column {
+  display: inline-flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--d) * -1 * var(--row)));
+  transition: transform 0.9s cubic-bezier(0.3, 1.25, 0.5, 1);
+  transition-delay: calc(var(--i) * 45ms);
+}
+
+.rolling-number__column span {
+  height: var(--row);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolling-number__column {
+    transition: none;
+  }
+}

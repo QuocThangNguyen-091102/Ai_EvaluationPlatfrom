@@ -1,10 +1,11 @@
 import { formatCost, formatLatency } from "../formatting.js";
 
 // Phần dưới mỗi câu trả lời: nguồn được trích dẫn, mọi đoạn đã tham khảo, và số đo của lượt hỏi.
-export default function AnswerSources({ citations = [], sources = [], metrics }) {
+// showCitations=false khi câu trả lời đã hiện thẻ nguồn bằng CitedAnswer, để không lặp danh sách.
+export default function AnswerSources({ citations = [], sources = [], metrics, showCitations = true }) {
   return (
     <div className="answer-meta">
-      {citations.length > 0 && (
+      {showCitations && citations.length > 0 && (
         <div className="answer-citations">
           <strong>Nguồn được trích dẫn:</strong>
           <ul>

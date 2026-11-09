@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
+import PasswordField from "../components/PasswordField.jsx";
 import { describeError } from "../formatting.js";
 import { useAuth } from "../hooks/useAuth.js";
 
@@ -13,6 +14,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const cardRef = useRef(null);
+
+  // Lắc thẻ như cái lắc đầu mỗi lần bị từ chối (#062); gỡ class rồi gắn lại để lần sai tiếp theo vẫn lắc.
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!error || !card) return;
+    card.classList.remove("auth-card--shake");
+    void card.offsetWidth;
+    card.classList.add("auth-card--shake");
+  }, [error]);
 
   const destination = location.state?.from ?? "/documents";
 
@@ -43,7 +54,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="card auth-card">
+      <div className="card auth-card" ref={cardRef}>
         <h1>AI Evaluation Platform</h1>
         <p className="muted">Đánh giá RAG, chất lượng LLM và kiểm thử bảo mật AI.</p>
 
@@ -68,18 +79,13 @@ export default function LoginPage() {
               required
             />
           </label>
-          <label>
-            Mật khẩu
-            <input
-              type="password"
-              name="password"
-              autoComplete={isRegister ? "new-password" : "current-password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </label>
-          {isRegister && <p className="hint">Mật khẩu cần đủ dài (tối thiểu theo quy định của máy chủ, thường là 8 ký tự).</p>}
+          <PasswordField
+            label="Mật khẩu"
+            value={password}
+            onChange={setPassword}
+            autoComplete={isRegister ? "new-password" : "current-password"}
+            showStrength={isRegister}
+          />
 
           {error && (
             <p className="alert alert--error" role="alert">
@@ -88,6 +94,7 @@ export default function LoginPage() {
           )}
 
           <button type="submit" className="button button--primary" disabled={submitting || !email || !password}>
+            {submitting && <i className="auth-spinner" aria-hidden="true" />}
             {submitting ? "Đang xử lý..." : isRegister ? "Tạo tài khoản" : "Đăng nhập"}
           </button>
         </form>

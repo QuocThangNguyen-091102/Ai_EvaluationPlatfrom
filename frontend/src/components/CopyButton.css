@@ -1,0 +1,128 @@
+/* Lucian UX/UI Prompt #008 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#008 */
+
+/* Chỉ lấy phần nút của mẫu (biểu tượng chuyển thành dấu tích, bóng "Đã copy"); bỏ khung lệnh cài đặt và tab. */
+.copy-button {
+  --ux-surface-2: var(--bg);
+  --ux-surface-3: var(--border);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--muted);
+  --ux-page: var(--bg);
+  --ux-accent: var(--primary);
+  --ux-mint: var(--ok);
+  --ux-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ux-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  padding: 0;
+  border-radius: 9px;
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.35s var(--ux-ease), color 0.35s var(--ux-ease), transform 0.45s var(--ux-spring);
+}
+
+.copy-button:hover {
+  background: var(--ux-surface-3);
+  color: var(--ux-ink);
+}
+
+.copy-button:active {
+  transform: scale(0.88);
+}
+
+.copy-button:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 3px;
+}
+
+.copy-button svg {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.25s var(--ux-ease), transform 0.5s var(--ux-spring);
+}
+
+.copy-button__check {
+  opacity: 0;
+  transform: scale(0.4) rotate(-30deg);
+}
+
+.copy-button__check path {
+  stroke-width: 2.6;
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  transition: stroke-dashoffset 0.4s var(--ux-ease) 0.1s;
+}
+
+.copy-button--copied {
+  background: var(--ux-mint);
+  color: var(--surface);
+}
+
+.copy-button--copied .copy-button__copy {
+  opacity: 0;
+  transform: scale(0.4) rotate(30deg);
+}
+
+.copy-button--copied .copy-button__check {
+  opacity: 1;
+  transform: none;
+}
+
+.copy-button--copied .copy-button__check path {
+  stroke-dashoffset: 0;
+}
+
+.copy-button__tip {
+  position: absolute;
+  right: -6px;
+  top: -40px;
+  padding: 6px 11px;
+  border-radius: 10px;
+  background: var(--ux-ink);
+  color: var(--ux-page);
+  font-size: 12.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px) scale(0.8);
+  transform-origin: 80% 100%;
+  transition: opacity 0.25s var(--ux-ease), transform 0.5s var(--ux-spring);
+}
+
+.copy-button__tip::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+.copy-button--copied .copy-button__tip {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy-button,
+  .copy-button * {
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+  }
+}

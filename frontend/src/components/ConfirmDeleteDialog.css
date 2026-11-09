@@ -1,0 +1,178 @@
+/* Lucian UX/UI Prompt #269 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#269 */
+
+.confirm-delete {
+  --ux-surface: var(--surface);
+  --ux-surface-2: var(--bg);
+  --ux-ink: var(--text);
+  --ux-ink-2: var(--muted);
+  --ux-ink-3: var(--muted);
+  --ux-line: var(--border);
+  --rose: var(--danger);
+
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.confirm-delete__dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.42);
+  animation: confirm-delete-fade 0.3s both;
+}
+
+.confirm-delete__dialog {
+  position: relative;
+  width: min(400px, 100%);
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--ux-surface);
+  color: var(--ux-ink);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
+  animation: confirm-delete-in 0.35s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+
+@keyframes confirm-delete-fade {
+  from { opacity: 0; }
+}
+
+@keyframes confirm-delete-in {
+  from {
+    transform: translateY(16px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+.confirm-delete__dialog h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.confirm-delete__dialog h4 i {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--rose) 15%, transparent);
+  color: var(--rose);
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.confirm-delete__dialog p {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ux-ink-2);
+}
+
+.confirm-delete__name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--ux-surface-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ux-ink-3);
+  white-space: pre;
+  overflow-wrap: anywhere;
+}
+
+.confirm-delete__name span {
+  transition: color 0.15s;
+}
+
+.confirm-delete__name span.is-ok {
+  color: var(--rose);
+}
+
+.confirm-delete__input {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--ux-surface-2);
+  box-shadow: inset 0 0 0 1.5px var(--ux-line);
+  color: var(--ux-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  outline: none;
+}
+
+.confirm-delete__input:focus {
+  box-shadow: inset 0 0 0 2px var(--rose);
+}
+
+.confirm-delete__input.is-shake {
+  animation: confirm-delete-shake 0.35s;
+}
+
+@keyframes confirm-delete-shake {
+  25%,
+  75% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+}
+
+.confirm-delete__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.confirm-delete__actions button {
+  flex: 1;
+  height: 42px;
+  border: 0;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.confirm-delete__actions button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.confirm-delete__cancel {
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-2);
+}
+
+.confirm-delete__go {
+  background: var(--rose);
+  color: var(--surface);
+  transition: opacity 0.2s;
+}
+
+.confirm-delete__go:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-delete__dim,
+  .confirm-delete__dialog,
+  .confirm-delete__input.is-shake {
+    animation: none;
+  }
+}
